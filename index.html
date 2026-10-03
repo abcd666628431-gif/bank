@@ -60,7 +60,6 @@
         <div>
           <div class="flex items-center gap-2">
             <h1 class="text-2xl font-serif font-bold text-[#1C1A18] tracking-tight">餘額</h1>
-            <!-- 實時同步狀態指示器 -->
             <div id="cloud-status-badge" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 text-[9px] font-semibold border border-amber-200 transition">
               <span id="cloud-pulse-dot" class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
               <span id="cloud-status-text">連線診斷中...</span>
@@ -87,13 +86,12 @@
         <div class="bg-cardBg rounded-2xl p-3 shadow-sm border border-[#EBE7E0] flex items-center justify-between">
           <div>
             <div class="flex items-baseline gap-1.5 mb-1 flex-wrap">
-              <span class="text-[10px] text-subText font-medium">總資產 (已扣款)</span>
+              <span class="text-[10px] text-subText font-medium">總資產</span>
               <span class="text-xs font-bold text-[#1C1A18] font-sans" id="total-wealth-amount">$0</span>
-              <span id="pending-wealth-hint" class="text-[9px] text-amber-700 font-semibold hidden"></span>
             </div>
             <span class="text-[10px] text-subText font-medium block">本月可用餘額</span>
             <div class="text-2xl font-bold text-[#1C1A18] font-sans tracking-tight" id="remaining-amount">$0</div>
-            <p id="remaining-desc" class="text-[9px] text-subText mt-0.5">總收入扣除總支出後之剩餘額度</p>
+            <p id="remaining-desc" class="text-[9px] text-subText mt-0.5">已扣除本月已付款項目之剩餘額度</p>
           </div>
           <div class="text-right">
             <span class="text-[10px] text-subText font-medium block">支出佔收入比</span>
@@ -123,11 +121,11 @@
 
           <div class="bg-gradient-to-br from-rose-50 to-red-100/60 rounded-xl p-2.5 border border-rose-200/80 shadow-sm">
             <div class="flex items-center justify-between text-rose-800 mb-0.5">
-              <span class="text-[10px] font-semibold">支出 (預算)</span>
+              <span class="text-[10px] font-semibold">支出</span>
               <i class="ph ph-arrow-up-right text-xs"></i>
             </div>
             <div id="total-expense-display" class="text-base font-bold text-rose-900 truncate font-sans">0</div>
-            <span class="text-[9px] text-rose-700/80">含待扣花費</span>
+            <span class="text-[9px] text-rose-700/80">累計花費</span>
           </div>
         </div>
 
@@ -150,7 +148,7 @@
         <div class="flex justify-between items-baseline">
           <div>
             <h2 class="text-xs font-bold text-[#1C1A18]">類別支出分佈</h2>
-            <p class="text-[9px] text-subText">各類型佔總支出比例</p>
+            <p class="text-[9px] text-subText">固定與不固定開支比例</p>
           </div>
           <span id="chart-total-expense" class="text-xs font-bold text-[#1C1A18] font-sans">$0</span>
         </div>
@@ -171,42 +169,37 @@
         </div>
       </section>
 
-      <!-- Wishlist Section -->
+      <!-- 待付費區 -->
       <section class="bg-cardBg rounded-2xl p-3 shadow-sm border border-[#EBE7E0] space-y-2.5">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-1.5">
             <span class="w-2 h-2 rounded-full bg-amber-500"></span>
             <div>
               <div class="flex items-center gap-1.5">
-                <h2 class="text-xs font-bold text-[#1C1A18]">待購買區</h2>
+                <h2 class="text-xs font-bold text-[#1C1A18]">待付費區</h2>
                 <span id="wishlist-month-badge" class="text-[9px] font-semibold text-amber-800 bg-amber-100/70 border border-amber-200/80 px-1.5 py-0.5 rounded-full">當月專屬</span>
               </div>
-              <p class="text-[9px] text-subText">本月心願與待購物品清單（各月獨立）</p>
+              <p class="text-[9px] text-subText">勾選項目代表已付款，即時影響總資產與可用餘額</p>
             </div>
           </div>
-
-          <button onclick="openWishlistModal()" class="flex items-center gap-1 px-2.5 py-1 bg-[#EFECE5] hover:bg-[#E5E0D5] text-[#2D2A26] rounded-lg text-[11px] font-semibold transition active:scale-95 border border-[#DDD6C8]">
-            <i class="ph ph-plus font-bold"></i>
-            <span>新增物品</span>
-          </button>
         </div>
 
         <div class="bg-[#FAF8F5] rounded-xl p-2.5 border border-[#ECE6DB] space-y-2">
           <div class="grid grid-cols-2 gap-2">
             <div class="bg-white rounded-lg p-2 border border-gray-100 shadow-sm">
-              <span class="text-[9px] text-gray-500 font-medium block">全部物品總價</span>
+              <span class="text-[9px] text-gray-500 font-medium block">全部待付總價</span>
               <div id="wishlist-total-sum" class="text-sm font-bold text-gray-800 font-sans mt-0.5">$0</div>
             </div>
 
-            <div class="bg-rose-50/70 rounded-lg p-2 border border-rose-100 shadow-sm">
-              <span class="text-[9px] text-rose-600 font-medium block">待備未購金額</span>
-              <div id="wishlist-pending-sum" class="text-sm font-bold text-rose-600 font-sans mt-0.5">$0</div>
+            <div class="bg-emerald-50/70 rounded-lg p-2 border border-emerald-100 shadow-sm">
+              <span class="text-[9px] text-emerald-700 font-medium block">已購金額 (已扣款)</span>
+              <div id="wishlist-purchased-sum" class="text-sm font-bold text-emerald-700 font-sans mt-0.5">$0</div>
             </div>
           </div>
 
           <div>
             <div class="flex justify-between items-center text-[9px] text-gray-500 mb-1">
-              <span>已購達成進度</span>
+              <span>付費達成進度</span>
               <span id="wishlist-progress-percent" class="font-bold text-emerald-700">0%</span>
             </div>
             <div class="w-full bg-[#E8E2D8] rounded-full h-1.5 overflow-hidden">
@@ -215,34 +208,32 @@
           </div>
         </div>
 
-        <div id="wishlist-items-container" class="space-y-1.5 pt-0.5"></div>
-      </section>
-
-      <!-- Transactions Section -->
-      <section class="bg-cardBg rounded-2xl p-3 shadow-sm border border-[#EBE7E0] space-y-2">
-        <div class="flex items-center justify-between flex-wrap gap-2">
-          <div>
-            <h2 class="text-xs font-bold text-[#1C1A18]">交易紀錄</h2>
-            <p id="transaction-count" class="text-[9px] text-subText">0 筆本月紀錄</p>
+        <!-- 左右雙欄容器 -->
+        <div class="grid grid-cols-2 gap-2 pt-0.5">
+          <!-- 左欄：固定區 -->
+          <div class="space-y-1.5">
+            <div class="flex items-center justify-between px-1.5 bg-purple-50 border border-purple-200/60 rounded-lg py-1">
+              <span class="text-[10px] font-bold text-purple-900">固定</span>
+              <div class="flex items-center gap-1">
+                <span id="fixed-col-sum" class="text-[10px] font-bold text-purple-900 font-sans">$0</span>
+                <button onclick="openWishlistModal(null, '固定')" title="新增固定項目" class="w-4 h-4 rounded bg-purple-200 text-purple-800 flex items-center justify-center font-bold text-[10px] hover:bg-purple-300 transition">+</button>
+              </div>
+            </div>
+            <div id="wishlist-fixed-container" class="space-y-1.5"></div>
           </div>
 
-          <div class="flex items-center gap-1.5 ml-auto">
-            <div class="flex bg-[#EAE5DC] p-0.5 rounded-lg text-[10px] font-medium text-gray-600">
-              <button onclick="setTxFilter('all')" id="filter-btn-all" class="px-2 py-0.5 rounded-md bg-white text-[#1C1A18] shadow-sm font-semibold transition">全部</button>
-              <button onclick="setTxFilter('expense')" id="filter-btn-expense" class="px-2 py-0.5 rounded-md hover:text-gray-900 transition">支出</button>
-              <button onclick="setTxFilter('fixed')" id="filter-btn-fixed" class="px-2 py-0.5 rounded-md hover:text-gray-900 transition">固定</button>
-              <button onclick="setTxFilter('pending')" id="filter-btn-pending" class="px-2 py-0.5 rounded-md hover:text-gray-900 transition text-amber-800 font-medium">待扣</button>
-              <button onclick="setTxFilter('income')" id="filter-btn-income" class="px-2 py-0.5 rounded-md hover:text-gray-900 transition">收入</button>
+          <!-- 右欄：不固定支付區 -->
+          <div class="space-y-1.5">
+            <div class="flex items-center justify-between px-1.5 bg-sky-50 border border-sky-200/60 rounded-lg py-1">
+              <span class="text-[10px] font-bold text-sky-900">不固定</span>
+              <div class="flex items-center gap-1">
+                <span id="variable-col-sum" class="text-[10px] font-bold text-sky-900 font-sans">$0</span>
+                <button onclick="openWishlistModal(null, '不固定')" title="新增不固定項目" class="w-4 h-4 rounded bg-sky-200 text-sky-800 flex items-center justify-center font-bold text-[10px] hover:bg-sky-300 transition">+</button>
+              </div>
             </div>
-
-            <button onclick="openTransactionModal()" class="flex items-center gap-1 px-2.5 py-1 bg-gradient-to-r from-[#17382B] to-[#22523E] text-white text-[11px] font-semibold rounded-lg hover:opacity-95 active:scale-95 transition shadow-sm border border-emerald-900/20">
-              <i class="ph ph-plus-circle text-xs font-bold text-emerald-300"></i>
-              <span>新增</span>
-            </button>
+            <div id="wishlist-variable-container" class="space-y-1.5"></div>
           </div>
         </div>
-
-        <div id="transactions-list" class="divide-y divide-gray-100 pt-0.5"></div>
       </section>
 
       <!-- Annual Trends -->
@@ -291,147 +282,45 @@
 
     </div>
 
-    <!-- Modal 1: Add/Edit Transaction -->
-    <div id="tx-modal" onclick="handleBackdropClick(event, 'tx-modal')" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
-      <div class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-2xl p-4 shadow-2xl space-y-3 border border-[#ECE8E1]">
-        <div class="flex items-center justify-between border-b pb-2.5 border-gray-100">
-          <h3 id="modal-title" class="font-bold text-sm text-gray-800">新增交易</h3>
-          <button onclick="closeTransactionModal()" class="p-1 rounded-full text-gray-400 hover:text-gray-700">
-            <i class="ph ph-x text-base"></i>
-          </button>
-        </div>
-
-        <form id="tx-form" onsubmit="handleTransactionSubmit(event)" class="space-y-2.5 text-xs">
-          <input type="hidden" id="tx-id">
-          
-          <div class="grid grid-cols-2 gap-1.5 bg-[#F3F0E9] p-1 rounded-xl">
-            <button type="button" onclick="setModalType('expense', true)" id="btn-type-expense" class="py-1.5 rounded-lg text-xs font-bold transition bg-white text-rose-600 shadow-sm">支出</button>
-            <button type="button" onclick="setModalType('income', true)" id="btn-type-income" class="py-1.5 rounded-lg text-xs font-bold transition text-gray-600">收入</button>
-          </div>
-          <input type="hidden" id="tx-type" value="expense">
-
-          <div>
-            <label class="block text-[11px] font-medium text-gray-500 mb-1">交易名稱</label>
-            <input type="text" id="tx-title" required placeholder="如：超市採買、午餐、房租" class="w-full px-3 py-2 bg-[#FAF8F5] border border-gray-200 rounded-xl focus:outline-none focus:border-brandDark">
-          </div>
-
-          <div class="grid grid-cols-2 gap-2">
-            <div>
-              <label class="block text-[11px] font-medium text-gray-500 mb-1">金額 ($)</label>
-              <input type="number" step="any" id="tx-amount" min="0.01" required placeholder="100" class="w-full px-3 py-2 bg-[#FAF8F5] border border-gray-200 rounded-xl focus:outline-none focus:border-brandDark font-sans">
-            </div>
-            <div>
-              <div class="flex justify-between items-center mb-1">
-                <label class="block text-[11px] font-medium text-gray-500">類別</label>
-                <button type="button" onclick="openCategoryModal()" class="text-[10px] text-emerald-700 font-semibold hover:underline flex items-center gap-0.5">
-                  <i class="ph ph-gear-six"></i>管理
-                </button>
-              </div>
-              <select id="tx-category" onchange="handleCategorySelectChange(this.value)" class="w-full px-2 py-2 bg-[#FAF8F5] border border-gray-200 rounded-xl focus:outline-none focus:border-brandDark"></select>
-            </div>
-          </div>
-
-          <div>
-            <label class="block text-[11px] font-medium text-gray-500 mb-1">日期</label>
-            <input type="date" id="tx-date" required class="w-full px-3 py-2 bg-[#FAF8F5] border border-gray-200 rounded-xl focus:outline-none focus:border-brandDark font-sans">
-          </div>
-
-          <div class="space-y-1.5 pt-0.5 bg-[#FAF8F5] p-2 rounded-xl border border-gray-200/60">
-            <div id="tx-fixed-container" class="flex items-center gap-2">
-              <input type="checkbox" id="tx-is-fixed" class="w-4 h-4 rounded accent-emerald-700 cursor-pointer">
-              <label for="tx-is-fixed" class="text-xs text-gray-700 cursor-pointer select-none">
-                設為每月固定開支 <span class="text-[10px] text-subText">(如房租、定期訂閱)</span>
-              </label>
-            </div>
-
-            <div class="flex items-center gap-2">
-              <input type="checkbox" id="tx-is-settled" checked class="w-4 h-4 rounded accent-emerald-700 cursor-pointer">
-              <label for="tx-is-settled" class="text-xs text-gray-700 cursor-pointer select-none">
-                <span id="tx-settled-label" class="font-medium text-gray-800">已正式扣款</span>
-                <span id="tx-settled-hint" class="text-[10px] text-amber-700 font-medium">(取消勾選代表先打定備忘，未正式扣錢)</span>
-              </label>
-            </div>
-          </div>
-
-          <div class="pt-2 flex gap-2">
-            <button type="button" onclick="closeTransactionModal()" class="flex-1 py-2 bg-[#EAE6DE] text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition">取消</button>
-            <button type="submit" class="flex-1 py-2 bg-brandDark text-white font-semibold rounded-xl hover:opacity-95 transition">儲存交易</button>
-          </div>
-        </form>
-      </div>
-    </div>
-
-    <!-- Modal 2: Add/Edit Wishlist Item -->
+    <!-- Modal: 新增/編輯待付項目（已取消所有提示字，採垂直排列） -->
     <div id="wishlist-modal" onclick="handleBackdropClick(event, 'wishlist-modal')" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
       <div class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-2xl p-4 shadow-2xl space-y-3 border border-[#ECE8E1]">
         <div class="flex items-center justify-between border-b pb-2 border-gray-100">
-          <h3 id="wishlist-modal-title" class="font-bold text-sm text-gray-800">新增待購物品</h3>
+          <h3 id="wishlist-modal-title" class="font-bold text-sm text-gray-800">新增待付項目</h3>
           <button onclick="closeWishlistModal()" class="p-1 rounded-full text-gray-400 hover:text-gray-700">
             <i class="ph ph-x text-base"></i>
           </button>
         </div>
 
-        <form id="wishlist-form" onsubmit="handleWishlistSubmit(event)" class="space-y-2.5 text-xs">
+        <form id="wishlist-form" onsubmit="handleWishlistSubmit(event)" class="space-y-3 text-xs">
           <input type="hidden" id="wishlist-edit-id">
+          <input type="hidden" id="wishlist-item-category">
 
           <div>
-            <label class="block text-[11px] font-medium text-gray-500 mb-1">物品名稱</label>
-            <input type="text" id="wishlist-item-title" required placeholder="如：降噪耳機、辦公椅" class="w-full px-3 py-2 bg-[#FAF8F5] border border-gray-200 rounded-xl focus:outline-none focus:border-brandDark">
+            <label class="block text-[11px] font-medium text-gray-500 mb-1">項目名稱</label>
+            <input type="text" id="wishlist-item-title" required class="w-full px-3 py-2 bg-[#FAF8F5] border border-gray-200 rounded-xl focus:outline-none focus:border-brandDark">
           </div>
 
-          <div class="grid grid-cols-2 gap-2">
-            <div>
-              <label class="block text-[11px] font-medium text-gray-500 mb-1">歸屬月份</label>
-              <input type="month" id="wishlist-item-month" required class="w-full px-2 py-2 bg-[#FAF8F5] border border-gray-200 rounded-xl focus:outline-none focus:border-brandDark font-sans">
-            </div>
-            <div>
-              <label class="block text-[11px] font-medium text-gray-500 mb-1">預估價格 ($)</label>
-              <input type="number" step="any" id="wishlist-item-price" min="0.01" required placeholder="2500" class="w-full px-3 py-2 bg-[#FAF8F5] border border-gray-200 rounded-xl focus:outline-none focus:border-brandDark font-sans">
-            </div>
+          <div>
+            <label class="block text-[11px] font-medium text-gray-500 mb-1">金額 ($)</label>
+            <input type="number" step="any" id="wishlist-item-price" min="0.01" required class="w-full px-3 py-2 bg-[#FAF8F5] border border-gray-200 rounded-xl focus:outline-none focus:border-brandDark font-sans">
           </div>
 
-          <div class="grid grid-cols-2 gap-2">
-            <div>
-              <label class="block text-[11px] font-medium text-gray-500 mb-1">分類</label>
-              <select id="wishlist-item-category" class="w-full px-2 py-2 bg-[#FAF8F5] border border-gray-200 rounded-xl focus:outline-none focus:border-brandDark"></select>
-            </div>
-            <div>
-              <label class="block text-[11px] font-medium text-gray-500 mb-1">備註說明 (選填)</label>
-              <input type="text" id="wishlist-item-note" placeholder="如：特價時入手" class="w-full px-3 py-2 bg-[#FAF8F5] border border-gray-200 rounded-xl focus:outline-none focus:border-brandDark">
-            </div>
+          <div>
+            <label class="block text-[11px] font-medium text-gray-500 mb-1">歸屬月份</label>
+            <input type="month" id="wishlist-item-month" required class="w-full px-3 py-2 bg-[#FAF8F5] border border-gray-200 rounded-xl focus:outline-none focus:border-brandDark font-sans">
+          </div>
+
+          <div>
+            <label class="block text-[11px] font-medium text-gray-500 mb-1">備註說明 (選填)</label>
+            <input type="text" id="wishlist-item-note" class="w-full px-3 py-2 bg-[#FAF8F5] border border-gray-200 rounded-xl focus:outline-none focus:border-brandDark">
           </div>
 
           <div class="pt-2 flex gap-2">
             <button type="button" onclick="closeWishlistModal()" class="flex-1 py-2 bg-[#EAE6DE] text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition">取消</button>
-            <button type="submit" class="flex-1 py-2 bg-emerald-800 text-white font-semibold rounded-xl hover:opacity-95 transition">儲存物品</button>
+            <button type="submit" class="flex-1 py-2 bg-emerald-800 text-white font-semibold rounded-xl hover:opacity-95 transition">儲存項目</button>
           </div>
         </form>
-      </div>
-    </div>
-
-    <!-- Modal 3: Category Management Modal -->
-    <div id="category-modal" onclick="handleBackdropClick(event, 'category-modal')" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div class="bg-white w-full max-w-sm rounded-2xl p-4 shadow-2xl space-y-3 border border-[#ECE8E1]">
-        <div class="flex items-center justify-between border-b pb-2 border-gray-100">
-          <div class="flex items-center gap-1.5">
-            <i class="ph ph-squares-four text-emerald-700 text-base"></i>
-            <h3 class="font-bold text-sm text-gray-800">類別管理</h3>
-          </div>
-          <button onclick="closeCategoryModal()" class="p-1 rounded-full text-gray-400 hover:text-gray-700">
-            <i class="ph ph-x text-base"></i>
-          </button>
-        </div>
-
-        <form onsubmit="handleAddCategory(event)" class="flex gap-2">
-          <input type="text" id="new-category-name" required placeholder="新類別名稱 (如: 寵物)" class="flex-1 px-3 py-1.5 bg-[#FAF8F5] border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-brandDark">
-          <button type="submit" class="px-3 py-1.5 bg-emerald-800 text-white rounded-xl text-xs font-semibold hover:opacity-95 transition">新增</button>
-        </form>
-
-        <div class="space-y-1 max-h-48 overflow-y-auto custom-scroll pr-1" id="category-management-list"></div>
-
-        <div class="pt-2">
-          <button type="button" onclick="closeCategoryModal()" class="w-full py-2 bg-[#EAE6DE] text-gray-700 font-semibold rounded-xl text-xs hover:bg-gray-200 transition">完成</button>
-        </div>
       </div>
     </div>
 
@@ -456,7 +345,6 @@
 
     let app = null, db = null;
     let isCloudReady = false;
-    let hasInitialTxSync = false;
     let hasInitialWishSync = false;
     let toastTimer = null;
 
@@ -474,12 +362,7 @@
 
     function safeJSONParse(str, fallback) {
       if (!str) return fallback;
-      try {
-        return JSON.parse(str);
-      } catch (e) {
-        console.error("緩存解析失敗，已自動回退", e);
-        return fallback;
-      }
+      try { return JSON.parse(str); } catch (e) { return fallback; }
     }
 
     function isSameMonthYear(dateStr, year, month) {
@@ -488,56 +371,35 @@
       return parts.length >= 2 && parseInt(parts[0], 10) === year && parseInt(parts[1], 10) === month;
     }
 
+    function diagLog(msg, isError = false) {
+      if (isError) console.error(msg); else console.log(msg);
+    }
+
     const DEFAULT_CATEGORIES = {
-      '飲食': { color: '#EA580C', icon: 'ph-fork-knife' },
-      '交通': { color: '#0284C7', icon: 'ph-car' },
-      '購物': { color: '#7C3AED', icon: 'ph-bag' },
-      '居住': { color: '#1E293B', icon: 'ph-house-line' },
-      '帳單': { color: '#E11D48', icon: 'ph-receipt' },
-      '固定支出': { color: '#8B5CF6', icon: 'ph-repeat' },
-      '薪資': { color: '#059669', icon: 'ph-coins' },
-      '其他': { color: '#64748B', icon: 'ph-tag' }
+      '固定': { color: '#8B5CF6', icon: 'ph-repeat' },
+      '不固定': { color: '#0284C7', icon: 'ph-shopping-bag' }
     };
 
-    const CORE_CATEGORIES = Object.keys(DEFAULT_CATEGORIES);
-
-    const localCategories = localStorage.getItem('budget_categories');
-    const localTransactions = localStorage.getItem('budget_transactions');
     const localWishlist = localStorage.getItem('budget_wishlist');
 
     const now = new Date();
     let state = {
       currentYear: now.getFullYear(),
       currentMonth: now.getMonth() + 1,
-      filter: 'all',
       annualView: 'flow',
-      categories: safeJSONParse(localCategories, DEFAULT_CATEGORIES),
-      transactions: safeJSONParse(localTransactions, []),
       wishlist: safeJSONParse(localWishlist, [])
     };
 
-    if (!state.categories || Object.keys(state.categories).length === 0) {
-      state.categories = JSON.parse(JSON.stringify(DEFAULT_CATEGORIES));
-    }
-
     function saveToLocalStorage() {
       try {
-        localStorage.setItem('budget_categories', JSON.stringify(state.categories));
-        localStorage.setItem('budget_transactions', JSON.stringify(state.transactions));
         localStorage.setItem('budget_wishlist', JSON.stringify(state.wishlist));
-      } catch (err) {
-        console.warn('本地快取儲存受阻:', err);
-      }
+      } catch (err) {}
     }
 
-    function recordOfflineDeletion(type, id) {
-      const key = type === 'tx' ? 'budget_deleted_txs' : 'budget_deleted_wish';
+    function recordOfflineDeletion(id) {
       try {
-        const list = safeJSONParse(localStorage.getItem(key), []);
-        if (!list.includes(id)) {
-          list.push(id);
-          localStorage.setItem(key, JSON.stringify(list));
-        }
+        const list = safeJSONParse(localStorage.getItem('budget_deleted_wish'), []);
+        if (!list.includes(id)) { list.push(id); localStorage.setItem('budget_deleted_wish', JSON.stringify(list)); }
       } catch (e) {}
     }
 
@@ -568,7 +430,7 @@
 
     window.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
-        ['tx-modal', 'wishlist-modal', 'category-modal'].forEach(id => {
+        ['wishlist-modal'].forEach(id => {
           const el = document.getElementById(id);
           if (el) el.classList.add('hidden');
         });
@@ -580,12 +442,7 @@
       const badgeText = document.getElementById('cloud-status-text');
       const badge = document.getElementById('cloud-status-badge');
       if (!dot || !badgeText || !badge) return;
-
-      if (status === 'syncing') {
-        dot.className = "w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse";
-        badgeText.innerText = text || "連線同步中...";
-        badge.className = "inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 text-[9px] font-semibold border border-amber-200 transition";
-      } else if (status === 'online') {
+      if (status === 'online') {
         dot.className = "w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse";
         badgeText.innerText = text || "已連線雲端";
         badge.className = "inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[9px] font-semibold border border-emerald-200 transition";
@@ -596,65 +453,48 @@
       }
     }
 
-    async function syncFixedExpensesToMonth(targetYear, targetMonth) {
-      const fixedTxs = state.transactions.filter(t => t.type === 'expense' && (t.isFixed || t.category === '固定支出'));
+    async function syncFixedItemsToMonth(targetYear, targetMonth) {
+      const fixedItems = state.wishlist.filter(i => i.category === '固定' || i.isFixed);
       const fixedMap = new Map();
-      fixedTxs.forEach(t => { if (!fixedMap.has(t.title)) fixedMap.set(t.title, t); });
+      fixedItems.forEach(i => { if (!fixedMap.has(i.title)) fixedMap.set(i.title, i); });
       if (fixedMap.size === 0) return;
 
       const currentMonthTitles = new Set(
-        state.transactions.filter(t => isSameMonthYear(t.date, targetYear, targetMonth) && (t.isFixed || t.category === '固定支出')).map(t => t.title)
+        state.wishlist.filter(i => isSameMonthYear(i.month, targetYear, targetMonth) && (i.category === '固定' || i.isFixed)).map(i => i.title)
       );
 
       let addedCount = 0;
       for (const [title, orig] of fixedMap.entries()) {
         if (!currentMonthTitles.has(title)) {
           const newId = `fixed_${targetYear}_${targetMonth}_${Date.now()}_${Math.floor(Math.random()*1000)}`;
-          const newDate = `${targetYear}-${String(targetMonth).padStart(2, '0')}-01`;
-          const newTx = { id: newId, title: orig.title, amount: orig.amount, category: orig.category || '固定支出', date: newDate, type: 'expense', isFixed: true, settled: false };
-          state.transactions.unshift(newTx);
+          const newMonth = `${targetYear}-${String(targetMonth).padStart(2, '0')}`;
+          const newItem = { id: newId, title: orig.title, price: orig.price, category: '固定', month: newMonth, note: orig.note || '', purchased: false, isFixed: true };
+          state.wishlist.unshift(newItem);
           addedCount++;
           if (isCloudReady && fbSetDoc && fbDoc) {
-            try { await fbSetDoc(fbDoc(db, 'shared_transactions', newId), newTx); } catch (e) {}
+            try { await fbSetDoc(fbDoc(db, 'shared_wishlist', newId), newItem); } catch (e) {}
           }
         }
       }
       if (addedCount > 0) {
         saveToLocalStorage();
-        showToast(`已自動帶入 ${addedCount} 筆每月固定開支 (先打定)`);
+        showToast(`已自動帶入 ${addedCount} 筆每月固定項目`);
       }
     }
 
     async function changeMonth(delta) {
       state.currentMonth += delta;
-      if (state.currentMonth > 12) {
-        state.currentMonth = 1;
-        state.currentYear += 1;
-      } else if (state.currentMonth < 1) {
-        state.currentMonth = 12;
-        state.currentYear -= 1;
-      }
-      await syncFixedExpensesToMonth(state.currentYear, state.currentMonth);
+      if (state.currentMonth > 12) { state.currentMonth = 1; state.currentYear++; }
+      else if (state.currentMonth < 1) { state.currentMonth = 12; state.currentYear--; }
+      await syncFixedItemsToMonth(state.currentYear, state.currentMonth);
       render();
     }
 
     async function jumpToMonth(targetMonth) {
       state.currentMonth = targetMonth;
-      await syncFixedExpensesToMonth(state.currentYear, state.currentMonth);
+      await syncFixedItemsToMonth(state.currentYear, state.currentMonth);
       render();
       showToast(`已切換至 ${state.currentYear}年${targetMonth}月`);
-    }
-
-    function setTxFilter(type) {
-      state.filter = type;
-      ['all', 'expense', 'fixed', 'pending', 'income'].forEach(tab => {
-        const btn = document.getElementById(`filter-btn-${tab}`);
-        if (!btn) return;
-        btn.className = (tab === type) 
-          ? "px-2 py-0.5 rounded-md bg-white text-[#1C1A18] shadow-sm font-semibold transition"
-          : (tab === 'pending' ? "px-2 py-0.5 rounded-md hover:text-gray-900 transition text-amber-800 font-medium" : "px-2 py-0.5 rounded-md hover:text-gray-900 transition");
-      });
-      renderTransactions();
     }
 
     function setAnnualChartView(viewType) {
@@ -671,105 +511,59 @@
       renderAnnualChart();
     }
 
-    function renderOverview(currentTxs) {
-      document.getElementById('current-month-display').innerText = `${state.currentYear}年${state.currentMonth}月`;
-
-      const income = currentTxs.filter(t => t.type === 'income').reduce((sum, t) => sum + Number(t.amount || 0), 0);
-      const expense = currentTxs.filter(t => t.type === 'expense').reduce((sum, t) => sum + Number(t.amount || 0), 0);
-      const fixedExpense = currentTxs.filter(t => t.type === 'expense' && (t.isFixed || t.category === '固定支出')).reduce((sum, t) => sum + Number(t.amount || 0), 0);
-      
-      const pendingExpense = currentTxs.filter(t => t.type === 'expense' && t.settled === false).reduce((sum, t) => sum + Number(t.amount || 0), 0);
-      const settledExpense = expense - pendingExpense;
-
-      const remaining = income - expense;
-      const ratio = income > 0 ? Math.round((expense / income) * 100) : (expense > 0 ? 100 : 0);
-
-      const allSettledIncome = state.transactions.filter(t => t.type === 'income' && t.settled !== false).reduce((sum, t) => sum + Number(t.amount || 0), 0);
-      const allSettledExpense = state.transactions.filter(t => t.type === 'expense' && t.settled !== false).reduce((sum, t) => sum + Number(t.amount || 0), 0);
-      const totalWealth = allSettledIncome - allSettledExpense;
-
-      const allPendingExpense = state.transactions.filter(t => t.type === 'expense' && t.settled === false).reduce((sum, t) => sum + Number(t.amount || 0), 0);
-
-      const totalWealthEl = document.getElementById('total-wealth-amount');
-      if (totalWealthEl) {
-        totalWealthEl.innerText = formatCurrency(totalWealth);
-        totalWealthEl.className = `text-xs font-bold font-sans ${totalWealth >= 0 ? 'text-[#1C1A18]' : 'text-rose-600'}`;
-      }
-
-      const pendingHintEl = document.getElementById('pending-wealth-hint');
-      if (pendingHintEl) {
-        if (allPendingExpense > 0) {
-          pendingHintEl.innerText = `(待扣 ${formatCurrency(allPendingExpense)})`;
-          pendingHintEl.classList.remove('hidden');
-        } else {
-          pendingHintEl.classList.add('hidden');
-        }
-      }
-
-      const remainingEl = document.getElementById('remaining-amount');
-      if (remainingEl) {
-        remainingEl.innerText = formatCurrency(remaining);
-        remainingEl.className = `text-2xl font-bold font-sans tracking-tight ${remaining >= 0 ? 'text-[#1C1A18]' : 'text-rose-600'}`;
-      }
-
-      const remainingDescEl = document.getElementById('remaining-desc');
-      if (remainingDescEl) {
-        if (pendingExpense > 0) {
-          remainingDescEl.innerHTML = `已扣 ${formatCurrency(settledExpense)} · <button type="button" onclick="setTxFilter('pending')" class="text-amber-700 font-semibold underline cursor-pointer hover:opacity-80">待扣 ${formatCurrency(pendingExpense)}</button>`;
-        } else {
-          remainingDescEl.innerText = `總收入扣除總支出後之剩餘額度`;
-        }
-      }
-
-      document.getElementById('total-income-display').innerText = formatNumber(income);
-      document.getElementById('total-fixed-display').innerText = formatNumber(fixedExpense);
-      document.getElementById('total-expense-display').innerText = formatNumber(expense);
-
-      document.getElementById('expense-ratio-text').innerText = `${ratio}%`;
-      
-      const ratioBar = document.getElementById('expense-ratio-bar');
-      const trackDot = document.getElementById('expense-track-dot');
-      ratioBar.style.width = `${Math.min(ratio, 100)}%`;
-
-      const statusTag = document.getElementById('expense-status-tag');
-      if (ratio > 80) {
-        statusTag.innerText = "支出偏高";
-        statusTag.className = "text-[9px] text-rose-600 font-medium block";
-        ratioBar.className = "h-full rounded-full transition-all duration-500 bg-rose-500";
-        if (trackDot) trackDot.className = "w-1.5 h-1.5 rounded-full bg-rose-500";
-      } else if (ratio > 50) {
-        statusTag.innerText = "收支平穩";
-        statusTag.className = "text-[9px] text-amber-600 font-medium block";
-        ratioBar.className = "h-full rounded-full transition-all duration-500 bg-amber-500";
-        if (trackDot) trackDot.className = "w-1.5 h-1.5 rounded-full bg-amber-500";
-      } else {
-        statusTag.innerText = "財務狀態良好";
-        statusTag.className = "text-[9px] text-emerald-600 font-medium block";
-        ratioBar.className = "h-full rounded-full transition-all duration-500 bg-emerald-500";
-        if (trackDot) trackDot.className = "w-1.5 h-1.5 rounded-full bg-emerald-500";
-      }
-
-      document.getElementById('chart-total-expense').innerText = formatCurrency(expense);
-      document.getElementById('donut-inner-total').innerText = formatNumber(expense);
+    function render() {
+      renderOverview();
+      renderCategories();
+      renderWishlist();
+      renderAnnualChart();
     }
 
-    function renderCategories(currentTxs) {
-      const expenseTxs = currentTxs.filter(t => t.type === 'expense');
-      const totalExpense = expenseTxs.reduce((sum, t) => sum + Number(t.amount || 0), 0);
+    function renderOverview() {
+      document.getElementById('current-month-display').innerText = `${state.currentYear}年${state.currentMonth}月`;
 
-      const catMap = {};
-      expenseTxs.forEach(t => {
-        const cat = t.category || '其他';
-        catMap[cat] = (catMap[cat] || 0) + Number(t.amount || 0);
+      const currentMonthItems = state.wishlist.filter(item => isSameMonthYear(item.month, state.currentYear, state.currentMonth));
+      
+      const fixedItems = currentMonthItems.filter(i => i.category === '固定' || i.isFixed);
+      const variableItems = currentMonthItems.filter(i => i.category !== '固定' && !i.isFixed);
+
+      const fixedSum = fixedItems.reduce((s, i) => s + Number(i.price || 0), 0);
+      const variableSum = variableItems.reduce((s, i) => s + Number(i.price || 0), 0);
+      const totalExpense = fixedSum + variableSum;
+
+      const allPurchasedSum = state.wishlist.filter(i => i.purchased).reduce((s, i) => s + Number(i.price || 0), 0);
+      
+      const totalWealth = -allPurchasedSum;
+      const currentPurchasedSum = currentMonthItems.filter(i => i.purchased).reduce((s, i) => s + Number(i.price || 0), 0);
+      const remaining = -currentPurchasedSum;
+
+      document.getElementById('total-wealth-amount').innerText = formatCurrency(totalWealth);
+      document.getElementById('remaining-amount').innerText = formatCurrency(remaining);
+      document.getElementById('total-income-display').innerText = '0';
+      document.getElementById('total-fixed-display').innerText = formatNumber(fixedSum);
+      document.getElementById('total-expense-display').innerText = formatNumber(totalExpense);
+      document.getElementById('chart-total-expense').innerText = formatCurrency(totalExpense);
+      document.getElementById('donut-inner-total').innerText = formatNumber(totalExpense);
+
+      if (document.getElementById('fixed-col-sum')) document.getElementById('fixed-col-sum').innerText = formatCurrency(fixedSum);
+      if (document.getElementById('variable-col-sum')) document.getElementById('variable-col-sum').innerText = formatCurrency(variableSum);
+    }
+
+    function renderCategories() {
+      const currentMonthItems = state.wishlist.filter(item => isSameMonthYear(item.month, state.currentYear, state.currentMonth));
+      const totalExpense = currentMonthItems.reduce((sum, t) => sum + Number(t.price || 0), 0);
+
+      const catMap = { '固定': 0, '不固定': 0 };
+      currentMonthItems.forEach(t => {
+        const cat = (t.category === '固定' || t.isFixed) ? '固定' : '不固定';
+        catMap[cat] = (catMap[cat] || 0) + Number(t.price || 0);
       });
 
       const sortedCats = Object.keys(catMap).map(cat => ({
         name: cat,
         amount: catMap[cat],
         pct: totalExpense > 0 ? Math.round((catMap[cat] / totalExpense) * 100) : 0,
-        color: state.categories[cat]?.color || '#64748B',
-        icon: state.categories[cat]?.icon || 'ph-tag'
-      })).sort((a, b) => b.amount - a.amount);
+        color: cat === '固定' ? '#8B5CF6' : '#0284C7'
+      })).filter(c => c.amount > 0).sort((a, b) => b.amount - a.amount);
 
       const donutContainer = document.getElementById('donut-segments');
       donutContainer.innerHTML = '';
@@ -796,7 +590,7 @@
 
       const listContainer = document.getElementById('category-breakdown-list');
       if (sortedCats.length === 0) {
-        listContainer.innerHTML = `<div class="text-[10px] text-subText text-center py-4">本月尚無支出紀錄</div>`;
+        listContainer.innerHTML = `<div class="text-[10px] text-subText text-center py-4">本月尚無待付紀錄</div>`;
         return;
       }
 
@@ -819,7 +613,8 @@
     }
 
     function renderWishlist() {
-      const container = document.getElementById('wishlist-items-container');
+      const fixedContainer = document.getElementById('wishlist-fixed-container');
+      const variableContainer = document.getElementById('wishlist-variable-container');
       const monthBadge = document.getElementById('wishlist-month-badge');
       if (monthBadge) monthBadge.innerText = `${state.currentMonth}月專屬`;
 
@@ -828,59 +623,53 @@
       });
 
       const totalSum = currentMonthWishlist.reduce((sum, item) => sum + Number(item.price || 0), 0);
-      const pendingSum = currentMonthWishlist.filter(item => !item.purchased).reduce((sum, item) => sum + Number(item.price || 0), 0);
-      const purchasedSum = totalSum - pendingSum;
+      const purchasedSum = currentMonthWishlist.filter(item => item.purchased).reduce((sum, item) => sum + Number(item.price || 0), 0);
       const progressPercent = totalSum > 0 ? Math.round((purchasedSum / totalSum) * 100) : 0;
 
       document.getElementById('wishlist-total-sum').innerText = formatCurrency(totalSum);
-      document.getElementById('wishlist-pending-sum').innerText = formatCurrency(pendingSum);
+      document.getElementById('wishlist-purchased-sum').innerText = formatCurrency(purchasedSum);
       document.getElementById('wishlist-progress-percent').innerText = `${progressPercent}%`;
       document.getElementById('wishlist-progress-bar').style.width = `${progressPercent}%`;
 
-      if (currentMonthWishlist.length === 0) {
-        container.innerHTML = `<div class="text-[10px] text-subText text-center py-4 bg-[#FAF8F5] rounded-xl border border-dashed border-gray-200">
-          ${state.currentYear}年${state.currentMonth}月 目前尚無待購清單<br>
-          <span class="text-[9px] text-gray-400">點擊「新增物品」為本月規劃心願</span>
-        </div>`;
-        return;
-      }
+      const fixedItems = currentMonthWishlist.filter(i => i.category === '固定' || i.isFixed);
+      const variableItems = currentMonthWishlist.filter(i => i.category !== '固定' && !i.isFixed);
 
-      container.innerHTML = currentMonthWishlist.map(item => {
-        const isPurchased = !!item.purchased;
-        const textStyle = isPurchased ? 'line-through text-gray-400' : 'text-gray-800 font-semibold';
-        const cardBg = isPurchased ? 'bg-[#F5F2ED] opacity-80' : 'bg-white hover:bg-gray-50';
-        const purchasedBadge = isPurchased 
-          ? `<span class="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800">已購</span>`
-          : `<span class="text-[9px] font-medium px-1.5 py-0.5 rounded bg-amber-100 text-amber-800">待買</span>`;
+      const renderItemsList = (items) => {
+        if (items.length === 0) {
+          return `<div class="text-[9px] text-subText text-center py-2 bg-white rounded-lg border border-dashed border-gray-200">無項目</div>`;
+        }
+        return items.map(item => {
+          const isPurchased = !!item.purchased;
+          const textStyle = isPurchased ? 'line-through text-gray-400' : 'text-gray-800 font-semibold';
+          const cardBg = isPurchased ? 'bg-[#F5F2ED] opacity-80' : 'bg-white hover:bg-gray-50';
 
-        return `
-          <div class="flex items-center justify-between p-2 rounded-xl border border-[#ECE6DB] ${cardBg} transition group">
-            <div class="flex items-center gap-2 flex-1 min-w-0">
-              <input type="checkbox" ${isPurchased ? 'checked' : ''} onchange="toggleWishlistPurchased('${item.id}')" class="compact-checkbox w-4 h-4 rounded text-emerald-700 cursor-pointer flex-shrink-0">
-              <div class="min-w-0 flex-1">
-                <div class="flex items-center gap-1.5 flex-wrap">
-                  <span class="text-xs ${textStyle} truncate">${escapeHtml(item.title)}</span>
-                  ${purchasedBadge}
-                  <span class="text-[9px] text-gray-400">· ${escapeHtml(item.category || '-')}</span>
+          return `
+            <div class="flex items-center justify-between p-1.5 rounded-lg border border-[#ECE6DB] ${cardBg} transition group">
+              <div class="flex items-center gap-1.5 flex-1 min-w-0">
+                <input type="checkbox" ${isPurchased ? 'checked' : ''} onchange="toggleWishlistPurchased('${item.id}')" class="compact-checkbox w-3.5 h-3.5 rounded text-emerald-700 cursor-pointer flex-shrink-0" title="勾選代表已付款扣錢">
+                <div class="min-w-0 flex-1">
+                  <span class="text-[11px] ${textStyle} truncate block">${escapeHtml(item.title)}</span>
                 </div>
-                ${item.note ? `<p class="text-[9px] text-gray-400 truncate mt-0.5">${escapeHtml(item.note)}</p>` : ''}
+              </div>
+
+              <div class="flex items-center gap-1 flex-shrink-0 ml-1">
+                <span class="text-[11px] font-bold font-sans ${isPurchased ? 'line-through text-gray-400' : 'text-gray-800'}">
+                  ${formatCurrency(item.price)}
+                </span>
+                <button onclick="editWishlistItem('${item.id}')" title="編輯" class="w-5 h-5 flex items-center justify-center rounded text-gray-400 hover:text-gray-700 transition">
+                  <i class="ph ph-pencil-simple text-[10px]"></i>
+                </button>
+                <button onclick="deleteWishlistItem('${item.id}')" title="刪除" class="w-5 h-5 flex items-center justify-center rounded text-gray-400 hover:text-rose-600 transition">
+                  <i class="ph ph-trash text-[10px]"></i>
+                </button>
               </div>
             </div>
+          `;
+        }).join('');
+      };
 
-            <div class="flex items-center gap-2 flex-shrink-0 ml-2">
-              <span class="text-xs font-bold font-sans ${isPurchased ? 'line-through text-gray-400' : 'text-gray-800'}">
-                ${formatCurrency(item.price)}
-              </span>
-              <button onclick="editWishlistItem('${item.id}')" title="編輯" class="w-6 h-6 flex items-center justify-center rounded text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition">
-                <i class="ph ph-pencil-simple text-xs"></i>
-              </button>
-              <button onclick="deleteWishlistItem('${item.id}')" title="刪除" class="w-6 h-6 flex items-center justify-center rounded text-gray-400 hover:text-rose-600 hover:bg-rose-50 transition">
-                <i class="ph ph-trash text-xs"></i>
-              </button>
-            </div>
-          </div>
-        `;
-      }).join('');
+      fixedContainer.innerHTML = renderItemsList(fixedItems);
+      variableContainer.innerHTML = renderItemsList(variableItems);
     }
 
     async function toggleWishlistPurchased(id) {
@@ -888,38 +677,37 @@
       if (!item) return;
       item.purchased = !item.purchased;
       saveToLocalStorage();
-      renderWishlist();
+      render();
 
       if (isCloudReady && fbSetDoc && fbDoc) {
         try {
           await fbSetDoc(fbDoc(db, 'shared_wishlist', id), { purchased: item.purchased }, { merge: true });
         } catch (err) {}
       }
-      showToast(item.purchased ? `已標示為已購` : `已還原待買狀態`);
+      showToast(item.purchased ? `已付費 (已扣款)` : `已還原未付費`);
     }
 
-    function openWishlistModal(editId = null) {
+    function openWishlistModal(editId = null, defaultCategory = '不固定') {
       const form = document.getElementById('wishlist-form');
       form.reset();
-      populateCategorySelects();
       const currentMonthStr = `${state.currentYear}-${String(state.currentMonth).padStart(2, '0')}`;
 
       if (editId) {
         const item = state.wishlist.find(w => w.id === editId);
         if (item) {
-          document.getElementById('wishlist-modal-title').innerText = '編輯待購物品';
+          document.getElementById('wishlist-modal-title').innerText = '編輯待付項目';
           document.getElementById('wishlist-edit-id').value = item.id;
           document.getElementById('wishlist-item-title').value = item.title;
           document.getElementById('wishlist-item-month').value = item.month || currentMonthStr;
           document.getElementById('wishlist-item-price').value = item.price;
-          document.getElementById('wishlist-item-category').value = item.category || '-';
+          document.getElementById('wishlist-item-category').value = item.category || '不固定';
           document.getElementById('wishlist-item-note').value = item.note || '';
         }
       } else {
-        document.getElementById('wishlist-modal-title').innerText = '新增待購物品';
+        document.getElementById('wishlist-modal-title').innerText = defaultCategory === '固定' ? '新增固定項目' : '新增不固定項目';
         document.getElementById('wishlist-edit-id').value = '';
         document.getElementById('wishlist-item-month').value = currentMonthStr;
-        document.getElementById('wishlist-item-category').value = '-';
+        document.getElementById('wishlist-item-category').value = defaultCategory;
       }
       document.getElementById('wishlist-modal').classList.remove('hidden');
     }
@@ -933,19 +721,19 @@
     }
 
     async function deleteWishlistItem(id) {
-      if (!confirm('確定要移除此待購物品嗎？')) return;
+      if (!confirm('確定要移除此項目嗎？')) return;
       state.wishlist = state.wishlist.filter(w => w.id !== id);
       saveToLocalStorage();
-      renderWishlist();
+      render();
 
       if (isCloudReady && fbDeleteDoc && fbDoc) {
         try {
           await fbDeleteDoc(fbDoc(db, 'shared_wishlist', id));
         } catch (err) {}
       } else {
-        recordOfflineDeletion('wish', id);
+        recordOfflineDeletion(id);
       }
-      showToast('物品已移除');
+      showToast('項目已移除');
     }
 
     async function handleWishlistSubmit(e) {
@@ -955,424 +743,58 @@
       const title = document.getElementById('wishlist-item-title').value.trim();
       const month = document.getElementById('wishlist-item-month').value || currentMonthStr;
       const price = Number(document.getElementById('wishlist-item-price').value);
-      const category = document.getElementById('wishlist-item-category').value || '-';
+      const category = document.getElementById('wishlist-item-category').value || '不固定';
       const note = document.getElementById('wishlist-item-note').value.trim();
+      const isFixed = (category === '固定');
 
       if (isNaN(price) || price <= 0) {
-        showToast('請輸入有效預估價格');
+        showToast('請輸入有效金額');
         return;
       }
 
-      const itemData = { title, month, price, category, note };
+      const itemData = { title, month, price, category, note, isFixed };
       closeWishlistModal();
 
       if (id) {
         const idx = state.wishlist.findIndex(w => w.id === id);
         if (idx !== -1) state.wishlist[idx] = { ...state.wishlist[idx], ...itemData };
         saveToLocalStorage();
-        renderWishlist();
+        render();
         if (isCloudReady && fbSetDoc && fbDoc) {
           try {
             await fbSetDoc(fbDoc(db, 'shared_wishlist', id), itemData, { merge: true });
           } catch (err) {}
         }
-        showToast('物品資訊已更新');
+        showToast('項目已更新');
       } else {
         const newId = 'w_' + Date.now();
         const fullItem = { id: newId, ...itemData, purchased: false };
         state.wishlist.push(fullItem);
+        
+        if (isFixed) {
+          const [yr, mo] = month.split('-').map(Number);
+          for (let m = mo + 1; m <= 12; m++) {
+            const mStr = `${yr}-${String(m).padStart(2, '0')}`;
+            const exists = state.wishlist.some(w => w.month === mStr && w.title === title);
+            if (!exists) {
+              const cloneId = `w_${Date.now()}_${Math.floor(Math.random()*1000)}`;
+              const cloneItem = { id: cloneId, title, month: mStr, price, category: '固定', note, purchased: false, isFixed: true };
+              state.wishlist.push(cloneItem);
+              if (isCloudReady && fbSetDoc && fbDoc) {
+                fbSetDoc(fbDoc(db, 'shared_wishlist', cloneId), cloneItem).catch(()=>{});
+              }
+            }
+          }
+        }
+
         saveToLocalStorage();
-        renderWishlist();
+        render();
         if (isCloudReady && fbSetDoc && fbDoc) {
           try {
             await fbSetDoc(fbDoc(db, 'shared_wishlist', newId), fullItem);
           } catch (err) {}
         }
-        showToast('待購物品已新增');
-      }
-    }
-
-    async function toggleTransactionSettled(id) {
-      const item = state.transactions.find(t => t.id === id);
-      if (!item) return;
-      const currentSettled = item.settled !== false;
-      item.settled = !currentSettled;
-      saveToLocalStorage();
-      render();
-
-      if (isCloudReady && fbSetDoc && fbDoc) {
-        try {
-          await fbSetDoc(fbDoc(db, 'shared_transactions', id), { settled: item.settled }, { merge: true });
-        } catch (err) {}
-      }
-      showToast(item.settled ? '已標記為正式扣款/入帳！' : '已標記為待扣款 (先打定備忘)');
-    }
-
-    function renderTransactions() {
-      const container = document.getElementById('transactions-list');
-      let filtered = state.transactions.filter(t => isSameMonthYear(t.date, state.currentYear, state.currentMonth));
-
-      const pendingCount = filtered.filter(t => t.settled === false).length;
-      const pendingText = pendingCount > 0 
-        ? ` · <button type="button" onclick="setTxFilter('pending')" class="text-amber-700 font-semibold underline cursor-pointer hover:opacity-80">${pendingCount} 筆待扣</button>` 
-        : '';
-      document.getElementById('transaction-count').innerHTML = `${filtered.length} 筆本月紀錄${pendingText}`;
-
-      if (state.filter === 'expense') {
-        filtered = filtered.filter(t => t.type === 'expense');
-      } else if (state.filter === 'income') {
-        filtered = filtered.filter(t => t.type === 'income');
-      } else if (state.filter === 'fixed') {
-        filtered = filtered.filter(t => t.type === 'expense' && (t.isFixed || t.category === '固定支出'));
-      } else if (state.filter === 'pending') {
-        filtered = filtered.filter(t => t.settled === false);
-      }
-
-      filtered.sort((a, b) => {
-        const dateA = (a.date || '').replace(/\//g, '-');
-        const dateB = (b.date || '').replace(/\//g, '-');
-        if (dateB !== dateA) return dateB.localeCompare(dateA);
-        return String(b.id || '').localeCompare(String(a.id || ''));
-      });
-
-      if (filtered.length === 0) {
-        const emptyMsg = state.filter === 'pending' ? '本月尚無待扣款項目（所有帳目均已正式結清）' : '本月尚無交易紀錄';
-        container.innerHTML = `<div class="text-[10px] text-subText text-center py-4 bg-[#FAF8F5] rounded-xl border border-dashed border-gray-200 mt-1">
-          ${emptyMsg}<br>
-          <span class="text-[9px] text-gray-400">${state.filter === 'pending' ? '先打定的支出會呈現在此處方便隨時核對' : '點擊右上角「新增」即可開始記帳'}</span>
-        </div>`;
-        return;
-      }
-
-      container.innerHTML = filtered.map(t => {
-        const isExp = t.type === 'expense';
-        const dateParts = (t.date || '').replace(/\//g, '-').split('-');
-        const dateDisplay = dateParts.length >= 3 ? `${parseInt(dateParts[1], 10)}/${parseInt(dateParts[2], 10)}` : t.date;
-        const amountDisplay = isExp ? `-$${formatNumber(t.amount)}` : `+$${formatNumber(t.amount)}`;
-        const amountColor = isExp ? 'text-gray-900' : 'text-emerald-700';
-        const isFixed = t.isFixed || t.category === '固定支出';
-        const isSettled = t.settled !== false;
-
-        return `
-          <div class="flex items-center justify-between py-2 group transition ${!isSettled ? 'bg-amber-50/50 -mx-1.5 px-1.5 rounded-xl border border-amber-200/60 my-0.5' : ''}">
-            <div class="flex items-center gap-2 flex-1 min-w-0">
-              <input type="checkbox" ${isSettled ? 'checked' : ''} onchange="toggleTransactionSettled('${t.id}')"
-                     title="${isSettled ? '已正式扣款（點擊設為待扣款）' : '未正式扣款（點擊確認扣款）'}"
-                     class="compact-checkbox w-4 h-4 rounded text-emerald-700 cursor-pointer flex-shrink-0">
-
-              <div class="min-w-0 flex-1">
-                <div class="flex items-center gap-1.5 flex-wrap">
-                  <span class="font-bold text-xs text-[#1C1A18] truncate">${escapeHtml(t.title)}</span>
-                  ${isFixed ? `<span class="text-[9px] font-semibold px-1 py-0.2 rounded bg-purple-100 text-purple-700">固定</span>` : ''}
-                  ${!isSettled ? `<span class="text-[9px] font-semibold px-1.5 py-0.2 rounded bg-amber-100 text-amber-800 border border-amber-200">待扣</span>` : ''}
-                </div>
-                <div class="text-[10px] text-subText">
-                  ${dateDisplay} · ${escapeHtml(t.category)} ${!isSettled ? '· <span class="text-amber-700 font-medium">先打定 (未正式扣錢)</span>' : ''}
-                </div>
-              </div>
-            </div>
-
-            <div class="flex items-center gap-2 flex-shrink-0 ml-2">
-              <span class="font-bold text-xs ${amountColor} font-sans ${!isSettled ? 'opacity-85' : ''}">
-                ${amountDisplay}
-              </span>
-              <button onclick="editTransaction('${t.id}')" class="p-1 text-gray-400 hover:text-gray-700 transition" title="編輯">
-                <i class="ph ph-pencil-simple text-xs"></i>
-              </button>
-              <button onclick="deleteTransaction('${t.id}')" class="p-1 text-gray-400 hover:text-rose-600 transition" title="刪除">
-                <i class="ph ph-trash text-xs"></i>
-              </button>
-            </div>
-          </div>
-        `;
-      }).join('');
-    }
-
-    function openTransactionModal(editId = null) {
-      const modal = document.getElementById('tx-modal');
-      const form = document.getElementById('tx-form');
-      form.reset();
-      populateCategorySelects();
-
-      if (editId) {
-        const item = state.transactions.find(t => t.id === editId);
-        if (item) {
-          document.getElementById('modal-title').innerText = '編輯交易';
-          document.getElementById('tx-id').value = item.id;
-          document.getElementById('tx-title').value = item.title;
-          document.getElementById('tx-amount').value = item.amount;
-          document.getElementById('tx-date').value = (item.date || '').replace(/\//g, '-');
-          document.getElementById('tx-is-fixed').checked = !!item.isFixed || item.category === '固定支出';
-          document.getElementById('tx-is-settled').checked = item.settled !== false;
-          
-          setModalType(item.type, false);
-          document.getElementById('tx-category').value = item.category;
-        }
-      } else {
-        document.getElementById('modal-title').innerText = '新增交易';
-        document.getElementById('tx-id').value = '';
-        document.getElementById('tx-is-fixed').checked = false;
-        document.getElementById('tx-is-settled').checked = true;
-        setModalType('expense', false);
-        
-        const catSelect = document.getElementById('tx-category');
-        if (catSelect && catSelect.value === '薪資') {
-          catSelect.value = state.categories['飲食'] ? '飲食' : Object.keys(state.categories)[0];
-        }
-
-        const maxDaysInMonth = new Date(state.currentYear, state.currentMonth, 0).getDate();
-        const safeDay = Math.min(new Date().getDate(), maxDaysInMonth);
-        const dStr = `${state.currentYear}-${String(state.currentMonth).padStart(2, '0')}-${String(safeDay).padStart(2, '0')}`;
-        document.getElementById('tx-date').value = dStr;
-      }
-
-      modal.classList.remove('hidden');
-    }
-
-    function closeTransactionModal() {
-      document.getElementById('tx-modal').classList.add('hidden');
-    }
-
-    function setModalType(type, isUserAction = false) {
-      document.getElementById('tx-type').value = type;
-      const expBtn = document.getElementById('btn-type-expense');
-      const incBtn = document.getElementById('btn-type-income');
-      const catSelect = document.getElementById('tx-category');
-      const fixedContainer = document.getElementById('tx-fixed-container');
-      const settledLabel = document.getElementById('tx-settled-label');
-      const settledHint = document.getElementById('tx-settled-hint');
-
-      if (type === 'expense') {
-        expBtn.className = "py-1.5 rounded-lg text-xs font-bold transition bg-white text-rose-600 shadow-sm";
-        incBtn.className = "py-1.5 rounded-lg text-xs font-bold transition text-gray-600";
-        if (fixedContainer) fixedContainer.classList.remove('hidden');
-        if (settledLabel) settledLabel.innerText = "已正式扣款";
-        if (settledHint) settledHint.innerText = "(取消勾選代表先打定備忘，未正式扣錢)";
-        if (isUserAction && catSelect && catSelect.value === '薪資') {
-          catSelect.value = state.categories['飲食'] ? '飲食' : Object.keys(state.categories)[0];
-        }
-      } else {
-        incBtn.className = "py-1.5 rounded-lg text-xs font-bold transition bg-white text-emerald-700 shadow-sm";
-        expBtn.className = "py-1.5 rounded-lg text-xs font-bold transition text-gray-600";
-        if (fixedContainer) fixedContainer.classList.add('hidden');
-        if (settledLabel) settledLabel.innerText = "已正式入帳";
-        if (settledHint) settledHint.innerText = "(取消勾選代表先打定預期收入，未正式到帳)";
-        if (isUserAction && catSelect && state.categories['薪資']) {
-          catSelect.value = '薪資';
-        }
-      }
-    }
-
-    function handleCategorySelectChange(val) {
-      if (val === '固定支出') {
-        document.getElementById('tx-is-fixed').checked = true;
-      }
-    }
-
-    async function handleTransactionSubmit(e) {
-      e.preventDefault();
-      const currentMonthStr = `${state.currentYear}-${String(state.currentMonth).padStart(2, '0')}`;
-      const id = document.getElementById('tx-id').value;
-      const title = document.getElementById('tx-title').value.trim();
-      const amount = Number(document.getElementById('tx-amount').value);
-      const category = document.getElementById('tx-category').value || '其他';
-      const date = document.getElementById('tx-date').value || `${currentMonthStr}-01`;
-      const type = document.getElementById('tx-type').value;
-      const isFixed = (type === 'expense') && (document.getElementById('tx-is-fixed').checked || category === '固定支出');
-      const settled = document.getElementById('tx-is-settled').checked;
-
-      if (isNaN(amount) || amount <= 0) {
-        showToast('請輸入有效金額');
-        return;
-      }
-
-      const txPayload = { title, amount, category, date, type, isFixed, settled };
-      closeTransactionModal();
-
-      const dParts = date.split('-');
-      const txYear = parseInt(dParts[0], 10);
-      const txMonth = parseInt(dParts[1], 10);
-      const isCrossMonth = (txYear !== state.currentYear || txMonth !== state.currentMonth);
-
-      if (id) {
-        const idx = state.transactions.findIndex(t => t.id === id);
-        if (idx !== -1) state.transactions[idx] = { id, ...txPayload };
-        saveToLocalStorage();
-        render();
-        if (isCloudReady && fbSetDoc && fbDoc) {
-          try {
-            await fbSetDoc(fbDoc(db, 'shared_transactions', id), { id, ...txPayload }, { merge: true });
-          } catch (err) {}
-        }
-        showToast(isCrossMonth ? `交易已更新至 ${txYear}年${txMonth}月` : '交易已更新');
-      } else {
-        const newId = Date.now().toString();
-        const fullTx = { id: newId, ...txPayload };
-        state.transactions.unshift(fullTx);
-        saveToLocalStorage();
-        render();
-        if (isCloudReady && fbSetDoc && fbDoc) {
-          try {
-            await fbSetDoc(fbDoc(db, 'shared_transactions', newId), fullTx);
-          } catch (err) {}
-        }
-        showToast(isCrossMonth ? `已新增至 ${txYear}年${txMonth}月帳本` : '交易已新增');
-      }
-    }
-
-    function editTransaction(id) {
-      openTransactionModal(id);
-    }
-
-    async function deleteTransaction(id) {
-      if (!confirm('確定要刪除此筆交易紀錄嗎？')) return;
-      state.transactions = state.transactions.filter(t => t.id !== id);
-      saveToLocalStorage();
-      render();
-      if (isCloudReady && fbDeleteDoc && fbDoc) {
-        try {
-          await fbDeleteDoc(fbDoc(db, 'shared_transactions', id));
-        } catch (err) {}
-      } else {
-        recordOfflineDeletion('tx', id);
-      }
-      showToast('交易已刪除');
-    }
-
-    function populateCategorySelects() {
-      ['tx-category', 'wishlist-item-category'].forEach(selectId => {
-        const select = document.getElementById(selectId);
-        if (!select) return;
-        const currentVal = select.value;
-        select.innerHTML = '';
-        if (selectId === 'wishlist-item-category') {
-          const defaultOpt = document.createElement('option');
-          defaultOpt.value = '-';
-          defaultOpt.textContent = '-';
-          select.appendChild(defaultOpt);
-        }
-        Object.keys(state.categories).forEach(cat => {
-          if (selectId === 'wishlist-item-category' && cat === '薪資') return;
-          const opt = document.createElement('option');
-          opt.value = cat;
-          opt.textContent = cat;
-          select.appendChild(opt);
-        });
-        if (currentVal && (state.categories[currentVal] || currentVal === '-')) {
-          select.value = currentVal;
-        } else if (selectId === 'wishlist-item-category') {
-          select.value = '-';
-        }
-      });
-    }
-
-    function openCategoryModal() {
-      renderCategoryManagementList();
-      document.getElementById('category-modal').classList.remove('hidden');
-    }
-
-    function closeCategoryModal() {
-      document.getElementById('category-modal').classList.add('hidden');
-      populateCategorySelects();
-      render();
-    }
-
-    function renderCategoryManagementList() {
-      const container = document.getElementById('category-management-list');
-      const cats = Object.keys(state.categories);
-      
-      container.innerHTML = cats.map(cat => {
-        const isCore = CORE_CATEGORIES.includes(cat);
-        const info = state.categories[cat];
-
-        return `
-          <div class="flex items-center justify-between p-1.5 rounded-lg bg-[#FAF8F5] border border-gray-100">
-            <div class="flex items-center gap-2">
-              <span class="w-3 h-3 rounded-full flex-shrink-0" style="background-color: ${info.color}"></span>
-              <span class="text-xs font-medium text-gray-800">${escapeHtml(cat)}</span>
-              ${isCore ? '<span class="text-[8px] bg-gray-200 text-gray-600 px-1 py-0.5 rounded">內建</span>' : ''}
-            </div>
-            ${!isCore ? `
-              <button onclick="handleDeleteCategory(this.getAttribute('data-cat'))" data-cat="${escapeHtml(cat)}" class="p-1 text-gray-400 hover:text-rose-600 transition" title="刪除類別">
-                <i class="ph ph-trash text-xs"></i>
-              </button>
-            ` : '<span class="text-[9px] text-gray-300">固定</span>'}
-          </div>
-        `;
-      }).join('');
-    }
-
-    async function handleAddCategory(e) {
-      e.preventDefault();
-      const input = document.getElementById('new-category-name');
-      const name = input.value.trim().replace(/['"<>]/g, '');
-      if (!name) return;
-      if (state.categories[name]) {
-        showToast('該類別已存在');
-        return;
-      }
-
-      const palette = ['#0891B2', '#D97706', '#4F46E5', '#BE185D', '#059669', '#6D28D9'];
-      const randomColor = palette[Object.keys(state.categories).length % palette.length];
-      
-      state.categories[name] = { color: randomColor, icon: 'ph-sparkle' };
-      input.value = '';
-      saveToLocalStorage();
-      showToast(`已新增類別「${name}」`);
-      renderCategoryManagementList();
-      populateCategorySelects();
-
-      if (isCloudReady && fbSetDoc && fbDoc) {
-        try {
-          await fbSetDoc(fbDoc(db, 'shared_settings', 'categories'), { categories: state.categories });
-        } catch (err) {}
-      }
-    }
-
-    async function handleDeleteCategory(catName) {
-      if (!catName || CORE_CATEGORIES.includes(catName)) {
-        showToast('內建分類不可刪除');
-        return;
-      }
-
-      if (!confirm(`確定要刪除類別「${catName}」嗎？關聯紀錄將自動轉歸為「其他」。`)) {
-        return;
-      }
-
-      delete state.categories[catName];
-      const affectedTxs = [];
-      state.transactions.forEach(t => {
-        if (t.category === catName) {
-          t.category = '其他';
-          affectedTxs.push(t);
-        }
-      });
-      const affectedWish = [];
-      state.wishlist.forEach(w => {
-        if (w.category === catName) {
-          w.category = '其他';
-          affectedWish.push(w);
-        }
-      });
-
-      saveToLocalStorage();
-      showToast(`已刪除「${catName}」，既有紀錄已歸為「其他」`);
-      renderCategoryManagementList();
-      populateCategorySelects();
-      render();
-
-      if (isCloudReady && fbWriteBatch && fbDoc) {
-        try {
-          const batch = fbWriteBatch(db);
-          batch.set(fbDoc(db, 'shared_settings', 'categories'), { categories: state.categories });
-          affectedTxs.forEach(t => {
-            batch.set(fbDoc(db, 'shared_transactions', t.id), { category: '其他' }, { merge: true });
-          });
-          affectedWish.forEach(w => {
-            batch.set(fbDoc(db, 'shared_wishlist', w.id), { category: '其他' }, { merge: true });
-          });
-          await batch.commit();
-        } catch (err) {}
+        showToast('待付項目已新增');
       }
     }
 
@@ -1381,21 +803,17 @@
       document.getElementById('annual-year-badge').innerText = `${year}年`;
 
       const monthlyData = [];
-      let totalYearIncome = 0;
       let totalYearExpense = 0;
 
       for (let m = 1; m <= 12; m++) {
-        const txs = state.transactions.filter(t => isSameMonthYear(t.date, year, m));
-        const inc = txs.filter(t => t.type === 'income').reduce((sum, t) => sum + Number(t.amount || 0), 0);
-        const exp = txs.filter(t => t.type === 'expense').reduce((sum, t) => sum + Number(t.amount || 0), 0);
-        const net = inc - exp;
-        totalYearIncome += inc;
+        const txs = state.wishlist.filter(t => isSameMonthYear(t.month, year, m));
+        const exp = txs.reduce((sum, t) => sum + Number(t.price || 0), 0);
         totalYearExpense += exp;
-        monthlyData.push({ month: m, income: inc, expense: exp, net: net });
+        monthlyData.push({ month: m, income: 0, expense: exp, net: -exp });
       }
 
-      const totalYearNet = totalYearIncome - totalYearExpense;
-      document.getElementById('year-total-income').innerText = formatCurrency(totalYearIncome);
+      const totalYearNet = -totalYearExpense;
+      document.getElementById('year-total-income').innerText = formatCurrency(0);
       document.getElementById('year-total-expense').innerText = formatCurrency(totalYearExpense);
       
       const yearNetEl = document.getElementById('year-net-savings');
@@ -1409,8 +827,7 @@
 
       if (state.annualView === 'flow') {
         legend.innerHTML = `
-          <span class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-sm bg-emerald-500 inline-block"></span>收入</span>
-          <span class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-sm bg-rose-500 inline-block"></span>支出</span>
+          <span class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-sm bg-rose-500 inline-block"></span>待付開支</span>
         `;
         renderBarFlowChart(container, monthlyData);
       } else {
@@ -1425,7 +842,7 @@
     }
 
     function renderBarFlowChart(container, data) {
-      const maxVal = Math.max(...data.map(d => Math.max(d.income, d.expense)), 10000);
+      const maxVal = Math.max(...data.map(d => d.expense), 10000);
       const chartHeight = 85;
       const chartWidth = 330;
       const colWidth = chartWidth / 12;
@@ -1435,7 +852,6 @@
 
       data.forEach((d, idx) => {
         const x = idx * colWidth;
-        const incHeight = d.income > 0 ? (d.income / maxVal) * (chartHeight - 10) : 0;
         const expHeight = d.expense > 0 ? (d.expense / maxVal) * (chartHeight - 10) : 0;
         const isCurrent = d.month === state.currentMonth;
 
@@ -1443,8 +859,7 @@
           <g class="cursor-pointer group" onclick="jumpToMonth(${d.month})">
             <rect x="${x}" y="0" width="${colWidth}" height="${chartHeight + 20}" fill="black" opacity="0" pointer-events="all" />
             ${isCurrent ? `<rect x="${x + 2}" y="0" width="${colWidth - 4}" height="${chartHeight + 18}" fill="#E8EEF5" rx="4" opacity="0.6"/>` : ''}
-            ${incHeight > 0 ? `<rect x="${x + 3}" y="${chartHeight - incHeight}" width="${(colWidth - 8) / 2}" height="${incHeight}" fill="#10B981" rx="1.5" class="transition group-hover:opacity-80"/>` : ''}
-            ${expHeight > 0 ? `<rect x="${x + 3 + (colWidth - 8) / 2 + 1}" y="${chartHeight - expHeight}" width="${(colWidth - 8) / 2}" height="${expHeight}" fill="#F43F5E" rx="1.5" class="transition group-hover:opacity-80"/>` : ''}
+            ${expHeight > 0 ? `<rect x="${x + 4}" y="${chartHeight - expHeight}" width="${colWidth - 8}" height="${expHeight}" fill="#F43F5E" rx="1.5" class="transition group-hover:opacity-80"/>` : ''}
             <text x="${x + colWidth / 2}" y="${chartHeight + 14}" text-anchor="middle" font-size="8" font-weight="${isCurrent ? 'bold' : 'normal'}" fill="${isCurrent ? '#0284C7' : '#8E8B85'}">${d.month}月</text>
           </g>
         `;
@@ -1597,17 +1012,6 @@
       container.innerHTML = svg;
     }
 
-    function render() {
-      const currentTxs = state.transactions.filter(t => isSameMonthYear(t.date, state.currentYear, state.currentMonth));
-
-      renderOverview(currentTxs);
-      renderCategories(currentTxs);
-      renderWishlist();
-      renderTransactions();
-      renderAnnualChart();
-      populateCategorySelects();
-    }
-
     async function initCloudSync() {
       try {
         const appModule = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js");
@@ -1624,46 +1028,10 @@
         fbCollection = fsModule.collection;
         fbWriteBatch = fsModule.writeBatch;
 
-        updateSyncBadge('syncing', '同步連線中...');
-
-        fbOnSnapshot(fbCollection(db, 'shared_transactions'), (snapshot) => {
+        fbOnSnapshot(fbCollection(db, 'shared_wishlist'), (snapshot) => {
           isCloudReady = true;
           updateSyncBadge('online', '已連線雲端');
 
-          const remoteMap = new Map();
-          snapshot.forEach(docSnap => remoteMap.set(docSnap.id, { id: docSnap.id, ...docSnap.data() }));
-
-          try {
-            const deletedTxList = safeJSONParse(localStorage.getItem('budget_deleted_txs'), []);
-            if (deletedTxList.length > 0) {
-              deletedTxList.forEach(async (delId) => {
-                remoteMap.delete(delId);
-                try { await fbDeleteDoc(fbDoc(db, 'shared_transactions', delId)); } catch (e) {}
-              });
-              localStorage.removeItem('budget_deleted_txs');
-            }
-          } catch (e) {}
-
-          if (!hasInitialTxSync && state.transactions.length > 0) {
-            const missingInRemote = state.transactions.filter(t => !remoteMap.has(t.id));
-            if (missingInRemote.length > 0) {
-              missingInRemote.forEach(async (tx) => {
-                try { await fbSetDoc(fbDoc(db, 'shared_transactions', tx.id), tx); } catch (e) {}
-              });
-              missingInRemote.forEach(tx => remoteMap.set(tx.id, tx));
-            }
-          }
-
-          state.transactions = Array.from(remoteMap.values());
-          saveToLocalStorage();
-          render();
-          hasInitialTxSync = true;
-        }, (err) => {
-          isCloudReady = false;
-          updateSyncBadge('offline', '本地離線運作');
-        });
-
-        fbOnSnapshot(fbCollection(db, 'shared_wishlist'), (snapshot) => {
           const remoteWishMap = new Map();
           snapshot.forEach(docSnap => remoteWishMap.set(docSnap.id, { id: docSnap.id, ...docSnap.data() }));
 
@@ -1678,30 +1046,13 @@
             }
           } catch (e) {}
 
-          if (!hasInitialWishSync && state.wishlist.length > 0) {
-            const missingWish = state.wishlist.filter(w => !remoteWishMap.has(w.id));
-            if (missingWish.length > 0) {
-              missingWish.forEach(async (item) => {
-                try { await fbSetDoc(fbDoc(db, 'shared_wishlist', item.id), item); } catch (e) {}
-              });
-              missingWish.forEach(item => remoteWishMap.set(item.id, item));
-            }
-          }
-
           state.wishlist = Array.from(remoteWishMap.values());
           saveToLocalStorage();
-          renderWishlist();
-          hasInitialWishSync = true;
-        }, (err) => {});
-
-        fbOnSnapshot(fbDoc(db, 'shared_settings', 'categories'), (docSnap) => {
-          if (docSnap.exists()) {
-            const cloudCats = docSnap.data().categories || {};
-            state.categories = { ...DEFAULT_CATEGORIES, ...state.categories, ...cloudCats };
-            saveToLocalStorage();
-            render();
-          }
-        }, (err) => {});
+          render();
+        }, (err) => {
+          isCloudReady = false;
+          updateSyncBadge('offline', '本地離線運作');
+        });
 
       } catch (err) {
         isCloudReady = false;
@@ -1712,26 +1063,13 @@
     Object.assign(window, {
       changeMonth,
       jumpToMonth,
-      setTxFilter,
       setAnnualChartView,
-      openTransactionModal,
-      closeTransactionModal,
-      setModalType,
-      handleCategorySelectChange,
-      handleTransactionSubmit,
-      editTransaction,
-      deleteTransaction,
-      toggleTransactionSettled,
       openWishlistModal,
       closeWishlistModal,
       toggleWishlistPurchased,
       editWishlistItem,
       deleteWishlistItem,
       handleWishlistSubmit,
-      openCategoryModal,
-      closeCategoryModal,
-      handleAddCategory,
-      handleDeleteCategory,
       handleBackdropClick
     });
 
