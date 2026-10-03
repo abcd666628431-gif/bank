@@ -574,34 +574,14 @@
       '其他': { color: '#64748B', icon: 'ph-tag' }
     };
 
-    // 預設示範資料 (若雲端載入前或離線時呈現完整數據)
-    const INITIAL_TRANSACTIONS = [
-      { id: 'tx_1', title: '正職月薪資', amount: 58000, category: '薪資', date: '2026-10-05', type: 'income', isFixed: false },
-      { id: 'tx_2', title: '副業接案報酬', amount: 4000, category: '薪資', date: '2026-10-12', type: 'income', isFixed: false },
-      { id: 'tx_3', title: '公寓房租', amount: 14000, category: '固定支出', date: '2026-10-01', type: 'expense', isFixed: true },
-      { id: 'tx_4', title: '水電與光纖網路', amount: 2280, category: '帳單', date: '2026-10-03', type: 'expense', isFixed: true },
-      { id: 'tx_5', title: '全方位健身房月費', amount: 1500, category: '固定支出', date: '2026-10-05', type: 'expense', isFixed: true },
-      { id: 'tx_6', title: '影音與雲端訂閱', amount: 1500, category: '固定支出', date: '2026-10-08', type: 'expense', isFixed: true },
-      { id: 'tx_7', title: '全聯超市日常採買', amount: 1280, category: '飲食', date: '2026-10-10', type: 'expense', isFixed: false },
-      { id: 'tx_8', title: '週末好友聚餐', amount: 680, category: '飲食', date: '2026-10-15', type: 'expense', isFixed: false }
-    ];
-
-    const INITIAL_WISHLIST = [
-      { id: 'w_1', title: '人體工學高透氣椅', month: '2026-10', price: 12800, category: '居住', note: '久坐必備，減輕脊椎負擔', purchased: false },
-      { id: 'w_2', title: '降噪無線旗艦耳機', month: '2026-10', price: 8900, category: '購物', note: '專注工作必備', purchased: true },
-      { id: 'w_3', title: '4K IPS 外接螢幕', month: '2026-10', price: 28700, category: '購物', note: '雙螢幕高解析度配置', purchased: false },
-      { id: 'w_4', title: '義式智能義式咖啡機', month: '2026-10', price: 8900, category: '居住', note: '提升早晨效率', purchased: false },
-      { id: 'w_5', title: '運動健康智慧手表', month: '2026-10', price: 37200, category: '購物', note: '心率與跑步紀錄', purchased: true }
-    ];
-
     let state = {
       currentYear: 2026,
       currentMonth: 10,
       filter: 'all',
       annualView: 'flow',
       categories: JSON.parse(JSON.stringify(DEFAULT_CATEGORIES)),
-      transactions: [...INITIAL_TRANSACTIONS],
-      wishlist: [...INITIAL_WISHLIST]
+      transactions: [],
+      wishlist: []
     };
 
     function formatCurrency(num) {
@@ -1471,15 +1451,11 @@
         // 1. 監聽交易紀錄 (公共集合 shared_transactions)
         onSnapshot(collection(db, 'shared_transactions'), (snapshot) => {
           clearTimeout(connectionTimer);
-          if (!snapshot.empty) {
-            const loadedTxs = [];
-            snapshot.forEach(docSnap => loadedTxs.push(docSnap.data()));
-            state.transactions = loadedTxs;
-            render();
-            diagLog(`成功接收雲端交易更新，共 ${loadedTxs.length} 筆`);
-          } else {
-            diagLog("雲端交易集合為空，保留初始示範資料並待命");
-          }
+          const loadedTxs = [];
+          snapshot.forEach(docSnap => loadedTxs.push(docSnap.data()));
+          state.transactions = loadedTxs;
+          render();
+          diagLog(`成功接收雲端交易更新，共 ${loadedTxs.length} 筆`);
 
           if (badgeDot && badgeText) {
             badgeDot.className = "w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse";
@@ -1498,13 +1474,11 @@
 
         // 2. 監聽待買清單
         onSnapshot(collection(db, 'shared_wishlist'), (snapshot) => {
-          if (!snapshot.empty) {
-            const loadedWish = [];
-            snapshot.forEach(docSnap => loadedWish.push(docSnap.data()));
-            state.wishlist = loadedWish;
-            renderWishlist();
-            diagLog(`成功接收待購清單更新，共 ${loadedWish.length} 項`);
-          }
+          const loadedWish = [];
+          snapshot.forEach(docSnap => loadedWish.push(docSnap.data()));
+          state.wishlist = loadedWish;
+          renderWishlist();
+          diagLog(`成功接收待購清單更新，共 ${loadedWish.length} 項`);
         }, (err) => {
           diagLog(`待買集合監聽失敗: ${err.message}`, true);
         });
