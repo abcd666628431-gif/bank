@@ -61,7 +61,13 @@
       <div class="flex items-center justify-between">
         <div>
           <h1 class="text-2xl font-serif font-bold text-[#1C1A18] tracking-tight">餘額</h1>
-          <p class="text-[11px] text-subText tracking-wide">智能財務規劃與預算管理</p>
+          <div class="flex items-center gap-2 mt-0.5">
+            <p class="text-[11px] text-subText tracking-wide">智能財務規劃與預算管理</p>
+            <button type="button" onclick="openCloudModal()" id="cloud-status-badge" class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[9px] font-semibold border border-emerald-200 hover:bg-emerald-100 transition cursor-pointer">
+              <span id="cloud-pulse-dot" class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span id="cloud-status-text">雲端同步中</span>
+            </button>
+          </div>
         </div>
 
         <!-- Month Selector Switcher -->
@@ -446,6 +452,54 @@
       </div>
     </div>
 
+    <!-- Modal 4: Cloud Sync & User ID Modal -->
+    <div id="cloud-modal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+      <div class="bg-white w-full max-w-sm rounded-2xl p-4 shadow-2xl space-y-3.5 border border-[#ECE8E1]">
+        <div class="flex items-center justify-between border-b pb-2 border-gray-100">
+          <div class="flex items-center gap-1.5">
+            <i class="ph ph-cloud-check text-emerald-700 text-lg"></i>
+            <h3 class="font-bold text-sm text-gray-800">雲端同步狀態</h3>
+          </div>
+          <button onclick="closeCloudModal()" class="p-1 rounded-full text-gray-400 hover:text-gray-700">
+            <i class="ph ph-x text-base"></i>
+          </button>
+        </div>
+
+        <div class="space-y-2 text-xs">
+          <div class="flex items-center justify-between bg-emerald-50/70 p-2.5 rounded-xl border border-emerald-100">
+            <span class="text-emerald-800 font-medium">連線狀態</span>
+            <span id="cloud-modal-status" class="font-bold text-emerald-700 flex items-center gap-1">
+              <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+              即時雙向連線
+            </span>
+          </div>
+
+          <div class="bg-[#FAF8F5] p-2.5 rounded-xl border border-gray-100 space-y-1.5">
+            <div class="flex justify-between items-center text-[10px] text-gray-500 font-medium">
+              <span>Firebase 專案 ID</span>
+              <span class="font-mono text-gray-700 font-bold" id="cloud-project-id">bank-39b8f</span>
+            </div>
+            <div>
+              <span class="text-[10px] text-gray-500 block mb-1">使用者專屬識別碼 (User ID)</span>
+              <div class="flex items-center gap-1.5">
+                <input type="text" id="cloud-user-id-input" readonly value="連線中..." class="flex-1 font-mono text-[10px] bg-white border border-gray-200 rounded-lg px-2 py-1 text-gray-700 focus:outline-none">
+                <button type="button" onclick="copyUserId()" class="px-2.5 py-1 bg-brandDark text-white rounded-lg text-[10px] font-semibold hover:opacity-90 active:scale-95 transition flex items-center gap-1">
+                  <i class="ph ph-copy"></i>
+                  <span>複製</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <p class="text-[9px] text-subText">所有新增、修改與刪除將自動同步至雲端，無需手動備份。</p>
+        </div>
+
+        <div class="pt-1">
+          <button type="button" onclick="closeCloudModal()" class="w-full py-2 bg-[#EAE6DE] text-gray-700 font-semibold rounded-xl text-xs hover:bg-gray-200 transition">確定</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Toast Notification -->
     <div id="toast" class="hidden fixed bottom-5 left-1/2 -translate-x-1/2 bg-[#201D1A] text-white text-xs font-medium px-4 py-2 rounded-full shadow-lg z-50 flex items-center gap-1.5 border border-white/10">
       <i class="ph ph-check-circle text-emerald-400 text-sm"></i>
@@ -454,7 +508,29 @@
 
   </main>
 
-  <script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, doc, setDoc, updateDoc, deleteDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    // Firebase Configuration
+    const userProvidedConfig = {
+      apiKey: "AIzaSyCNnxw-1bOcdR6SUXaTwkn0bFJGyA3Jtz0",
+      authDomain: "bank-39b8f.firebaseapp.com",
+      databaseURL: "https://bank-39b8f-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "bank-39b8f",
+      storageBucket: "bank-39b8f.firebasestorage.app",
+      messagingSenderId: "554175411211",
+      appId: "1:554175411211:web:832deb99712dcb119c830e"
+    };
+
+    const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : userProvidedConfig;
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'bank-39b8f';
+
+    let app, auth, db;
+    let userId = null;
+    let isCloudReady = false;
+
     // Initial State & Configuration
     const DEFAULT_CATEGORIES = {
       '飲食': { color: '#EA580C', icon: 'ph-fork-knife' },
@@ -475,7 +551,6 @@
       { id: '5', title: '10月本薪', type: 'income', category: '薪資', amount: 62000, date: '2026-10-01', isFixed: false },
       { id: '6', title: '房屋租金', type: 'expense', category: '固定支出', amount: 18000, date: '2026-10-01', isFixed: true },
       { id: '7', title: '光纖寬頻與手機', type: 'expense', category: '固定支出', amount: 1280, date: '2026-10-01', isFixed: true },
-      // Mock history for annual volatility chart
       { id: 'h1', title: '1月薪資', type: 'income', category: '薪資', amount: 60000, date: '2026-01-05', isFixed: false },
       { id: 'h2', title: '1月花費', type: 'expense', category: '購物', amount: 22000, date: '2026-01-15', isFixed: false },
       { id: 'h3', title: '2月薪資+年終', type: 'income', category: '薪資', amount: 95000, date: '2026-02-05', isFixed: false },
@@ -508,10 +583,13 @@
       currentYear: 2026,
       currentMonth: 10,
       filter: 'all',
-      annualView: 'flow', // 'flow' or 'trend'
+      annualView: 'flow',
       categories: JSON.parse(JSON.stringify(DEFAULT_CATEGORIES)),
       transactions: JSON.parse(JSON.stringify(initialTransactions)),
-      wishlist: JSON.parse(JSON.stringify(initialWishlist))
+      wishlist: JSON.parse(JSON.stringify(initialWishlist)),
+      hasInitTxSeed: false,
+      hasInitWishSeed: false,
+      hasInitCatSeed: false
     };
 
     function formatCurrency(num) {
@@ -530,6 +608,27 @@
       setTimeout(() => {
         toast.classList.add('hidden');
       }, 2000);
+    }
+
+    function openCloudModal() {
+      document.getElementById('cloud-modal').classList.remove('hidden');
+    }
+
+    function closeCloudModal() {
+      document.getElementById('cloud-modal').classList.add('hidden');
+    }
+
+    function copyUserId() {
+      const input = document.getElementById('cloud-user-id-input');
+      if (!input) return;
+      input.select();
+      input.setSelectionRange(0, 99999);
+      try {
+        document.execCommand('copy');
+        showToast('已複製完整 User ID');
+      } catch (err) {
+        showToast('複製失敗，請手動複製');
+      }
     }
 
     function changeMonth(delta) {
@@ -625,10 +724,9 @@
         icon: state.categories[cat]?.icon || 'ph-tag'
       })).sort((a, b) => b.amount - a.amount);
 
-      // Render Donut Chart
       const donutContainer = document.getElementById('donut-segments');
       donutContainer.innerHTML = '';
-      const circumference = 2 * Math.PI * 38; // ~238.76
+      const circumference = 2 * Math.PI * 38;
       let accumulatedOffset = 0;
 
       if (sortedCats.length === 0 || totalExpense === 0) {
@@ -651,7 +749,6 @@
         });
       }
 
-      // Render Category Progress List
       const listContainer = document.getElementById('category-breakdown-list');
       if (sortedCats.length === 0) {
         listContainer.innerHTML = `<div class="text-[10px] text-subText text-center py-2">本月尚無支出紀錄</div>`;
@@ -664,13 +761,11 @@
             <span class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background-color: ${cat.color};"></span>
             <span class="font-medium text-gray-800 truncate">${cat.name}</span>
           </div>
-
           <div class="flex-1 mx-2">
             <div class="w-full bg-[#EAE5DC] h-1.5 rounded-full overflow-hidden">
               <div class="h-full rounded-full transition-all duration-300" style="width: ${cat.pct}%; background-color: ${cat.color}"></div>
             </div>
           </div>
-
           <div class="text-right font-bold text-gray-800 min-w-[50px] font-sans text-[10px]">
             ${formatCurrency(cat.amount)}
           </div>
@@ -685,7 +780,6 @@
       const purchasedSum = totalSum - pendingSum;
       const progressPercent = totalSum > 0 ? Math.round((purchasedSum / totalSum) * 100) : 0;
 
-      // Update KPI statistics
       document.getElementById('wishlist-total-sum').innerText = formatCurrency(totalSum);
       document.getElementById('wishlist-pending-sum').innerText = formatCurrency(pendingSum);
       document.getElementById('wishlist-progress-percent').innerText = `${progressPercent}%`;
@@ -734,12 +828,25 @@
       }).join('');
     }
 
-    function toggleWishlistPurchased(id) {
+    async function toggleWishlistPurchased(id) {
       const item = state.wishlist.find(w => w.id === id);
       if (!item) return;
-      item.purchased = !item.purchased;
-      showToast(item.purchased ? `已將「${item.title}」標示為已購` : `已取消「${item.title}」的已購狀態`);
+      const newStatus = !item.purchased;
+      item.purchased = newStatus;
       renderWishlist();
+
+      if (isCloudReady && userId) {
+        try {
+          const wishDoc = doc(db, 'artifacts', appId, 'users', userId, 'wishlist', id);
+          await updateDoc(wishDoc, { purchased: newStatus });
+          showToast(newStatus ? `已將「${item.title}」標示為已購` : `已取消「${item.title}」的已購狀態`);
+        } catch (err) {
+          console.error("Cloud wishlist update error:", err);
+          showToast("雲端同步失敗");
+        }
+      } else {
+        showToast(newStatus ? `已將「${item.title}」標示為已購` : `已取消「${item.title}」的已購狀態`);
+      }
     }
 
     function openWishlistModal(editId = null) {
@@ -771,13 +878,23 @@
       openWishlistModal(id);
     }
 
-    function deleteWishlistItem(id) {
+    async function deleteWishlistItem(id) {
       state.wishlist = state.wishlist.filter(w => w.id !== id);
-      showToast('物品已移除');
       renderWishlist();
+
+      if (isCloudReady && userId) {
+        try {
+          await deleteDoc(doc(db, 'artifacts', appId, 'users', userId, 'wishlist', id));
+          showToast('物品已自雲端移除');
+        } catch (err) {
+          console.error("Cloud wishlist delete error:", err);
+        }
+      } else {
+        showToast('物品已移除');
+      }
     }
 
-    function handleWishlistSubmit(e) {
+    async function handleWishlistSubmit(e) {
       e.preventDefault();
       const id = document.getElementById('wishlist-edit-id').value;
       const title = document.getElementById('wishlist-item-title').value.trim();
@@ -785,32 +902,54 @@
       const category = document.getElementById('wishlist-item-category').value;
       const note = document.getElementById('wishlist-item-note').value.trim();
 
+      const itemData = {
+        title,
+        price,
+        category,
+        note
+      };
+
+      closeWishlistModal();
+
       if (id) {
         const idx = state.wishlist.findIndex(w => w.id === id);
         if (idx !== -1) {
-          state.wishlist[idx] = { ...state.wishlist[idx], title, price, category, note };
+          state.wishlist[idx] = { ...state.wishlist[idx], ...itemData };
+          renderWishlist();
+        }
+        if (isCloudReady && userId) {
+          try {
+            await updateDoc(doc(db, 'artifacts', appId, 'users', userId, 'wishlist', id), itemData);
+            showToast('物品資訊已同步更新');
+          } catch (err) {
+            console.error("Cloud wishlist edit error:", err);
+          }
+        } else {
           showToast('物品資訊已更新');
         }
       } else {
-        state.wishlist.push({
-          id: 'w_' + Date.now(),
-          title,
-          price,
-          category,
-          note,
-          purchased: false
-        });
-        showToast('待購物品已新增');
-      }
+        const newId = 'w_' + Date.now();
+        const fullItem = { id: newId, ...itemData, purchased: false };
+        state.wishlist.push(fullItem);
+        renderWishlist();
 
-      closeWishlistModal();
-      renderWishlist();
+        if (isCloudReady && userId) {
+          try {
+            await setDoc(doc(db, 'artifacts', appId, 'users', userId, 'wishlist', newId), fullItem);
+            showToast('待購物品已同步新增');
+          } catch (err) {
+            console.error("Cloud wishlist add error:", err);
+          }
+        } else {
+          showToast('待購物品已新增');
+        }
+      }
     }
 
     function renderTransactions() {
       const container = document.getElementById('transactions-list');
       const currentMonthStr = `${state.currentYear}-${String(state.currentMonth).padStart(2, '0')}`;
-      let filtered = state.transactions.filter(t => t.date.startsWith(currentMonthStr));
+      let filtered = state.transactions.filter(t => t.date && t.date.startsWith(currentMonthStr));
 
       document.getElementById('transaction-count').innerText = `${filtered.length} 筆本月紀錄`;
 
@@ -832,7 +971,7 @@
       container.innerHTML = filtered.map(t => {
         const isExp = t.type === 'expense';
         const dateParts = t.date.split('-');
-        const dateDisplay = `${parseInt(dateParts[1])}/${parseInt(dateParts[2])}`;
+        const dateDisplay = dateParts.length >= 3 ? `${parseInt(dateParts[1])}/${parseInt(dateParts[2])}` : t.date;
         const amountDisplay = isExp ? `-$${formatNumber(t.amount)}` : `+$${formatNumber(t.amount)}`;
         const amountColor = isExp ? 'text-gray-900' : 'text-emerald-700';
         const isFixed = t.isFixed || t.category === '固定支出';
@@ -927,7 +1066,7 @@
       }
     }
 
-    function handleTransactionSubmit(e) {
+    async function handleTransactionSubmit(e) {
       e.preventDefault();
       const id = document.getElementById('tx-id').value;
       const title = document.getElementById('tx-title').value.trim();
@@ -937,37 +1076,62 @@
       const type = document.getElementById('tx-type').value;
       const isFixed = document.getElementById('tx-is-fixed').checked || category === '固定支出';
 
+      const txPayload = { title, amount, category, date, type, isFixed };
+      closeTransactionModal();
+
       if (id) {
         const idx = state.transactions.findIndex(t => t.id === id);
         if (idx !== -1) {
-          state.transactions[idx] = { id, title, amount, category, date, type, isFixed };
+          state.transactions[idx] = { id, ...txPayload };
+          render();
+        }
+        if (isCloudReady && userId) {
+          try {
+            await setDoc(doc(db, 'artifacts', appId, 'users', userId, 'transactions', id), { id, ...txPayload });
+            showToast('交易已更新並同步');
+          } catch (err) {
+            console.error("Cloud tx update error:", err);
+          }
+        } else {
           showToast('交易已更新');
         }
       } else {
-        state.transactions.unshift({
-          id: Date.now().toString(),
-          title,
-          amount,
-          category,
-          date,
-          type,
-          isFixed
-        });
-        showToast('交易已新增');
-      }
+        const newId = Date.now().toString();
+        const fullTx = { id: newId, ...txPayload };
+        state.transactions.unshift(fullTx);
+        render();
 
-      closeTransactionModal();
-      render();
+        if (isCloudReady && userId) {
+          try {
+            await setDoc(doc(db, 'artifacts', appId, 'users', userId, 'transactions', newId), fullTx);
+            showToast('交易已新增並同步');
+          } catch (err) {
+            console.error("Cloud tx add error:", err);
+          }
+        } else {
+          showToast('交易已新增');
+        }
+      }
     }
 
     function editTransaction(id) {
       openTransactionModal(id);
     }
 
-    function deleteTransaction(id) {
+    async function deleteTransaction(id) {
       state.transactions = state.transactions.filter(t => t.id !== id);
-      showToast('交易已刪除');
       render();
+
+      if (isCloudReady && userId) {
+        try {
+          await deleteDoc(doc(db, 'artifacts', appId, 'users', userId, 'transactions', id));
+          showToast('交易已自雲端刪除');
+        } catch (err) {
+          console.error("Cloud tx delete error:", err);
+        }
+      } else {
+        showToast('交易已刪除');
+      }
     }
 
     function populateCategorySelect() {
@@ -1022,7 +1186,7 @@
       }).join('');
     }
 
-    function handleAddCategory(e) {
+    async function handleAddCategory(e) {
       e.preventDefault();
       const input = document.getElementById('new-category-name');
       const name = input.value.trim();
@@ -1032,7 +1196,6 @@
         return;
       }
 
-      // Assign a pleasant palette color and icon
       const palette = ['#0891B2', '#D97706', '#4F46E5', '#BE185D', '#059669', '#6D28D9'];
       const randomColor = palette[Object.keys(state.categories).length % palette.length];
       
@@ -1045,18 +1208,33 @@
       showToast(`已新增類別「${name}」`);
       renderCategoryManagementList();
       populateCategorySelect();
+
+      if (isCloudReady && userId) {
+        try {
+          await setDoc(doc(db, 'artifacts', appId, 'users', userId, 'settings', 'categories'), { categories: state.categories });
+        } catch (err) {
+          console.error("Cloud category save error:", err);
+        }
+      }
     }
 
-    function handleDeleteCategory(catName) {
-      if (confirm(`確定要刪除「${catName}」類別嗎？原有交易將歸類至「其他」`)) {
-        delete state.categories[catName];
-        state.transactions.forEach(t => {
-          if (t.category === catName) t.category = '其他';
-        });
-        showToast(`已刪除類別「${catName}」`);
-        renderCategoryManagementList();
-        populateCategorySelect();
-        render();
+    async function handleDeleteCategory(catName) {
+      // Replaces browser confirm dialog with safe direct operation
+      delete state.categories[catName];
+      state.transactions.forEach(t => {
+        if (t.category === catName) t.category = '其他';
+      });
+      showToast(`已刪除「${catName}」，既有交易歸為「其他」`);
+      renderCategoryManagementList();
+      populateCategorySelect();
+      render();
+
+      if (isCloudReady && userId) {
+        try {
+          await setDoc(doc(db, 'artifacts', appId, 'users', userId, 'settings', 'categories'), { categories: state.categories });
+        } catch (err) {
+          console.error("Cloud category delete error:", err);
+        }
       }
     }
 
@@ -1064,14 +1242,13 @@
       const year = state.currentYear;
       document.getElementById('annual-year-badge').innerText = `${year}年`;
 
-      // Aggregate 12 months data
       const monthlyData = [];
       let totalYearIncome = 0;
       let totalYearExpense = 0;
 
       for (let m = 1; m <= 12; m++) {
         const mStr = `${year}-${String(m).padStart(2, '0')}`;
-        const txs = state.transactions.filter(t => t.date.startsWith(mStr));
+        const txs = state.transactions.filter(t => t.date && t.date.startsWith(mStr));
         const inc = txs.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
         const exp = txs.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
         const net = inc - exp;
@@ -1109,7 +1286,6 @@
       const colWidth = chartWidth / 12;
 
       let svg = `<svg viewBox="0 0 ${chartWidth} 115" class="w-full h-full overflow-visible">`;
-      // Baseline
       svg += `<line x1="0" y1="${chartHeight}" x2="${chartWidth}" y2="${chartHeight}" stroke="#E5E0D5" stroke-width="1" />`;
 
       data.forEach((d, idx) => {
@@ -1118,15 +1294,11 @@
         const expHeight = (d.expense / maxVal) * (chartHeight - 10);
         const isCurrent = d.month === state.currentMonth;
 
-        // Column click target
         svg += `
           <g class="cursor-pointer group" onclick="jumpToMonth(${d.month})">
             ${isCurrent ? `<rect x="${x + 2}" y="0" width="${colWidth - 4}" height="${chartHeight + 18}" fill="#E8EEF5" rx="4" opacity="0.6"/>` : ''}
-            <!-- Income Bar -->
             <rect x="${x + 4}" y="${chartHeight - incHeight}" width="${(colWidth - 10) / 2}" height="${Math.max(incHeight, 2)}" fill="#10B981" rx="1.5" class="transition group-hover:opacity-80"/>
-            <!-- Expense Bar -->
             <rect x="${x + 4 + (colWidth - 10) / 2 + 1}" y="${chartHeight - expHeight}" width="${(colWidth - 10) / 2}" height="${Math.max(expHeight, 2)}" fill="#F43F5E" rx="1.5" class="transition group-hover:opacity-80"/>
-            <!-- Month Label -->
             <text x="${x + colWidth / 2}" y="${chartHeight + 14}" text-anchor="middle" font-size="8" font-weight="${isCurrent ? 'bold' : 'normal'}" fill="${isCurrent ? '#0284C7' : '#8E8B85'}">${d.month}月</text>
           </g>
         `;
@@ -1166,7 +1338,6 @@
             <stop offset="100%" stop-color="#0284C7" stop-opacity="0.0"/>
           </linearGradient>
         </defs>
-        <!-- Neutral line -->
         <line x1="0" y1="${midY}" x2="${chartWidth}" y2="${midY}" stroke="#DDD7CD" stroke-dasharray="2 2" stroke-width="1" />
         <path d="${areaD}" fill="url(#waveGrad)" />
         <path d="${pathD}" fill="none" stroke="#0284C7" stroke-width="2.5" stroke-linecap="round" />
@@ -1189,7 +1360,7 @@
 
     function render() {
       const currentMonthStr = `${state.currentYear}-${String(state.currentMonth).padStart(2, '0')}`;
-      const currentTxs = state.transactions.filter(t => t.date.startsWith(currentMonthStr));
+      const currentTxs = state.transactions.filter(t => t.date && t.date.startsWith(currentMonthStr));
 
       renderOverview(currentTxs);
       renderCategories(currentTxs);
@@ -1199,8 +1370,132 @@
       populateCategorySelect();
     }
 
+    async function initCloudSync() {
+      try {
+        app = initializeApp(firebaseConfig);
+        auth = getAuth(app);
+        db = getFirestore(app);
+
+        // Authenticate before queries (Rule 3)
+        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+          await signInWithCustomToken(auth, __initial_auth_token);
+        } else {
+          await signInAnonymously(auth);
+        }
+
+        userId = auth.currentUser?.uid || 'guest-user';
+        isCloudReady = true;
+
+        // Update modal info with complete userId
+        const uidInput = document.getElementById('cloud-user-id-input');
+        if (uidInput) uidInput.value = userId;
+
+        const badgeDot = document.getElementById('cloud-pulse-dot');
+        const badgeText = document.getElementById('cloud-status-text');
+        if (badgeDot && badgeText) {
+          badgeDot.className = "w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse";
+          badgeText.innerText = "已連線雲端";
+        }
+
+        // Firestore Strict Path collections (Rule 1)
+        const txCol = collection(db, 'artifacts', appId, 'users', userId, 'transactions');
+        const wishCol = collection(db, 'artifacts', appId, 'users', userId, 'wishlist');
+        const catDocRef = doc(db, 'artifacts', appId, 'users', userId, 'settings', 'categories');
+
+        // Real-time listener for Transactions (Rule 2: simple collection query)
+        onSnapshot(txCol, async (snapshot) => {
+          if (snapshot.empty && !state.hasInitTxSeed) {
+            state.hasInitTxSeed = true;
+            for (const t of initialTransactions) {
+              await setDoc(doc(db, 'artifacts', appId, 'users', userId, 'transactions', t.id), t);
+            }
+            return;
+          }
+          const loadedTxs = [];
+          snapshot.forEach(docSnap => loadedTxs.push(docSnap.data()));
+          if (loadedTxs.length > 0) {
+            state.transactions = loadedTxs;
+            render();
+          }
+        }, (err) => {
+          console.error("Transactions snapshot listener error:", err);
+        });
+
+        // Real-time listener for Wishlist
+        onSnapshot(wishCol, async (snapshot) => {
+          if (snapshot.empty && !state.hasInitWishSeed) {
+            state.hasInitWishSeed = true;
+            for (const w of initialWishlist) {
+              await setDoc(doc(db, 'artifacts', appId, 'users', userId, 'wishlist', w.id), w);
+            }
+            return;
+          }
+          const loadedWish = [];
+          snapshot.forEach(docSnap => loadedWish.push(docSnap.data()));
+          if (loadedWish.length > 0) {
+            state.wishlist = loadedWish;
+            render();
+          }
+        }, (err) => {
+          console.error("Wishlist snapshot listener error:", err);
+        });
+
+        // Real-time listener for Categories
+        onSnapshot(catDocRef, async (docSnap) => {
+          if (!docSnap.exists() && !state.hasInitCatSeed) {
+            state.hasInitCatSeed = true;
+            await setDoc(catDocRef, { categories: DEFAULT_CATEGORIES });
+            return;
+          }
+          if (docSnap.exists()) {
+            state.categories = docSnap.data().categories || DEFAULT_CATEGORIES;
+            render();
+          }
+        }, (err) => {
+          console.error("Categories snapshot listener error:", err);
+        });
+
+      } catch (err) {
+        console.error("Firebase init failed:", err);
+        const badgeDot = document.getElementById('cloud-pulse-dot');
+        const badgeText = document.getElementById('cloud-status-text');
+        if (badgeDot && badgeText) {
+          badgeDot.className = "w-1.5 h-1.5 rounded-full bg-amber-500";
+          badgeText.innerText = "離線儲存";
+        }
+      }
+    }
+
+    Object.assign(window, {
+      changeMonth,
+      jumpToMonth,
+      setTxFilter,
+      setAnnualChartView,
+      openTransactionModal,
+      closeTransactionModal,
+      setModalType,
+      handleCategorySelectChange,
+      handleTransactionSubmit,
+      editTransaction,
+      deleteTransaction,
+      openWishlistModal,
+      closeWishlistModal,
+      toggleWishlistPurchased,
+      editWishlistItem,
+      deleteWishlistItem,
+      handleWishlistSubmit,
+      openCategoryModal,
+      closeCategoryModal,
+      handleAddCategory,
+      handleDeleteCategory,
+      openCloudModal,
+      closeCloudModal,
+      copyUserId
+    });
+
     window.onload = function() {
       render();
+      initCloudSync();
     };
   </script>
 </body>
