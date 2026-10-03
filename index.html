@@ -91,7 +91,7 @@
             </div>
             <span class="text-[10px] text-subText font-medium block">本月可用餘額</span>
             <div class="text-2xl font-bold text-[#1C1A18] font-sans tracking-tight" id="remaining-amount">$0</div>
-            <p id="remaining-desc" class="text-[9px] text-subText mt-0.5">已扣除本月已付款項目之剩餘額度</p>
+            <p id="remaining-desc" class="text-[9px] text-subText mt-0.5">本月總收入減去已付費項目之剩餘額度</p>
           </div>
           <div class="text-right">
             <span class="text-[10px] text-subText font-medium block">支出佔收入比</span>
@@ -99,48 +99,41 @@
             <span id="expense-status-tag" class="text-[9px] text-emerald-600 font-medium block">財務狀態良好</span>
           </div>
         </div>
+      </section>
 
-        <div class="grid grid-cols-3 gap-2">
-          <div class="bg-gradient-to-br from-emerald-50 to-teal-100/60 rounded-xl p-2.5 border border-emerald-200/80 shadow-sm">
-            <div class="flex items-center justify-between text-emerald-800 mb-0.5">
-              <span class="text-[10px] font-semibold">收入</span>
-              <i class="ph ph-arrow-down-left text-xs"></i>
+      <!-- 本月收入區 -->
+      <section class="bg-cardBg rounded-2xl p-3 shadow-sm border border-[#EBE7E0] space-y-2.5">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+            <div>
+              <div class="flex items-center gap-1.5">
+                <h2 class="text-xs font-bold text-[#1C1A18]">本月收入區</h2>
+                <span id="income-month-badge" class="text-[9px] font-semibold text-emerald-800 bg-emerald-100/70 border border-emerald-200/80 px-1.5 py-0.5 rounded-full">當月專屬</span>
+              </div>
+              <p class="text-[9px] text-subText">記錄每個月的零散進帳，即時增加總資產與可用餘額</p>
             </div>
-            <div id="total-income-display" class="text-base font-bold text-emerald-900 truncate font-sans">0</div>
-            <span class="text-[9px] text-emerald-700/80">本月進帳</span>
           </div>
+          <button onclick="openIncomeModal(null)" class="px-2 py-1 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-[10px] font-bold flex items-center gap-1 transition shadow-sm">
+            <i class="ph ph-plus font-bold"></i> 新增收入
+          </button>
+        </div>
 
-          <div class="bg-gradient-to-br from-violet-50 to-purple-100/60 rounded-xl p-2.5 border border-purple-200/80 shadow-sm">
-            <div class="flex items-center justify-between text-purple-800 mb-0.5">
-              <span class="text-[10px] font-semibold">固定支出</span>
-              <i class="ph ph-repeat text-xs"></i>
+        <div class="bg-[#FAF8F5] rounded-xl p-2.5 border border-[#ECE6DB] space-y-2">
+          <div class="bg-white rounded-lg p-2 border border-gray-100 shadow-sm flex items-center justify-between">
+            <div>
+              <span class="text-[9px] text-gray-500 font-medium block">本月總收入</span>
+              <div id="income-total-sum" class="text-sm font-bold text-emerald-700 font-sans mt-0.5">$0</div>
             </div>
-            <div id="total-fixed-display" class="text-base font-bold text-purple-900 truncate font-sans">0</div>
-            <span class="text-[9px] text-purple-700/80">定期支出</span>
-          </div>
-
-          <div class="bg-gradient-to-br from-rose-50 to-red-100/60 rounded-xl p-2.5 border border-rose-200/80 shadow-sm">
-            <div class="flex items-center justify-between text-rose-800 mb-0.5">
-              <span class="text-[10px] font-semibold">支出</span>
-              <i class="ph ph-arrow-up-right text-xs"></i>
+            <div class="text-right">
+              <span class="text-[9px] text-gray-400 block">筆數</span>
+              <div id="income-count" class="text-xs font-bold text-gray-700 font-sans mt-0.5">0 筆</div>
             </div>
-            <div id="total-expense-display" class="text-base font-bold text-rose-900 truncate font-sans">0</div>
-            <span class="text-[9px] text-rose-700/80">累計花費</span>
           </div>
         </div>
 
-        <div class="bg-cardBg rounded-xl p-2 border border-[#EBE7E0] shadow-sm">
-          <div class="flex justify-between items-center text-[10px] text-gray-500 font-medium mb-1">
-            <div class="flex items-center gap-1">
-              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500" id="expense-track-dot"></span>
-              <span>支出進度指標</span>
-            </div>
-            <span id="expense-track-label" class="text-[9px] text-gray-400">上限建議 70%</span>
-          </div>
-          <div class="w-full bg-[#EAE5DC] rounded-full h-1.5 overflow-hidden">
-            <div id="expense-ratio-bar" class="h-full rounded-full transition-all duration-500 bg-emerald-500" style="width: 0%;"></div>
-          </div>
-        </div>
+        <!-- 收入列表容器 -->
+        <div id="income-items-container" class="space-y-1.5 pt-0.5"></div>
       </section>
 
       <!-- Category Breakdown -->
@@ -282,7 +275,48 @@
 
     </div>
 
-    <!-- Modal: 新增/編輯待付項目（已取消所有提示字，採垂直排列） -->
+    <!-- Modal: 新增/編輯收入項目 -->
+    <div id="income-modal" onclick="handleBackdropClick(event, 'income-modal')" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <div class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-2xl p-4 shadow-2xl space-y-3 border border-[#ECE8E1]">
+        <div class="flex items-center justify-between border-b pb-2 border-gray-100">
+          <h3 id="income-modal-title" class="font-bold text-sm text-gray-800">新增收入項目</h3>
+          <button onclick="closeIncomeModal()" class="p-1 rounded-full text-gray-400 hover:text-gray-700">
+            <i class="ph ph-x text-base"></i>
+          </button>
+        </div>
+
+        <form id="income-form" onsubmit="handleIncomeSubmit(event)" class="space-y-3 text-xs">
+          <input type="hidden" id="income-edit-id">
+
+          <div>
+            <label class="block text-[11px] font-medium text-gray-500 mb-1">收入來源名稱</label>
+            <input type="text" id="income-item-title" required class="w-full px-3 py-2 bg-[#FAF8F5] border border-gray-200 rounded-xl focus:outline-none focus:border-brandDark">
+          </div>
+
+          <div>
+            <label class="block text-[11px] font-medium text-gray-500 mb-1">金額 ($)</label>
+            <input type="number" step="any" id="income-item-price" min="0.01" required class="w-full px-3 py-2 bg-[#FAF8F5] border border-gray-200 rounded-xl focus:outline-none focus:border-brandDark font-sans">
+          </div>
+
+          <div>
+            <label class="block text-[11px] font-medium text-gray-500 mb-1">歸屬月份</label>
+            <input type="month" id="income-item-month" required class="w-full px-3 py-2 bg-[#FAF8F5] border border-gray-200 rounded-xl focus:outline-none focus:border-brandDark font-sans">
+          </div>
+
+          <div>
+            <label class="block text-[11px] font-medium text-gray-500 mb-1">備註說明 (選填)</label>
+            <input type="text" id="income-item-note" class="w-full px-3 py-2 bg-[#FAF8F5] border border-gray-200 rounded-xl focus:outline-none focus:border-brandDark">
+          </div>
+
+          <div class="pt-2 flex gap-2">
+            <button type="button" onclick="closeIncomeModal()" class="flex-1 py-2 bg-[#EAE6DE] text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition">取消</button>
+            <button type="submit" class="flex-1 py-2 bg-emerald-700 text-white font-semibold rounded-xl hover:opacity-95 transition">儲存收入</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modal: 新增/編輯待付項目 -->
     <div id="wishlist-modal" onclick="handleBackdropClick(event, 'wishlist-modal')" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
       <div class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-2xl p-4 shadow-2xl space-y-3 border border-[#ECE8E1]">
         <div class="flex items-center justify-between border-b pb-2 border-gray-100">
@@ -345,7 +379,6 @@
 
     let app = null, db = null;
     let isCloudReady = false;
-    let hasInitialWishSync = false;
     let toastTimer = null;
 
     let fbDoc, fbSetDoc, fbUpdateDoc, fbDeleteDoc, fbOnSnapshot, fbCollection, fbWriteBatch;
@@ -371,35 +404,30 @@
       return parts.length >= 2 && parseInt(parts[0], 10) === year && parseInt(parts[1], 10) === month;
     }
 
-    function diagLog(msg, isError = false) {
-      if (isError) console.error(msg); else console.log(msg);
-    }
-
-    const DEFAULT_CATEGORIES = {
-      '固定': { color: '#8B5CF6', icon: 'ph-repeat' },
-      '不固定': { color: '#0284C7', icon: 'ph-shopping-bag' }
-    };
-
     const localWishlist = localStorage.getItem('budget_wishlist');
+    const localIncomes = localStorage.getItem('budget_incomes');
 
     const now = new Date();
     let state = {
       currentYear: now.getFullYear(),
       currentMonth: now.getMonth() + 1,
       annualView: 'flow',
-      wishlist: safeJSONParse(localWishlist, [])
+      wishlist: safeJSONParse(localWishlist, []),
+      incomes: safeJSONParse(localIncomes, [])
     };
 
     function saveToLocalStorage() {
       try {
         localStorage.setItem('budget_wishlist', JSON.stringify(state.wishlist));
+        localStorage.setItem('budget_incomes', JSON.stringify(state.incomes));
       } catch (err) {}
     }
 
-    function recordOfflineDeletion(id) {
+    function recordOfflineDeletion(id, type = 'wish') {
       try {
-        const list = safeJSONParse(localStorage.getItem('budget_deleted_wish'), []);
-        if (!list.includes(id)) { list.push(id); localStorage.setItem('budget_deleted_wish', JSON.stringify(list)); }
+        const key = type === 'income' ? 'budget_deleted_income' : 'budget_deleted_wish';
+        const list = safeJSONParse(localStorage.getItem(key), []);
+        if (!list.includes(id)) { list.push(id); localStorage.setItem(key, JSON.stringify(list)); }
       } catch (e) {}
     }
 
@@ -430,7 +458,7 @@
 
     window.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
-        ['wishlist-modal'].forEach(id => {
+        ['wishlist-modal', 'income-modal'].forEach(id => {
           const el = document.getElementById(id);
           if (el) el.classList.add('hidden');
         });
@@ -513,6 +541,7 @@
 
     function render() {
       renderOverview();
+      renderIncomeSection();
       renderCategories();
       renderWishlist();
       renderAnnualChart();
@@ -521,36 +550,158 @@
     function renderOverview() {
       document.getElementById('current-month-display').innerText = `${state.currentYear}年${state.currentMonth}月`;
 
-      const currentMonthItems = state.wishlist.filter(item => isSameMonthYear(item.month, state.currentYear, state.currentMonth));
-      
-      const fixedItems = currentMonthItems.filter(i => i.category === '固定' || i.isFixed);
-      const variableItems = currentMonthItems.filter(i => i.category !== '固定' && !i.isFixed);
+      const currentMonthWishlist = state.wishlist.filter(item => isSameMonthYear(item.month, state.currentYear, state.currentMonth));
+      const currentMonthIncomes = state.incomes.filter(item => isSameMonthYear(item.month, state.currentYear, state.currentMonth));
 
-      const fixedSum = fixedItems.reduce((s, i) => s + Number(i.price || 0), 0);
-      const variableSum = variableItems.reduce((s, i) => s + Number(i.price || 0), 0);
-      const totalExpense = fixedSum + variableSum;
-
+      const totalIncome = currentMonthIncomes.reduce((s, i) => s + Number(i.price || 0), 0);
+      const allIncomeSum = state.incomes.reduce((s, i) => s + Number(i.price || 0), 0);
       const allPurchasedSum = state.wishlist.filter(i => i.purchased).reduce((s, i) => s + Number(i.price || 0), 0);
       
-      const totalWealth = -allPurchasedSum;
-      const currentPurchasedSum = currentMonthItems.filter(i => i.purchased).reduce((s, i) => s + Number(i.price || 0), 0);
-      const remaining = -currentPurchasedSum;
+      const totalWealth = allIncomeSum - allPurchasedSum;
+      const currentPurchasedSum = currentMonthWishlist.filter(i => i.purchased).reduce((s, i) => s + Number(i.price || 0), 0);
+      const remaining = totalIncome - currentPurchasedSum;
 
       document.getElementById('total-wealth-amount').innerText = formatCurrency(totalWealth);
       document.getElementById('remaining-amount').innerText = formatCurrency(remaining);
-      document.getElementById('total-income-display').innerText = '0';
-      document.getElementById('total-fixed-display').innerText = formatNumber(fixedSum);
-      document.getElementById('total-expense-display').innerText = formatNumber(totalExpense);
-      document.getElementById('chart-total-expense').innerText = formatCurrency(totalExpense);
-      document.getElementById('donut-inner-total').innerText = formatNumber(totalExpense);
+    }
 
-      if (document.getElementById('fixed-col-sum')) document.getElementById('fixed-col-sum').innerText = formatCurrency(fixedSum);
-      if (document.getElementById('variable-col-sum')) document.getElementById('variable-col-sum').innerText = formatCurrency(variableSum);
+    function renderIncomeSection() {
+      const container = document.getElementById('income-items-container');
+      const monthBadge = document.getElementById('income-month-badge');
+      if (monthBadge) monthBadge.innerText = `${state.currentMonth}月專屬`;
+
+      const currentMonthIncomes = state.incomes.filter(item => isSameMonthYear(item.month, state.currentYear, state.currentMonth));
+      const totalSum = currentMonthIncomes.reduce((sum, item) => sum + Number(item.price || 0), 0);
+
+      document.getElementById('income-total-sum').innerText = formatCurrency(totalSum);
+      document.getElementById('income-count').innerText = `${currentMonthIncomes.length} 筆`;
+
+      if (currentMonthIncomes.length === 0) {
+        container.innerHTML = `<div class="text-[9px] text-subText text-center py-2 bg-white rounded-lg border border-dashed border-gray-200">本月尚無收入紀錄</div>`;
+        return;
+      }
+
+      container.innerHTML = currentMonthIncomes.map(item => `
+        <div class="flex items-center justify-between p-1.5 rounded-lg border border-[#ECE6DB] bg-white hover:bg-gray-50 transition group">
+          <div class="flex items-center gap-1.5 flex-1 min-w-0">
+            <div class="w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0"></div>
+            <div class="min-w-0 flex-1">
+              <span class="text-[11px] font-semibold text-gray-800 truncate block">${escapeHtml(item.title)}</span>
+              ${item.note ? `<span class="text-[9px] text-gray-400 truncate block">${escapeHtml(item.note)}</span>` : ''}
+            </div>
+          </div>
+
+          <div class="flex items-center gap-1 flex-shrink-0 ml-1">
+            <span class="text-[11px] font-bold font-sans text-emerald-700">
+              +${formatCurrency(item.price)}
+            </span>
+            <button onclick="editIncomeItem('${item.id}')" title="編輯" class="w-5 h-5 flex items-center justify-center rounded text-gray-400 hover:text-gray-700 transition">
+              <i class="ph ph-pencil-simple text-[10px]"></i>
+            </button>
+            <button onclick="deleteIncomeItem('${item.id}')" title="刪除" class="w-5 h-5 flex items-center justify-center rounded text-gray-400 hover:text-rose-600 transition">
+              <i class="ph ph-trash text-[10px]"></i>
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function openIncomeModal(editId = null) {
+      const form = document.getElementById('income-form');
+      form.reset();
+      const currentMonthStr = `${state.currentYear}-${String(state.currentMonth).padStart(2, '0')}`;
+
+      if (editId) {
+        const item = state.incomes.find(w => w.id === editId);
+        if (item) {
+          document.getElementById('income-modal-title').innerText = '編輯收入項目';
+          document.getElementById('income-edit-id').value = item.id;
+          document.getElementById('income-item-title').value = item.title;
+          document.getElementById('income-item-month').value = item.month || currentMonthStr;
+          document.getElementById('income-item-price').value = item.price;
+          document.getElementById('income-item-note').value = item.note || '';
+        }
+      } else {
+        document.getElementById('income-modal-title').innerText = '新增收入項目';
+        document.getElementById('income-edit-id').value = '';
+        document.getElementById('income-item-month').value = currentMonthStr;
+      }
+      document.getElementById('income-modal').classList.remove('hidden');
+    }
+
+    function closeIncomeModal() {
+      document.getElementById('income-modal').classList.add('hidden');
+    }
+
+    function editIncomeItem(id) {
+      openIncomeModal(id);
+    }
+
+    async function deleteIncomeItem(id) {
+      if (!confirm('確定要移除此收入項目嗎？')) return;
+      state.incomes = state.incomes.filter(w => w.id !== id);
+      saveToLocalStorage();
+      render();
+
+      if (isCloudReady && fbDeleteDoc && fbDoc) {
+        try {
+          await fbDeleteDoc(fbDoc(db, 'shared_incomes', id));
+        } catch (err) {}
+      } else {
+        recordOfflineDeletion(id, 'income');
+      }
+      showToast('收入項目已移除');
+    }
+
+    async function handleIncomeSubmit(e) {
+      e.preventDefault();
+      const currentMonthStr = `${state.currentYear}-${String(state.currentMonth).padStart(2, '0')}`;
+      const id = document.getElementById('income-edit-id').value;
+      const title = document.getElementById('income-item-title').value.trim();
+      const month = document.getElementById('income-item-month').value || currentMonthStr;
+      const price = Number(document.getElementById('income-item-price').value);
+      const note = document.getElementById('income-item-note').value.trim();
+
+      if (isNaN(price) || price <= 0) {
+        showToast('請輸入有效金額');
+        return;
+      }
+
+      const itemData = { title, month, price, note };
+      closeIncomeModal();
+
+      if (id) {
+        const idx = state.incomes.findIndex(w => w.id === id);
+        if (idx !== -1) state.incomes[idx] = { ...state.incomes[idx], ...itemData };
+        saveToLocalStorage();
+        render();
+        if (isCloudReady && fbSetDoc && fbDoc) {
+          try {
+            await fbSetDoc(fbDoc(db, 'shared_incomes', id), itemData, { merge: true });
+          } catch (err) {}
+        }
+        showToast('收入項目已更新');
+      } else {
+        const newId = 'inc_' + Date.now();
+        const fullItem = { id: newId, ...itemData };
+        state.incomes.push(fullItem);
+        saveToLocalStorage();
+        render();
+        if (isCloudReady && fbSetDoc && fbDoc) {
+          try {
+            await fbSetDoc(fbDoc(db, 'shared_incomes', newId), fullItem);
+          } catch (err) {}
+        }
+        showToast('收入項目已新增');
+      }
     }
 
     function renderCategories() {
       const currentMonthItems = state.wishlist.filter(item => isSameMonthYear(item.month, state.currentYear, state.currentMonth));
       const totalExpense = currentMonthItems.reduce((sum, t) => sum + Number(t.price || 0), 0);
+
+      document.getElementById('chart-total-expense').innerText = formatCurrency(totalExpense);
+      document.getElementById('donut-inner-total').innerText = formatNumber(totalExpense);
 
       const catMap = { '固定': 0, '不固定': 0 };
       currentMonthItems.forEach(t => {
@@ -633,6 +784,12 @@
 
       const fixedItems = currentMonthWishlist.filter(i => i.category === '固定' || i.isFixed);
       const variableItems = currentMonthWishlist.filter(i => i.category !== '固定' && !i.isFixed);
+
+      const fixedSum = fixedItems.reduce((s, i) => s + Number(i.price || 0), 0);
+      const variableSum = variableItems.reduce((s, i) => s + Number(i.price || 0), 0);
+
+      if (document.getElementById('fixed-col-sum')) document.getElementById('fixed-col-sum').innerText = formatCurrency(fixedSum);
+      if (document.getElementById('variable-col-sum')) document.getElementById('variable-col-sum').innerText = formatCurrency(variableSum);
 
       const renderItemsList = (items) => {
         if (items.length === 0) {
@@ -731,7 +888,7 @@
           await fbDeleteDoc(fbDoc(db, 'shared_wishlist', id));
         } catch (err) {}
       } else {
-        recordOfflineDeletion(id);
+        recordOfflineDeletion(id, 'wish');
       }
       showToast('項目已移除');
     }
@@ -804,16 +961,22 @@
 
       const monthlyData = [];
       let totalYearExpense = 0;
+      let totalYearIncome = 0;
 
       for (let m = 1; m <= 12; m++) {
         const txs = state.wishlist.filter(t => isSameMonthYear(t.month, year, m));
+        const incs = state.incomes.filter(i => isSameMonthYear(i.month, year, m));
+
         const exp = txs.reduce((sum, t) => sum + Number(t.price || 0), 0);
+        const inc = incs.reduce((sum, i) => sum + Number(i.price || 0), 0);
+
         totalYearExpense += exp;
-        monthlyData.push({ month: m, income: 0, expense: exp, net: -exp });
+        totalYearIncome += inc;
+        monthlyData.push({ month: m, income: inc, expense: exp, net: inc - exp });
       }
 
-      const totalYearNet = -totalYearExpense;
-      document.getElementById('year-total-income').innerText = formatCurrency(0);
+      const totalYearNet = totalYearIncome - totalYearExpense;
+      document.getElementById('year-total-income').innerText = formatCurrency(totalYearIncome);
       document.getElementById('year-total-expense').innerText = formatCurrency(totalYearExpense);
       
       const yearNetEl = document.getElementById('year-net-savings');
@@ -827,6 +990,7 @@
 
       if (state.annualView === 'flow') {
         legend.innerHTML = `
+          <span class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-sm bg-emerald-600 inline-block"></span>收入</span>
           <span class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-sm bg-rose-500 inline-block"></span>待付開支</span>
         `;
         renderBarFlowChart(container, monthlyData);
@@ -842,7 +1006,7 @@
     }
 
     function renderBarFlowChart(container, data) {
-      const maxVal = Math.max(...data.map(d => d.expense), 10000);
+      const maxVal = Math.max(...data.map(d => Math.max(d.income, d.expense)), 10000);
       const chartHeight = 85;
       const chartWidth = 330;
       const colWidth = chartWidth / 12;
@@ -852,6 +1016,7 @@
 
       data.forEach((d, idx) => {
         const x = idx * colWidth;
+        const incHeight = d.income > 0 ? (d.income / maxVal) * (chartHeight - 10) : 0;
         const expHeight = d.expense > 0 ? (d.expense / maxVal) * (chartHeight - 10) : 0;
         const isCurrent = d.month === state.currentMonth;
 
@@ -859,7 +1024,8 @@
           <g class="cursor-pointer group" onclick="jumpToMonth(${d.month})">
             <rect x="${x}" y="0" width="${colWidth}" height="${chartHeight + 20}" fill="black" opacity="0" pointer-events="all" />
             ${isCurrent ? `<rect x="${x + 2}" y="0" width="${colWidth - 4}" height="${chartHeight + 18}" fill="#E8EEF5" rx="4" opacity="0.6"/>` : ''}
-            ${expHeight > 0 ? `<rect x="${x + 4}" y="${chartHeight - expHeight}" width="${colWidth - 8}" height="${expHeight}" fill="#F43F5E" rx="1.5" class="transition group-hover:opacity-80"/>` : ''}
+            ${incHeight > 0 ? `<rect x="${x + 2}" y="${chartHeight - incHeight}" width="${(colWidth - 4)/2 - 1}" height="${incHeight}" fill="#059669" rx="1" />` : ''}
+            ${expHeight > 0 ? `<rect x="${x + (colWidth/2)}" y="${chartHeight - expHeight}" width="${(colWidth - 4)/2 - 1}" height="${expHeight}" fill="#F43F5E" rx="1" />` : ''}
             <text x="${x + colWidth / 2}" y="${chartHeight + 14}" text-anchor="middle" font-size="8" font-weight="${isCurrent ? 'bold' : 'normal'}" fill="${isCurrent ? '#0284C7' : '#8E8B85'}">${d.month}月</text>
           </g>
         `;
@@ -1028,6 +1194,7 @@
         fbCollection = fsModule.collection;
         fbWriteBatch = fsModule.writeBatch;
 
+        // 監聽待付費區
         fbOnSnapshot(fbCollection(db, 'shared_wishlist'), (snapshot) => {
           isCloudReady = true;
           updateSyncBadge('online', '已連線雲端');
@@ -1054,6 +1221,27 @@
           updateSyncBadge('offline', '本地離線運作');
         });
 
+        // 監聽本月收入區
+        fbOnSnapshot(fbCollection(db, 'shared_incomes'), (snapshot) => {
+          const remoteIncomeMap = new Map();
+          snapshot.forEach(docSnap => remoteIncomeMap.set(docSnap.id, { id: docSnap.id, ...docSnap.data() }));
+
+          try {
+            const deletedIncomeList = safeJSONParse(localStorage.getItem('budget_deleted_income'), []);
+            if (deletedIncomeList.length > 0) {
+              deletedIncomeList.forEach(async (delId) => {
+                remoteIncomeMap.delete(delId);
+                try { await fbDeleteDoc(fbDoc(db, 'shared_incomes', delId)); } catch (e) {}
+              });
+              localStorage.removeItem('budget_deleted_income');
+            }
+          } catch (e) {}
+
+          state.incomes = Array.from(remoteIncomeMap.values());
+          saveToLocalStorage();
+          render();
+        }, () => {});
+
       } catch (err) {
         isCloudReady = false;
         updateSyncBadge('offline', '本地離線運作');
@@ -1070,6 +1258,11 @@
       editWishlistItem,
       deleteWishlistItem,
       handleWishlistSubmit,
+      openIncomeModal,
+      closeIncomeModal,
+      editIncomeItem,
+      deleteIncomeItem,
+      handleIncomeSubmit,
       handleBackdropClick
     });
 
