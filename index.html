@@ -1,1503 +1,1521 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>餘額 - 預算規劃器</title>
-  <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Phosphor Icons CDN -->
-  <script src="https://unpkg.com/@phosphor-icons/web"></script>
-  <!-- Google Fonts: Inter & Noto Serif TC -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Serif+TC:wght@500;600;700&display=swap" rel="stylesheet">
-  
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            appBg: '#F3EFEA',
-            cardBg: '#FFFFFF',
-            subText: '#858077',
-            accentGreen: '#15803D',
-            accentRed: '#DC2626',
-            brandDark: '#1E2C26'
-          },
-          fontFamily: {
-            serif: ['"Noto Serif TC"', 'serif'],
-            sans: ['Inter', 'sans-serif']
-          }
-        }
-      }
-    }
-  </script>
-  <style>
-    body {
-      background-color: #E6E1D8;
-      font-family: 'Inter', sans-serif;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .custom-scroll::-webkit-scrollbar {
-      width: 0px;
-      background: transparent;
-    }
-    .donut-segment {
-      transition: stroke-dasharray 0.5s ease, stroke-dashoffset 0.5s ease;
-    }
-    .compact-checkbox:checked {
-      background-color: #15803D;
-      border-color: #15803D;
-    }
-  </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>餘額 - 預算規劃器</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Phosphor Icons CDN -->
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <!-- Google Fonts: Inter & Noto Serif TC -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Serif+TC:wght@500;600;700&display=swap" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            appBg: '#F3EFEA',
+            cardBg: '#FFFFFF',
+            subText: '#858077',
+            accentGreen: '#15803D',
+            accentRed: '#DC2626',
+            brandDark: '#1E2C26'
+          },
+          fontFamily: {
+            serif: ['"Noto Serif TC"', 'serif'],
+            sans: ['Inter', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #E6E1D8;
+      font-family: 'Inter', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .custom-scroll::-webkit-scrollbar {
+      width: 0px;
+      background: transparent;
+    }
+    .donut-segment {
+      transition: stroke-dasharray 0.5s ease, stroke-dashoffset 0.5s ease;
+    }
+    .compact-checkbox:checked {
+      background-color: #15803D;
+      border-color: #15803D;
+    }
+  </style>
 </head>
 <body class="flex justify-center min-h-screen py-0 sm:py-4 text-[#24211E]">
 
-  <main class="w-full max-w-md bg-appBg min-h-screen sm:min-h-[860px] sm:rounded-[32px] shadow-2xl flex flex-col overflow-hidden relative border border-[#DDD7CD]">
-    
-    <!-- Header Bar with Title and Month Navigator -->
-    <header class="pt-4 px-4 pb-1">
-      <div class="flex items-center justify-between">
-        <div>
-          <div class="flex items-center gap-2">
-            <h1 class="text-2xl font-serif font-bold text-[#1C1A18] tracking-tight">餘額</h1>
-            <button type="button" onclick="openDiagModal()" id="cloud-status-badge" class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-700 text-[9px] font-semibold border border-amber-200 cursor-pointer hover:opacity-80 transition">
-              <span id="cloud-pulse-dot" class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
-              <span id="cloud-status-text">連線診斷中...</span>
-            </button>
-          </div>
-          <p class="text-[11px] text-subText tracking-wide mt-0.5">智能財務規劃與預算管理</p>
-        </div>
-
-        <!-- Month Selector Switcher -->
-        <div class="flex items-center bg-[#E8E2D8] p-1 rounded-xl shadow-inner gap-1">
-          <button onclick="changeMonth(-1)" class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-white text-gray-700 transition active:scale-95">
-            <i class="ph ph-caret-left text-sm font-bold"></i>
-          </button>
-          <span id="current-month-display" class="font-bold text-xs text-[#1C1A18] px-1 tracking-wide">2026年10月</span>
-          <button onclick="changeMonth(1)" class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-white text-gray-700 transition active:scale-95">
-            <i class="ph ph-caret-right text-sm font-bold"></i>
-          </button>
-        </div>
-      </div>
-    </header>
-
-    <!-- Main Scrollable Area -->
-    <div class="flex-1 overflow-y-auto custom-scroll px-3.5 pb-8 space-y-2.5 pt-2">
-      
-      <!-- Section: Overview & Metrics -->
-      <section class="space-y-2">
-        <div class="bg-cardBg rounded-2xl p-3 shadow-xs border border-[#EBE7E0] flex items-center justify-between">
-          <div>
-            <span class="text-[10px] text-subText font-medium block">本月可用餘額</span>
-            <div class="text-2xl font-bold text-[#1C1A18] font-sans tracking-tight" id="remaining-amount">$40,760</div>
-            <p class="text-[9px] text-subText mt-0.5">總收入扣除總支出後之剩餘額度</p>
-          </div>
-          <div class="text-right">
-            <span class="text-[10px] text-subText font-medium block">支出佔收入比</span>
-            <span id="expense-ratio-text" class="text-sm font-bold text-gray-800">34%</span>
-            <span class="text-[9px] text-emerald-600 font-medium block">財務狀態良好</span>
-          </div>
-        </div>
-
-        <!-- Colorful Metrics Grid: Income, Fixed, Expense -->
-        <div class="grid grid-cols-3 gap-2">
-          <!-- Income Card -->
-          <div class="bg-gradient-to-br from-emerald-50 to-teal-100/60 rounded-xl p-2.5 border border-emerald-200/80 shadow-2xs">
-            <div class="flex items-center justify-between text-emerald-800 mb-0.5">
-              <span class="text-[10px] font-semibold">收入</span>
-              <i class="ph ph-arrow-down-left text-xs"></i>
-            </div>
-            <div id="total-income-display" class="text-base font-bold text-emerald-900 truncate font-sans">62,000</div>
-            <span class="text-[9px] text-emerald-700/80">本月進帳</span>
-          </div>
-
-          <!-- Fixed Expense Card -->
-          <div class="bg-gradient-to-br from-violet-50 to-purple-100/60 rounded-xl p-2.5 border border-purple-200/80 shadow-2xs">
-            <div class="flex items-center justify-between text-purple-800 mb-0.5">
-              <span class="text-[10px] font-semibold">固定支出</span>
-              <i class="ph ph-repeat text-xs"></i>
-            </div>
-            <div id="total-fixed-display" class="text-base font-bold text-purple-900 truncate font-sans">19,280</div>
-            <span class="text-[9px] text-purple-700/80">定期支出</span>
-          </div>
-
-          <!-- Total Expense Card -->
-          <div class="bg-gradient-to-br from-rose-50 to-red-100/60 rounded-xl p-2.5 border border-rose-200/80 shadow-2xs">
-            <div class="flex items-center justify-between text-rose-800 mb-0.5">
-              <span class="text-[10px] font-semibold">支出</span>
-              <i class="ph ph-arrow-up-right text-xs"></i>
-            </div>
-            <div id="total-expense-display" class="text-base font-bold text-rose-900 truncate font-sans">21,240</div>
-            <span class="text-[9px] text-rose-700/80">累計花費</span>
-          </div>
-        </div>
-
-        <!-- Sleek Expense Ratio Track Bar -->
-        <div class="bg-cardBg rounded-xl p-2 border border-[#EBE7E0] shadow-2xs">
-          <div class="flex justify-between items-center text-[10px] text-gray-500 font-medium mb-1">
-            <div class="flex items-center gap-1">
-              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-              <span>支出進度指標</span>
-            </div>
-            <span id="expense-track-label" class="text-[9px] text-gray-400">上限建議 70%</span>
-          </div>
-          <div class="w-full bg-[#EAE5DC] rounded-full h-1.5 overflow-hidden">
-            <div id="expense-ratio-bar" class="h-full rounded-full transition-all duration-500 bg-gradient-to-r from-emerald-500 via-amber-500 to-rose-500" style="width: 34%;"></div>
-          </div>
-        </div>
-      </section>
-
-      <section class="bg-cardBg rounded-2xl p-3 shadow-xs border border-[#EBE7E0] space-y-2">
-        <div class="flex justify-between items-baseline">
-          <div>
-            <h2 class="text-xs font-bold text-[#1C1A18]">類別支出分佈</h2>
-            <p class="text-[9px] text-subText">各類型佔總支出比例</p>
-          </div>
-          <span id="chart-total-expense" class="text-xs font-bold text-[#1C1A18] font-sans">$21,240</span>
-        </div>
-
-        <!-- Donut Chart & Category List Side-by-Side -->
-        <div class="flex items-center gap-3">
-          <div class="relative w-24 h-24 flex-shrink-0 flex items-center justify-center">
-            <svg class="w-full h-full -rotate-90 transform" viewBox="0 0 100 100">
-              <circle cx="50" cy="50" r="38" fill="transparent" stroke="#EFECE6" stroke-width="9"></circle>
-              <g id="donut-segments"></g>
-            </svg>
-            <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-              <span class="text-[8px] text-subText font-medium">總開銷</span>
-              <span id="donut-inner-total" class="text-xs font-bold text-[#1C1A18] mt-0.5 font-sans">21,240</span>
-            </div>
-          </div>
-
-          <div id="category-breakdown-list" class="flex-1 space-y-1.5 overflow-hidden">
-            <!-- Dynamically populated categories -->
-          </div>
-        </div>
-      </section>
-
-      <section class="bg-cardBg rounded-2xl p-3 shadow-xs border border-[#EBE7E0] space-y-2.5">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-1.5">
-            <span class="w-2 h-2 rounded-full bg-amber-500"></span>
-            <div>
-              <div class="flex items-center gap-1.5">
-                <h2 class="text-xs font-bold text-[#1C1A18]">待購買區</h2>
-                <span id="wishlist-month-badge" class="text-[9px] font-semibold text-amber-800 bg-amber-100/70 border border-amber-200/80 px-1.5 py-0.2 rounded-full">10月專屬</span>
-              </div>
-              <p class="text-[9px] text-subText">本月心願與待購物品清單（各月獨立）</p>
-            </div>
-          </div>
-
-          <button onclick="openWishlistModal()" class="flex items-center gap-1 px-2.5 py-1 bg-[#EFECE5] hover:bg-[#E5E0D5] text-[#2D2A26] rounded-lg text-[11px] font-semibold transition active:scale-95 border border-[#DDD6C8]">
-            <i class="ph ph-plus font-bold"></i>
-            <span>新增物品</span>
-          </button>
-        </div>
-
-        <!-- Refined Split KPI Cards for Wishlist -->
-        <div class="bg-[#FAF8F5] rounded-xl p-2.5 border border-[#ECE6DB] space-y-2">
-          <div class="grid grid-cols-2 gap-2">
-            <!-- Total Sum of All Items -->
-            <div class="bg-white rounded-lg p-2 border border-gray-100 shadow-2xs">
-              <span class="text-[9px] text-gray-500 font-medium block">全部物品總價</span>
-              <div id="wishlist-total-sum" class="text-sm font-bold text-gray-800 font-sans mt-0.5">$96,500</div>
-            </div>
-
-            <!-- Pending Sum for Unpurchased -->
-            <div class="bg-rose-50/70 rounded-lg p-2 border border-rose-100 shadow-2xs">
-              <span class="text-[9px] text-rose-600 font-medium block">待備未購金額</span>
-              <div id="wishlist-pending-sum" class="text-sm font-bold text-rose-600 font-sans mt-0.5">$50,400</div>
-            </div>
-          </div>
-
-          <!-- Progress bar for purchased value -->
-          <div>
-            <div class="flex justify-between items-center text-[9px] text-gray-500 mb-1">
-              <span>已購達成進度</span>
-              <span id="wishlist-progress-percent" class="font-bold text-emerald-700">47%</span>
-            </div>
-            <div class="w-full bg-[#E8E2D8] rounded-full h-1.5 overflow-hidden">
-              <div id="wishlist-progress-bar" class="bg-emerald-600 h-full rounded-full transition-all duration-300" style="width: 47%;"></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Wishlist Items List (Checked items stay visible with strike-through) -->
-        <div id="wishlist-items-container" class="space-y-1.5 pt-0.5">
-          <!-- Dynamically populated -->
-        </div>
-      </section>
-
-      <section class="bg-cardBg rounded-2xl p-3 shadow-xs border border-[#EBE7E0] space-y-2">
-        <div class="flex items-center justify-between flex-wrap gap-2">
-          <div>
-            <h2 class="text-xs font-bold text-[#1C1A18]">交易紀錄</h2>
-            <p id="transaction-count" class="text-[9px] text-subText">7 筆本月紀錄</p>
-          </div>
-
-          <div class="flex items-center gap-1.5 ml-auto">
-            <!-- Filter Tabs -->
-            <div class="flex bg-[#EAE5DC] p-0.5 rounded-lg text-[10px] font-medium text-gray-600">
-              <button onclick="setTxFilter('all')" id="filter-btn-all" class="px-2 py-0.5 rounded-md bg-white text-[#1C1A18] shadow-xs font-semibold transition">全部</button>
-              <button onclick="setTxFilter('expense')" id="filter-btn-expense" class="px-2 py-0.5 rounded-md hover:text-gray-900 transition">支出</button>
-              <button onclick="setTxFilter('fixed')" id="filter-btn-fixed" class="px-2 py-0.5 rounded-md hover:text-gray-900 transition flex items-center gap-0.5">
-                <span>固定</span>
-              </button>
-              <button onclick="setTxFilter('income')" id="filter-btn-income" class="px-2 py-0.5 rounded-md hover:text-gray-900 transition">收入</button>
-            </div>
-
-            <!-- Stylized Add Button at far right -->
-            <button onclick="openTransactionModal()" class="flex items-center gap-1 px-2.5 py-1 bg-gradient-to-r from-[#17382B] to-[#22523E] text-white text-[11px] font-semibold rounded-lg hover:opacity-95 active:scale-95 transition shadow-xs border border-emerald-900/20">
-              <i class="ph ph-plus-circle text-xs font-bold text-emerald-300"></i>
-              <span>新增</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- Transactions List -->
-        <div id="transactions-list" class="divide-y divide-gray-100 pt-0.5">
-          <!-- Dynamically populated -->
-        </div>
-      </section>
-
-      <section class="bg-cardBg rounded-2xl p-3 shadow-xs border border-[#EBE7E0] space-y-2">
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-1.5">
-            <span class="w-2 h-2 rounded-full bg-[#0284C7]"></span>
-            <div>
-              <div class="flex items-center gap-1">
-                <h2 class="text-xs font-bold text-[#1C1A18]">全年金錢波動走勢</h2>
-                <span id="annual-year-badge" class="text-[9px] font-semibold text-sky-700 bg-sky-50 border border-sky-200 px-1 py-0.2 rounded">2026年</span>
-              </div>
-              <p class="text-[9px] text-subText">月度收支對比與結餘波動趨勢</p>
-            </div>
-          </div>
-          
-          <!-- Chart View Switcher -->
-          <div class="flex bg-[#EAE5DC] p-0.5 rounded-lg text-[10px] font-medium text-gray-600">
-            <button type="button" onclick="setAnnualChartView('flow')" id="btn-chart-flow" class="px-2 py-0.5 rounded-md bg-white text-[#1C1A18] shadow-xs font-bold transition">收支對比</button>
-            <button type="button" onclick="setAnnualChartView('trend')" id="btn-chart-trend" class="px-2 py-0.5 rounded-md hover:text-gray-900 transition">結餘波浪</button>
-          </div>
-        </div>
-
-        <!-- Annual Summary KPI Cards -->
-        <div class="grid grid-cols-3 gap-1 bg-[#FAF8F5] p-2 rounded-xl border border-[#EDE8E0] text-center">
-          <div class="p-0.5">
-            <span class="text-[8px] text-subText font-medium block">全年總收入</span>
-            <span id="year-total-income" class="text-[11px] font-bold text-emerald-700 font-sans truncate block mt-0.5">$0</span>
-          </div>
-          <div class="p-0.5 border-x border-gray-200/70">
-            <span class="text-[8px] text-subText font-medium block">全年總支出</span>
-            <span id="year-total-expense" class="text-[11px] font-bold text-rose-700 font-sans truncate block mt-0.5">$0</span>
-          </div>
-          <div class="p-0.5">
-            <span class="text-[8px] text-subText font-medium block">全年淨結餘</span>
-            <span id="year-net-savings" class="text-[11px] font-bold text-sky-700 font-sans truncate block mt-0.5">$0</span>
-          </div>
-        </div>
-
-        <!-- Dynamic SVG Annual Chart -->
-        <div class="relative bg-[#FCFBF9] p-2 rounded-xl border border-[#F0ECE4]">
-          <div id="annual-chart-container" class="w-full h-32 flex items-center justify-center">
-            <!-- Dynamically populated SVG -->
-          </div>
-          <div class="flex items-center justify-between text-[8px] text-subText pt-1 px-0.5">
-            <div id="chart-legend" class="flex items-center gap-2">
-              <span class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-xs bg-emerald-500 inline-block"></span>收入</span>
-              <span class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-xs bg-rose-500 inline-block"></span>支出</span>
-            </div>
-            <span class="text-gray-400">點選月份柱可直接切換當月</span>
-          </div>
-        </div>
-      </section>
-
-    </div>
-
-    <!-- Modal 1: Add/Edit Transaction -->
-    <div id="tx-modal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
-      <div class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-2xl p-4 shadow-2xl space-y-3 border border-[#ECE8E1]">
-        <div class="flex items-center justify-between border-b pb-2.5 border-gray-100">
-          <h3 id="modal-title" class="font-bold text-sm text-gray-800">新增交易</h3>
-          <button onclick="closeTransactionModal()" class="p-1 rounded-full text-gray-400 hover:text-gray-700">
-            <i class="ph ph-x text-base"></i>
-          </button>
-        </div>
-
-        <form id="tx-form" onsubmit="handleTransactionSubmit(event)" class="space-y-2.5 text-xs">
-          <input type="hidden" id="tx-id">
-          
-          <div class="grid grid-cols-2 gap-1.5 bg-[#F3F0E9] p-1 rounded-xl">
-            <button type="button" onclick="setModalType('expense')" id="btn-type-expense" class="py-1.5 rounded-lg text-xs font-bold transition bg-white text-rose-600 shadow-xs">支出</button>
-            <button type="button" onclick="setModalType('income')" id="btn-type-income" class="py-1.5 rounded-lg text-xs font-bold transition text-gray-600">收入</button>
-          </div>
-          <input type="hidden" id="tx-type" value="expense">
-
-          <div>
-            <label class="block text-[11px] font-medium text-gray-500 mb-1">交易名稱</label>
-            <input type="text" id="tx-title" required placeholder="如：超市採買、午餐、房租" class="w-full px-3 py-2 bg-[#FAF8F5] border border-gray-200 rounded-xl focus:outline-none focus:border-brandDark">
-          </div>
-
-          <div class="grid grid-cols-2 gap-2">
-            <div>
-              <label class="block text-[11px] font-medium text-gray-500 mb-1">金額 ($)</label>
-              <input type="number" id="tx-amount" min="1" required placeholder="100" class="w-full px-3 py-2 bg-[#FAF8F5] border border-gray-200 rounded-xl focus:outline-none focus:border-brandDark">
-            </div>
-            <div>
-              <div class="flex justify-between items-center mb-1">
-                <label class="block text-[11px] font-medium text-gray-500">類別</label>
-                <button type="button" onclick="openCategoryModal()" class="text-[10px] text-emerald-700 font-semibold hover:underline flex items-center gap-0.5">
-                  <i class="ph ph-gear-six"></i>管理
-                </button>
-              </div>
-              <select id="tx-category" onchange="handleCategorySelectChange(this.value)" class="w-full px-2 py-2 bg-[#FAF8F5] border border-gray-200 rounded-xl focus:outline-none focus:border-brandDark">
-                <!-- Dynamically populated -->
-              </select>
-            </div>
-          </div>
-
-          <div>
-            <label class="block text-[11px] font-medium text-gray-500 mb-1">日期</label>
-            <input type="date" id="tx-date" required class="w-full px-3 py-2 bg-[#FAF8F5] border border-gray-200 rounded-xl focus:outline-none focus:border-brandDark">
-          </div>
-
-          <div class="flex items-center gap-2 pt-0.5">
-            <input type="checkbox" id="tx-is-fixed" class="w-4 h-4 rounded accent-emerald-700 cursor-pointer">
-            <label for="tx-is-fixed" class="text-xs text-gray-700 cursor-pointer select-none">
-              設為每月固定開支 <span class="text-[10px] text-subText">(如房租、訂閱、電信費)</span>
-            </label>
-          </div>
-
-          <div class="pt-2 flex gap-2">
-            <button type="button" onclick="closeTransactionModal()" class="flex-1 py-2 bg-[#EAE6DE] text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition">取消</button>
-            <button type="submit" class="flex-1 py-2 bg-brandDark text-white font-semibold rounded-xl hover:opacity-95 transition">儲存交易</button>
-          </div>
-        </form>
-      </div>
-    </div>
-
-    <!-- Modal 2: Add/Edit Wishlist Item -->
-    <div id="wishlist-modal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
-      <div class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-2xl p-4 shadow-2xl space-y-3 border border-[#ECE8E1]">
-        <div class="flex items-center justify-between border-b pb-2 border-gray-100">
-          <h3 id="wishlist-modal-title" class="font-bold text-sm text-gray-800">新增待購物品</h3>
-          <button onclick="closeWishlistModal()" class="p-1 rounded-full text-gray-400 hover:text-gray-700">
-            <i class="ph ph-x text-base"></i>
-          </button>
-        </div>
-
-        <form id="wishlist-form" onsubmit="handleWishlistSubmit(event)" class="space-y-2.5 text-xs">
-          <input type="hidden" id="wishlist-edit-id">
-
-          <div>
-            <label class="block text-[11px] font-medium text-gray-500 mb-1">物品名稱</label>
-            <input type="text" id="wishlist-item-title" required placeholder="如：降噪耳機、人體工學椅" class="w-full px-3 py-2 bg-[#FAF8F5] border border-gray-200 rounded-xl focus:outline-none focus:border-brandDark">
-          </div>
-
-          <div class="grid grid-cols-2 gap-2">
-            <div>
-              <label class="block text-[11px] font-medium text-gray-500 mb-1">歸屬月份</label>
-              <input type="month" id="wishlist-item-month" required class="w-full px-2 py-2 bg-[#FAF8F5] border border-gray-200 rounded-xl focus:outline-none focus:border-brandDark font-sans">
-            </div>
-            <div>
-              <label class="block text-[11px] font-medium text-gray-500 mb-1">預估價格 ($)</label>
-              <input type="number" id="wishlist-item-price" min="1" required placeholder="2500" class="w-full px-3 py-2 bg-[#FAF8F5] border border-gray-200 rounded-xl focus:outline-none focus:border-brandDark">
-            </div>
-          </div>
-
-          <div class="grid grid-cols-2 gap-2">
-            <div>
-              <label class="block text-[11px] font-medium text-gray-500 mb-1">分類</label>
-              <select id="wishlist-item-category" class="w-full px-2 py-2 bg-[#FAF8F5] border border-gray-200 rounded-xl focus:outline-none focus:border-brandDark">
-                <option value="購物">購物</option>
-                <option value="居住">居住</option>
-                <option value="飲食">飲食</option>
-                <option value="交通">交通</option>
-                <option value="其他">其他</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-[11px] font-medium text-gray-500 mb-1">備註說明 (選填)</label>
-              <input type="text" id="wishlist-item-note" placeholder="如：雙11特價入手" class="w-full px-3 py-2 bg-[#FAF8F5] border border-gray-200 rounded-xl focus:outline-none focus:border-brandDark">
-            </div>
-          </div>
-
-          <div class="pt-2 flex gap-2">
-            <button type="button" onclick="closeWishlistModal()" class="flex-1 py-2 bg-[#EAE6DE] text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition">取消</button>
-            <button type="submit" class="flex-1 py-2 bg-emerald-800 text-white font-semibold rounded-xl hover:opacity-95 transition">儲存物品</button>
-          </div>
-        </form>
-      </div>
-    </div>
-
-    <!-- Modal 3: Category Management Modal -->
-    <div id="category-modal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-      <div class="bg-white w-full max-w-sm rounded-2xl p-4 shadow-2xl space-y-3 border border-[#ECE8E1]">
-        <div class="flex items-center justify-between border-b pb-2 border-gray-100">
-          <div class="flex items-center gap-1.5">
-            <i class="ph ph-squares-four text-emerald-700 text-base"></i>
-            <h3 class="font-bold text-sm text-gray-800">類別管理</h3>
-          </div>
-          <button onclick="closeCategoryModal()" class="p-1 rounded-full text-gray-400 hover:text-gray-700">
-            <i class="ph ph-x text-base"></i>
-          </button>
-        </div>
-
-        <form onsubmit="handleAddCategory(event)" class="flex gap-2">
-          <input type="text" id="new-category-name" required placeholder="輸入新類別名稱 (如: 寵物)" class="flex-1 px-3 py-1.5 bg-[#FAF8F5] border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-brandDark">
-          <button type="submit" class="px-3 py-1.5 bg-emerald-800 text-white rounded-xl text-xs font-semibold hover:opacity-95 transition">新增</button>
-        </form>
-
-        <div class="space-y-1 max-h-48 overflow-y-auto custom-scroll pr-1" id="category-management-list">
-          <!-- Dynamically populated -->
-        </div>
-
-        <div class="pt-2">
-          <button type="button" onclick="closeCategoryModal()" class="w-full py-2 bg-[#EAE6DE] text-gray-700 font-semibold rounded-xl text-xs hover:bg-gray-200 transition">完成</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Modal 4: Cloud Sync Diagnostic Modal (視覺化排查中心) -->
-    <div id="diag-modal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-      <div class="bg-white w-full max-w-md rounded-2xl p-4 shadow-2xl space-y-3 border border-[#ECE8E1]">
-        <div class="flex items-center justify-between border-b pb-2 border-gray-100">
-          <div class="flex items-center gap-1.5">
-            <i class="ph ph-activity text-emerald-700 text-base"></i>
-            <h3 class="font-bold text-sm text-gray-800">雲端同步即時診斷</h3>
-          </div>
-          <button onclick="closeDiagModal()" class="p-1 rounded-full text-gray-400 hover:text-gray-700">
-            <i class="ph ph-x text-base"></i>
-          </button>
-        </div>
-
-        <div class="space-y-2 text-xs">
-          <div class="flex items-center justify-between p-2 bg-[#FAF8F5] rounded-xl border border-gray-200">
-            <span class="text-gray-600 font-medium">資料庫狀態：</span>
-            <span id="diag-status-summary" class="font-bold text-amber-600">檢測中...</span>
-          </div>
-
-          <div>
-            <div class="flex justify-between items-center mb-1">
-              <span class="text-[11px] font-semibold text-gray-700">即時連線日誌 (Log)</span>
-              <button onclick="runManualCloudTest()" class="text-[10px] bg-emerald-800 text-white px-2 py-0.5 rounded font-bold hover:bg-emerald-900 transition">
-                <i class="ph ph-arrow-counter-clockwise"></i> 重新測試連線
-              </button>
-            </div>
-            <pre id="diag-log-console" class="w-full h-36 bg-gray-900 text-emerald-400 p-2 rounded-xl text-[10px] font-mono overflow-y-auto whitespace-pre-wrap select-all leading-tight">正在初始化連線...</pre>
-          </div>
-
-          <div class="p-2 bg-amber-50 rounded-xl border border-amber-200 text-[10px] text-amber-900 space-y-1">
-            <p class="font-bold flex items-center gap-1"><i class="ph ph-info"></i> 若顯示 Missing or insufficient permissions：</p>
-            <p>請前往 Firebase Console ➔ <strong>Firestore Database</strong> ➔ <strong>Rules (規則)</strong>，將規則設為 <code class="bg-amber-100 px-1 rounded">allow read, write: if true;</code> 並按「發布」。</p>
-          </div>
-        </div>
-
-        <div class="pt-1 flex gap-2">
-          <button type="button" onclick="closeDiagModal()" class="w-full py-2 bg-[#EAE6DE] text-gray-700 font-semibold rounded-xl text-xs hover:bg-gray-200 transition">關閉</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Toast Notification -->
-    <div id="toast" class="hidden fixed bottom-5 left-1/2 -translate-x-1/2 bg-[#201D1A] text-white text-xs font-medium px-4 py-2 rounded-full shadow-lg z-50 flex items-center gap-1.5 border border-white/10">
-      <i class="ph ph-check-circle text-emerald-400 text-sm"></i>
-      <span id="toast-message">操作完成</span>
-    </div>
-
-  </main>
-
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { 
-      getFirestore, 
-      doc, 
-      setDoc, 
-      updateDoc, 
-      deleteDoc, 
-      onSnapshot, 
-      collection,
-      getDocs
-    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
-    // 您的 Firebase Configuration
-    const firebaseConfig = {
-      apiKey: "AIzaSyCNnxw-1bOcdR6SUXaTwkn0bFJGyA3Jtz0",
-      authDomain: "bank-39b8f.firebaseapp.com",
-      databaseURL: "https://bank-39b8f-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId: "bank-39b8f",
-      storageBucket: "bank-39b8f.firebasestorage.app",
-      messagingSenderId: "554175411211",
-      appId: "1:554175411211:web:832deb99712dcb119c830e"
-    };
-
-    let app, db;
-    let isCloudReady = false;
-
-    // 診斷日誌輔助函式
-    function diagLog(msg, isError = false) {
-      const consoleEl = document.getElementById('diag-log-console');
-      const time = new Date().toLocaleTimeString();
-      const prefix = isError ? '❌ [ERR]' : '✅ [OK]';
-      const line = `[${time}] ${prefix} ${msg}\n`;
-      if (consoleEl) {
-        consoleEl.textContent += line;
-        consoleEl.scrollTop = consoleEl.scrollHeight;
-      }
-      if (isError) {
-        console.error(msg);
-      } else {
-        console.log(msg);
-      }
-    }
-
-    const DEFAULT_CATEGORIES = {
-      '飲食': { color: '#EA580C', icon: 'ph-fork-knife' },
-      '交通': { color: '#0284C7', icon: 'ph-car' },
-      '購物': { color: '#7C3AED', icon: 'ph-bag' },
-      '居住': { color: '#1E293B', icon: 'ph-house-line' },
-      '帳單': { color: '#E11D48', icon: 'ph-receipt' },
-      '固定支出': { color: '#8B5CF6', icon: 'ph-repeat' },
-      '薪資': { color: '#059669', icon: 'ph-coins' },
-      '其他': { color: '#64748B', icon: 'ph-tag' }
-    };
-
-    let state = {
-      currentYear: 2026,
-      currentMonth: 10,
-      filter: 'all',
-      annualView: 'flow',
-      categories: JSON.parse(JSON.stringify(DEFAULT_CATEGORIES)),
-      transactions: [],
-      wishlist: []
-    };
-
-    function formatCurrency(num) {
-      return '$' + Number(num || 0).toLocaleString();
-    }
-
-    function formatNumber(num) {
-      return Number(num || 0).toLocaleString();
-    }
-
-    function showToast(msg) {
-      const toast = document.getElementById('toast');
-      const text = document.getElementById('toast-message');
-      text.innerText = msg;
-      toast.classList.remove('hidden');
-      setTimeout(() => toast.classList.add('hidden'), 2000);
-    }
-
-    function openDiagModal() {
-      document.getElementById('diag-modal').classList.remove('hidden');
-    }
-
-    function closeDiagModal() {
-      document.getElementById('diag-modal').classList.add('hidden');
-    }
-
-    function changeMonth(delta) {
-      state.currentMonth += delta;
-      if (state.currentMonth > 12) {
-        state.currentMonth = 1;
-        state.currentYear += 1;
-      } else if (state.currentMonth < 1) {
-        state.currentMonth = 12;
-        state.currentYear -= 1;
-      }
-      autoCarryForwardFixedExpenses(state.currentYear, state.currentMonth);
-      render();
-    }
-
-    function jumpToMonth(targetMonth) {
-      state.currentMonth = targetMonth;
-      autoCarryForwardFixedExpenses(state.currentYear, state.currentMonth);
-      render();
-      showToast(`已切換至 ${state.currentYear}年${targetMonth}月`);
-    }
-
-    // 自動把固定支出延續至新月份 (獨立持久化)
-    async function autoCarryForwardFixedExpenses(targetYear, targetMonth) {
-      const targetMonthStr = `${targetYear}-${String(targetMonth).padStart(2, '0')}`;
-      
-      const fixedTemplates = new Map();
-      state.transactions.forEach(t => {
-        const isFixed = t.isFixed || t.category === '固定支出';
-        if (isFixed && t.type === 'expense' && !fixedTemplates.has(t.title)) {
-          fixedTemplates.set(t.title, t);
-        }
-      });
-
-      if (fixedTemplates.size === 0) return;
-
-      const targetMonthFixedTitles = new Set(
-        state.transactions
-          .filter(t => t.date && t.date.startsWith(targetMonthStr) && (t.isFixed || t.category === '固定支出'))
-          .map(t => t.title)
-      );
-
-      let newlyAdded = 0;
-      for (const [title, template] of fixedTemplates.entries()) {
-        if (!targetMonthFixedTitles.has(title)) {
-          const newDate = `${targetMonthStr}-01`;
-          const newId = `fx_${targetYear}_${targetMonth}_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
-          const autoTx = {
-            id: newId,
-            title: template.title,
-            amount: template.amount,
-            category: template.category || '固定支出',
-            date: newDate,
-            type: 'expense',
-            isFixed: true
-          };
-          state.transactions.unshift(autoTx);
-          newlyAdded++;
-
-          if (isCloudReady) {
-            try {
-              await setDoc(doc(db, 'shared_transactions', newId), autoTx);
-              diagLog(`已將 ${targetMonth} 月固定支出 [${title}] 同步至雲端`);
-            } catch (err) {
-              diagLog(`同步固定支出失敗: ${err.message}`, true);
-            }
-          }
-        }
-      }
-
-      if (newlyAdded > 0) {
-        showToast(`已為 ${targetMonth} 月自動帶入 ${newlyAdded} 筆每月固定開支`);
-      }
-    }
-
-    function setTxFilter(type) {
-      state.filter = type;
-      ['all', 'expense', 'fixed', 'income'].forEach(tab => {
-        const btn = document.getElementById(`filter-btn-${tab}`);
-        if (!btn) return;
-        btn.className = (tab === type) 
-          ? "px-2 py-0.5 rounded-md bg-white text-[#1C1A18] shadow-xs font-semibold transition"
-          : "px-2 py-0.5 rounded-md hover:text-gray-900 transition";
-      });
-      renderTransactions();
-    }
-
-    function setAnnualChartView(viewType) {
-      state.annualView = viewType;
-      const flowBtn = document.getElementById('btn-chart-flow');
-      const trendBtn = document.getElementById('btn-chart-trend');
-      if (viewType === 'flow') {
-        flowBtn.className = "px-2 py-0.5 rounded-md bg-white text-[#1C1A18] shadow-xs font-bold transition";
-        trendBtn.className = "px-2 py-0.5 rounded-md hover:text-gray-900 transition";
-      } else {
-        trendBtn.className = "px-2 py-0.5 rounded-md bg-white text-[#1C1A18] shadow-xs font-bold transition";
-        flowBtn.className = "px-2 py-0.5 rounded-md hover:text-gray-900 transition";
-      }
-      renderAnnualChart();
-    }
-
-    function renderOverview(currentTxs) {
-      document.getElementById('current-month-display').innerText = `${state.currentYear}年${state.currentMonth}月`;
-
-      const income = currentTxs.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
-      const expense = currentTxs.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
-      const fixedExpense = currentTxs.filter(t => t.type === 'expense' && (t.isFixed || t.category === '固定支出')).reduce((sum, t) => sum + t.amount, 0);
-
-      const remaining = income - expense;
-      const ratio = income > 0 ? Math.round((expense / income) * 100) : 0;
-
-      document.getElementById('remaining-amount').innerText = formatCurrency(remaining);
-      document.getElementById('total-income-display').innerText = formatNumber(income);
-      document.getElementById('total-fixed-display').innerText = formatNumber(fixedExpense);
-      document.getElementById('total-expense-display').innerText = formatNumber(expense);
-
-      document.getElementById('expense-ratio-text').innerText = `${ratio}%`;
-      document.getElementById('expense-ratio-bar').style.width = `${Math.min(ratio, 100)}%`;
-
-      document.getElementById('chart-total-expense').innerText = formatCurrency(expense);
-      document.getElementById('donut-inner-total').innerText = formatNumber(expense);
-    }
-
-    function renderCategories(currentTxs) {
-      const expenseTxs = currentTxs.filter(t => t.type === 'expense');
-      const totalExpense = expenseTxs.reduce((sum, t) => sum + t.amount, 0);
-
-      const catMap = {};
-      expenseTxs.forEach(t => {
-        catMap[t.category] = (catMap[t.category] || 0) + t.amount;
-      });
-
-      const sortedCats = Object.keys(catMap).map(cat => ({
-        name: cat,
-        amount: catMap[cat],
-        pct: totalExpense > 0 ? Math.round((catMap[cat] / totalExpense) * 100) : 0,
-        color: state.categories[cat]?.color || '#64748B',
-        icon: state.categories[cat]?.icon || 'ph-tag'
-      })).sort((a, b) => b.amount - a.amount);
-
-      const donutContainer = document.getElementById('donut-segments');
-      donutContainer.innerHTML = '';
-      const circumference = 2 * Math.PI * 38;
-      let accumulatedOffset = 0;
-
-      if (sortedCats.length === 0 || totalExpense === 0) {
-        donutContainer.innerHTML = `<circle cx="50" cy="50" r="38" fill="transparent" stroke="#EAE5DC" stroke-width="9"></circle>`;
-      } else {
-        sortedCats.forEach(cat => {
-          const segmentLength = (cat.amount / totalExpense) * circumference;
-          const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-          circle.setAttribute('cx', '50');
-          circle.setAttribute('cy', '50');
-          circle.setAttribute('r', '38');
-          circle.setAttribute('fill', 'transparent');
-          circle.setAttribute('stroke', cat.color);
-          circle.setAttribute('stroke-width', '9');
-          circle.setAttribute('stroke-dasharray', `${segmentLength} ${circumference}`);
-          circle.setAttribute('stroke-dashoffset', -accumulatedOffset);
-          circle.setAttribute('class', 'donut-segment');
-          donutContainer.appendChild(circle);
-          accumulatedOffset += segmentLength;
-        });
-      }
-
-      const listContainer = document.getElementById('category-breakdown-list');
-      if (sortedCats.length === 0) {
-        listContainer.innerHTML = `<div class="text-[10px] text-subText text-center py-2">本月尚無支出紀錄</div>`;
-        return;
-      }
-
-      listContainer.innerHTML = sortedCats.slice(0, 4).map(cat => `
-        <div class="flex items-center justify-between text-[11px]">
-          <div class="flex items-center gap-1.5 w-20 truncate">
-            <span class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background-color: ${cat.color};"></span>
-            <span class="font-medium text-gray-800 truncate">${cat.name}</span>
-          </div>
-          <div class="flex-1 mx-2">
-            <div class="w-full bg-[#EAE5DC] h-1.5 rounded-full overflow-hidden">
-              <div class="h-full rounded-full transition-all duration-300" style="width: ${cat.pct}%; background-color: ${cat.color}"></div>
-            </div>
-          </div>
-          <div class="text-right font-bold text-gray-800 min-w-[50px] font-sans text-[10px]">
-            ${formatCurrency(cat.amount)}
-          </div>
-        </div>
-      `).join('');
-    }
-
-    function renderWishlist() {
-      const container = document.getElementById('wishlist-items-container');
-      const currentMonthStr = `${state.currentYear}-${String(state.currentMonth).padStart(2, '0')}`;
-      
-      const monthBadge = document.getElementById('wishlist-month-badge');
-      if (monthBadge) monthBadge.innerText = `${state.currentMonth}月專屬`;
-
-      const currentMonthWishlist = state.wishlist.filter(item => {
-        return (item.month || currentMonthStr) === currentMonthStr;
-      });
-
-      const totalSum = currentMonthWishlist.reduce((sum, item) => sum + item.price, 0);
-      const pendingSum = currentMonthWishlist.filter(item => !item.purchased).reduce((sum, item) => sum + item.price, 0);
-      const purchasedSum = totalSum - pendingSum;
-      const progressPercent = totalSum > 0 ? Math.round((purchasedSum / totalSum) * 100) : 0;
-
-      document.getElementById('wishlist-total-sum').innerText = formatCurrency(totalSum);
-      document.getElementById('wishlist-pending-sum').innerText = formatCurrency(pendingSum);
-      document.getElementById('wishlist-progress-percent').innerText = `${progressPercent}%`;
-      document.getElementById('wishlist-progress-bar').style.width = `${progressPercent}%`;
-
-      if (currentMonthWishlist.length === 0) {
-        container.innerHTML = `<div class="text-[10px] text-subText text-center py-4 bg-[#FAF8F5] rounded-xl border border-dashed border-gray-200">
-          ${state.currentYear}年${state.currentMonth}月 目前尚無待購清單<br>
-          <span class="text-[9px] text-gray-400">各月清單獨立，點擊「新增物品」為本月規劃</span>
-        </div>`;
-        return;
-      }
-
-      container.innerHTML = currentMonthWishlist.map(item => {
-        const isPurchased = !!item.purchased;
-        const textStyle = isPurchased ? 'line-through text-gray-400' : 'text-gray-800 font-semibold';
-        const cardBg = isPurchased ? 'bg-[#F5F2ED] opacity-80' : 'bg-white hover:bg-gray-50';
-        const purchasedBadge = isPurchased 
-          ? `<span class="text-[9px] font-bold px-1.5 py-0.2 rounded bg-emerald-100 text-emerald-800">已購</span>`
-          : `<span class="text-[9px] font-medium px-1.5 py-0.2 rounded bg-amber-100 text-amber-800">待買</span>`;
-
-        return `
-          <div class="flex items-center justify-between p-2 rounded-xl border border-[#ECE6DB] ${cardBg} transition group">
-            <div class="flex items-center gap-2 flex-1 min-w-0">
-              <input type="checkbox" ${isPurchased ? 'checked' : ''} onchange="toggleWishlistPurchased('${item.id}')" class="compact-checkbox w-4 h-4 rounded text-emerald-700 cursor-pointer flex-shrink-0">
-              <div class="min-w-0 flex-1">
-                <div class="flex items-center gap-1.5 flex-wrap">
-                  <span class="text-xs ${textStyle} truncate">${item.title}</span>
-                  ${purchasedBadge}
-                  <span class="text-[9px] text-gray-400">· ${item.category}</span>
-                </div>
-                ${item.note ? `<p class="text-[9px] text-gray-400 truncate mt-0.2">${item.note}</p>` : ''}
-              </div>
-            </div>
-
-            <div class="flex items-center gap-2 flex-shrink-0 ml-2">
-              <span class="text-xs font-bold font-sans ${isPurchased ? 'line-through text-gray-400' : 'text-gray-800'}">
-                ${formatCurrency(item.price)}
-              </span>
-              <button onclick="editWishlistItem('${item.id}')" title="編輯" class="w-6 h-6 flex items-center justify-center rounded text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition">
-                <i class="ph ph-pencil-simple text-xs"></i>
-              </button>
-              <button onclick="deleteWishlistItem('${item.id}')" title="刪除" class="w-6 h-6 flex items-center justify-center rounded text-gray-400 hover:text-rose-600 hover:bg-rose-50 transition">
-                <i class="ph ph-trash text-xs"></i>
-              </button>
-            </div>
-          </div>
-        `;
-      }).join('');
-    }
-
-    async function toggleWishlistPurchased(id) {
-      const item = state.wishlist.find(w => w.id === id);
-      if (!item) return;
-      const newStatus = !item.purchased;
-      item.purchased = newStatus;
-      renderWishlist();
-
-      if (isCloudReady) {
-        try {
-          await updateDoc(doc(db, 'shared_wishlist', id), { purchased: newStatus });
-          diagLog(`已同步待購狀態 [${item.title}] ➔ ${newStatus ? '已購' : '未購'}`);
-        } catch (err) {
-          diagLog(`更新待購狀態失敗: ${err.message}`, true);
-        }
-      }
-      showToast(newStatus ? `已標示為已購` : `已還原待買狀態`);
-    }
-
-    function openWishlistModal(editId = null) {
-      const form = document.getElementById('wishlist-form');
-      form.reset();
-      const currentMonthStr = `${state.currentYear}-${String(state.currentMonth).padStart(2, '0')}`;
-
-      if (editId) {
-        const item = state.wishlist.find(w => w.id === editId);
-        if (item) {
-          document.getElementById('wishlist-modal-title').innerText = '編輯待購物品';
-          document.getElementById('wishlist-edit-id').value = item.id;
-          document.getElementById('wishlist-item-title').value = item.title;
-          document.getElementById('wishlist-item-month').value = item.month || currentMonthStr;
-          document.getElementById('wishlist-item-price').value = item.price;
-          document.getElementById('wishlist-item-category').value = item.category;
-          document.getElementById('wishlist-item-note').value = item.note || '';
-        }
-      } else {
-        document.getElementById('wishlist-modal-title').innerText = '新增待購物品';
-        document.getElementById('wishlist-edit-id').value = '';
-        document.getElementById('wishlist-item-month').value = currentMonthStr;
-      }
-      document.getElementById('wishlist-modal').classList.remove('hidden');
-    }
-
-    function closeWishlistModal() {
-      document.getElementById('wishlist-modal').classList.add('hidden');
-    }
-
-    function editWishlistItem(id) {
-      openWishlistModal(id);
-    }
-
-    async function deleteWishlistItem(id) {
-      state.wishlist = state.wishlist.filter(w => w.id !== id);
-      renderWishlist();
-
-      if (isCloudReady) {
-        try {
-          await deleteDoc(doc(db, 'shared_wishlist', id));
-          diagLog(`已自雲端刪除待購項目 [${id}]`);
-        } catch (err) {
-          diagLog(`刪除待購失敗: ${err.message}`, true);
-        }
-      }
-      showToast('物品已移除');
-    }
-
-    async function handleWishlistSubmit(e) {
-      e.preventDefault();
-      const id = document.getElementById('wishlist-edit-id').value;
-      const title = document.getElementById('wishlist-item-title').value.trim();
-      const month = document.getElementById('wishlist-item-month').value;
-      const price = Number(document.getElementById('wishlist-item-price').value);
-      const category = document.getElementById('wishlist-item-category').value;
-      const note = document.getElementById('wishlist-item-note').value.trim();
-
-      const itemData = { title, month, price, category, note };
-      closeWishlistModal();
-
-      if (id) {
-        const idx = state.wishlist.findIndex(w => w.id === id);
-        if (idx !== -1) state.wishlist[idx] = { ...state.wishlist[idx], ...itemData };
-        renderWishlist();
-        if (isCloudReady) {
-          try {
-            await updateDoc(doc(db, 'shared_wishlist', id), itemData);
-            diagLog(`已同步更新待購物品 [${title}]`);
-          } catch (err) {
-            diagLog(`更新待購失敗: ${err.message}`, true);
-          }
-        }
-        showToast('物品資訊已更新');
-      } else {
-        const newId = 'w_' + Date.now();
-        const fullItem = { id: newId, ...itemData, purchased: false };
-        state.wishlist.push(fullItem);
-        renderWishlist();
-        if (isCloudReady) {
-          try {
-            await setDoc(doc(db, 'shared_wishlist', newId), fullItem);
-            diagLog(`已新增待購物品至雲端 [${title}]`);
-          } catch (err) {
-            diagLog(`新增待購失敗: ${err.message}`, true);
-          }
-        }
-        showToast('待購物品已新增');
-      }
-    }
-
-    function renderTransactions() {
-      const container = document.getElementById('transactions-list');
-      const currentMonthStr = `${state.currentYear}-${String(state.currentMonth).padStart(2, '0')}`;
-      let filtered = state.transactions.filter(t => t.date && t.date.startsWith(currentMonthStr));
-
-      document.getElementById('transaction-count').innerText = `${filtered.length} 筆本月紀錄`;
-
-      if (state.filter === 'expense') {
-        filtered = filtered.filter(t => t.type === 'expense' && !t.isFixed && t.category !== '固定支出');
-      } else if (state.filter === 'income') {
-        filtered = filtered.filter(t => t.type === 'income');
-      } else if (state.filter === 'fixed') {
-        filtered = filtered.filter(t => t.type === 'expense' && (t.isFixed || t.category === '固定支出'));
-      }
-
-      filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
-
-      if (filtered.length === 0) {
-        container.innerHTML = `<div class="text-[10px] text-subText text-center py-4">無交易紀錄</div>`;
-        return;
-      }
-
-      container.innerHTML = filtered.map(t => {
-        const isExp = t.type === 'expense';
-        const dateParts = t.date.split('-');
-        const dateDisplay = dateParts.length >= 3 ? `${parseInt(dateParts[1])}/${parseInt(dateParts[2])}` : t.date;
-        const amountDisplay = isExp ? `-$${formatNumber(t.amount)}` : `+$${formatNumber(t.amount)}`;
-        const amountColor = isExp ? 'text-gray-900' : 'text-emerald-700';
-        const isFixed = t.isFixed || t.category === '固定支出';
-        const catInfo = state.categories[t.category] || { color: '#64748B', icon: 'ph-tag' };
-
-        return `
-          <div class="flex items-center justify-between py-2 group">
-            <div class="flex items-center gap-2">
-              <div class="w-7 h-7 rounded-lg flex items-center justify-center text-white flex-shrink-0 shadow-2xs" style="background-color: ${catInfo.color}">
-                <i class="ph ${catInfo.icon} text-xs"></i>
-              </div>
-
-              <div>
-                <div class="flex items-center gap-1.5 flex-wrap">
-                  <span class="font-bold text-xs text-[#1C1A18]">${t.title}</span>
-                  ${isFixed ? `<span class="text-[9px] font-semibold px-1 py-0.2 rounded bg-purple-100 text-purple-700">固定</span>` : ''}
-                </div>
-                <div class="text-[10px] text-subText">
-                  ${dateDisplay} · ${t.category}
-                </div>
-              </div>
-            </div>
-
-            <div class="flex items-center gap-2">
-              <span class="font-bold text-xs ${amountColor} font-sans">
-                ${amountDisplay}
-              </span>
-              <button onclick="editTransaction('${t.id}')" class="p-1 text-gray-400 hover:text-gray-700 transition" title="編輯">
-                <i class="ph ph-pencil-simple text-xs"></i>
-              </button>
-              <button onclick="deleteTransaction('${t.id}')" class="p-1 text-gray-400 hover:text-rose-600 transition" title="刪除">
-                <i class="ph ph-trash text-xs"></i>
-              </button>
-            </div>
-          </div>
-        `;
-      }).join('');
-    }
-
-    function openTransactionModal(editId = null) {
-      const modal = document.getElementById('tx-modal');
-      const form = document.getElementById('tx-form');
-      form.reset();
-      populateCategorySelect();
-
-      if (editId) {
-        const item = state.transactions.find(t => t.id === editId);
-        if (item) {
-          document.getElementById('modal-title').innerText = '編輯交易';
-          document.getElementById('tx-id').value = item.id;
-          document.getElementById('tx-title').value = item.title;
-          document.getElementById('tx-amount').value = item.amount;
-          document.getElementById('tx-category').value = item.category;
-          document.getElementById('tx-date').value = item.date;
-          document.getElementById('tx-is-fixed').checked = !!item.isFixed || item.category === '固定支出';
-          setModalType(item.type);
-        }
-      } else {
-        document.getElementById('modal-title').innerText = '新增交易';
-        document.getElementById('tx-id').value = '';
-        document.getElementById('tx-is-fixed').checked = false;
-        setModalType('expense');
-        const todayDay = new Date().getDate();
-        const dStr = `${state.currentYear}-${String(state.currentMonth).padStart(2, '0')}-${String(Math.min(todayDay, 28)).padStart(2, '0')}`;
-        document.getElementById('tx-date').value = dStr;
-      }
-
-      modal.classList.remove('hidden');
-    }
-
-    function closeTransactionModal() {
-      document.getElementById('tx-modal').classList.add('hidden');
-    }
-
-    function setModalType(type) {
-      document.getElementById('tx-type').value = type;
-      const expBtn = document.getElementById('btn-type-expense');
-      const incBtn = document.getElementById('btn-type-income');
-
-      if (type === 'expense') {
-        expBtn.className = "py-1.5 rounded-lg text-xs font-bold transition bg-white text-rose-600 shadow-xs";
-        incBtn.className = "py-1.5 rounded-lg text-xs font-bold transition text-gray-600";
-      } else {
-        incBtn.className = "py-1.5 rounded-lg text-xs font-bold transition bg-white text-emerald-700 shadow-xs";
-        expBtn.className = "py-1.5 rounded-lg text-xs font-bold transition text-gray-600";
-      }
-    }
-
-    function handleCategorySelectChange(val) {
-      if (val === '固定支出') {
-        document.getElementById('tx-is-fixed').checked = true;
-      }
-    }
-
-    async function handleTransactionSubmit(e) {
-      e.preventDefault();
-      const id = document.getElementById('tx-id').value;
-      const title = document.getElementById('tx-title').value.trim();
-      const amount = Number(document.getElementById('tx-amount').value);
-      const category = document.getElementById('tx-category').value;
-      const date = document.getElementById('tx-date').value;
-      const type = document.getElementById('tx-type').value;
-      const isFixed = document.getElementById('tx-is-fixed').checked || category === '固定支出';
-
-      const txPayload = { title, amount, category, date, type, isFixed };
-      closeTransactionModal();
-
-      if (id) {
-        const idx = state.transactions.findIndex(t => t.id === id);
-        if (idx !== -1) state.transactions[idx] = { id, ...txPayload };
-        render();
-        if (isCloudReady) {
-          try {
-            await setDoc(doc(db, 'shared_transactions', id), { id, ...txPayload });
-            diagLog(`已同步更新交易 [${title}]`);
-          } catch (err) {
-            diagLog(`更新交易失敗: ${err.message}`, true);
-          }
-        }
-        showToast('交易已更新並同步');
-      } else {
-        const newId = Date.now().toString();
-        const fullTx = { id: newId, ...txPayload };
-        state.transactions.unshift(fullTx);
-        render();
-        if (isCloudReady) {
-          try {
-            await setDoc(doc(db, 'shared_transactions', newId), fullTx);
-            diagLog(`已新增交易至雲端 [${title}]`);
-          } catch (err) {
-            diagLog(`新增交易失敗: ${err.message}`, true);
-          }
-        }
-        showToast('交易已新增並同步');
-      }
-    }
-
-    function editTransaction(id) {
-      openTransactionModal(id);
-    }
-
-    async function deleteTransaction(id) {
-      state.transactions = state.transactions.filter(t => t.id !== id);
-      render();
-      if (isCloudReady) {
-        try {
-          await deleteDoc(doc(db, 'shared_transactions', id));
-          diagLog(`已自雲端刪除交易 [${id}]`);
-        } catch (err) {
-          diagLog(`刪除交易失敗: ${err.message}`, true);
-        }
-      }
-      showToast('交易已刪除');
-    }
-
-    function populateCategorySelect() {
-      const select = document.getElementById('tx-category');
-      if (!select) return;
-      const currentVal = select.value;
-      select.innerHTML = '';
-      Object.keys(state.categories).forEach(cat => {
-        const opt = document.createElement('option');
-        opt.value = cat;
-        opt.textContent = cat;
-        select.appendChild(opt);
-      });
-      if (currentVal && state.categories[currentVal]) {
-        select.value = currentVal;
-      }
-    }
-
-    function openCategoryModal() {
-      renderCategoryManagementList();
-      document.getElementById('category-modal').classList.remove('hidden');
-    }
-
-    function closeCategoryModal() {
-      document.getElementById('category-modal').classList.add('hidden');
-      populateCategorySelect();
-      render();
-    }
-
-    function renderCategoryManagementList() {
-      const container = document.getElementById('category-management-list');
-      const cats = Object.keys(state.categories);
-      
-      container.innerHTML = cats.map(cat => {
-        const isCore = ['飲食', '交通', '居住', '薪資', '固定支出'].includes(cat);
-        const info = state.categories[cat];
-
-        return `
-          <div class="flex items-center justify-between p-1.5 rounded-lg bg-[#FAF8F5] border border-gray-100">
-            <div class="flex items-center gap-2">
-              <span class="w-3 h-3 rounded-full flex-shrink-0" style="background-color: ${info.color}"></span>
-              <span class="text-xs font-medium text-gray-800">${cat}</span>
-              ${isCore ? '<span class="text-[8px] bg-gray-200 text-gray-600 px-1 py-0.2 rounded">內建</span>' : ''}
-            </div>
-            ${!isCore ? `
-              <button onclick="handleDeleteCategory('${cat}')" class="p-1 text-gray-400 hover:text-rose-600 transition" title="刪除類別">
-                <i class="ph ph-trash text-xs"></i>
-              </button>
-            ` : '<span class="text-[9px] text-gray-300">預設</span>'}
-          </div>
-        `;
-      }).join('');
-    }
-
-    async function handleAddCategory(e) {
-      e.preventDefault();
-      const input = document.getElementById('new-category-name');
-      const name = input.value.trim();
-      if (!name) return;
-      if (state.categories[name]) {
-        showToast('該類別已存在');
-        return;
-      }
-
-      const palette = ['#0891B2', '#D97706', '#4F46E5', '#BE185D', '#059669', '#6D28D9'];
-      const randomColor = palette[Object.keys(state.categories).length % palette.length];
-      
-      state.categories[name] = { color: randomColor, icon: 'ph-sparkle' };
-      input.value = '';
-      showToast(`已新增類別「${name}」`);
-      renderCategoryManagementList();
-      populateCategorySelect();
-
-      if (isCloudReady) {
-        try {
-          await setDoc(doc(db, 'shared_settings', 'categories'), { categories: state.categories });
-          diagLog(`已同步新增自訂類別 [${name}]`);
-        } catch (err) {
-          diagLog(`儲存類別失敗: ${err.message}`, true);
-        }
-      }
-    }
-
-    async function handleDeleteCategory(catName) {
-      delete state.categories[catName];
-      state.transactions.forEach(t => {
-        if (t.category === catName) t.category = '其他';
-      });
-      showToast(`已刪除「${catName}」，既有交易歸為「其他」`);
-      renderCategoryManagementList();
-      populateCategorySelect();
-      render();
-
-      if (isCloudReady) {
-        try {
-          await setDoc(doc(db, 'shared_settings', 'categories'), { categories: state.categories });
-          diagLog(`已同步刪除類別 [${catName}]`);
-        } catch (err) {
-          diagLog(`刪除類別失敗: ${err.message}`, true);
-        }
-      }
-    }
-
-    function renderAnnualChart() {
-      const year = state.currentYear;
-      document.getElementById('annual-year-badge').innerText = `${year}年`;
-
-      const monthlyData = [];
-      let totalYearIncome = 0;
-      let totalYearExpense = 0;
-
-      for (let m = 1; m <= 12; m++) {
-        const mStr = `${year}-${String(m).padStart(2, '0')}`;
-        const txs = state.transactions.filter(t => t.date && t.date.startsWith(mStr));
-        const inc = txs.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
-        const exp = txs.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
-        const net = inc - exp;
-        totalYearIncome += inc;
-        totalYearExpense += exp;
-        monthlyData.push({ month: m, income: inc, expense: exp, net: net });
-      }
-
-      const totalYearNet = totalYearIncome - totalYearExpense;
-      document.getElementById('year-total-income').innerText = formatCurrency(totalYearIncome);
-      document.getElementById('year-total-expense').innerText = formatCurrency(totalYearExpense);
-      document.getElementById('year-net-savings').innerText = (totalYearNet >= 0 ? '+' : '') + formatCurrency(totalYearNet);
-
-      const container = document.getElementById('annual-chart-container');
-      const legend = document.getElementById('chart-legend');
-
-      if (state.annualView === 'flow') {
-        legend.innerHTML = `
-          <span class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-xs bg-emerald-500 inline-block"></span>收入</span>
-          <span class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-xs bg-rose-500 inline-block"></span>支出</span>
-        `;
-        renderBarFlowChart(container, monthlyData);
-      } else {
-        legend.innerHTML = `
-          <span class="flex items-center gap-1"><span class="w-2 h-0.5 bg-sky-500 inline-block"></span>月淨結餘波浪</span>
-        `;
-        renderWaveTrendChart(container, monthlyData);
-      }
-    }
-
-    function renderBarFlowChart(container, data) {
-      const maxVal = Math.max(...data.map(d => Math.max(d.income, d.expense, 10000)));
-      const chartHeight = 85;
-      const chartWidth = 320;
-      const colWidth = chartWidth / 12;
-
-      let svg = `<svg viewBox="0 0 ${chartWidth} 115" class="w-full h-full overflow-visible">`;
-      svg += `<line x1="0" y1="${chartHeight}" x2="${chartWidth}" y2="${chartHeight}" stroke="#E5E0D5" stroke-width="1" />`;
-
-      data.forEach((d, idx) => {
-        const x = idx * colWidth;
-        const incHeight = (d.income / maxVal) * (chartHeight - 10);
-        const expHeight = (d.expense / maxVal) * (chartHeight - 10);
-        const isCurrent = d.month === state.currentMonth;
-
-        svg += `
-          <g class="cursor-pointer group" onclick="jumpToMonth(${d.month})">
-            ${isCurrent ? `<rect x="${x + 2}" y="0" width="${colWidth - 4}" height="${chartHeight + 18}" fill="#E8EEF5" rx="4" opacity="0.6"/>` : ''}
-            <rect x="${x + 4}" y="${chartHeight - incHeight}" width="${(colWidth - 10) / 2}" height="${Math.max(incHeight, 2)}" fill="#10B981" rx="1.5" class="transition group-hover:opacity-80"/>
-            <rect x="${x + 4 + (colWidth - 10) / 2 + 1}" y="${chartHeight - expHeight}" width="${(colWidth - 10) / 2}" height="${Math.max(expHeight, 2)}" fill="#F43F5E" rx="1.5" class="transition group-hover:opacity-80"/>
-            <text x="${x + colWidth / 2}" y="${chartHeight + 14}" text-anchor="middle" font-size="8" font-weight="${isCurrent ? 'bold' : 'normal'}" fill="${isCurrent ? '#0284C7' : '#8E8B85'}">${d.month}月</text>
-          </g>
-        `;
-      });
-
-      svg += `</svg>`;
-      container.innerHTML = svg;
-    }
-
-    function renderWaveTrendChart(container, data) {
-      const maxNet = Math.max(...data.map(d => Math.abs(d.net)), 20000);
-      const chartWidth = 320;
-      const chartHeight = 85;
-      const midY = chartHeight / 2;
-      const colWidth = chartWidth / 11;
-
-      const points = data.map((d, idx) => {
-        const x = idx * colWidth;
-        const y = midY - (d.net / maxNet) * (midY - 8);
-        return { x, y, net: d.net, month: d.month };
-      });
-
-      let pathD = `M ${points[0].x} ${points[0].y}`;
-      for (let i = 0; i < points.length - 1; i++) {
-        const p0 = points[i];
-        const p1 = points[i + 1];
-        const cpX = (p0.x + p1.x) / 2;
-        pathD += ` C ${cpX} ${p0.y}, ${cpX} ${p1.y}, ${p1.x} ${p1.y}`;
-      }
-
-      let areaD = `${pathD} L ${points[points.length - 1].x} ${chartHeight} L 0 ${chartHeight} Z`;
-
-      let svg = `<svg viewBox="0 0 ${chartWidth} 115" class="w-full h-full overflow-visible">
-        <defs>
-          <linearGradient id="waveGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-            <stop offset="0%" stop-color="#0284C7" stop-opacity="0.3"/>
-            <stop offset="100%" stop-color="#0284C7" stop-opacity="0.0"/>
-          </linearGradient>
-        </defs>
-        <line x1="0" y1="${midY}" x2="${chartWidth}" y2="${midY}" stroke="#DDD7CD" stroke-dasharray="2 2" stroke-width="1" />
-        <path d="${areaD}" fill="url(#waveGrad)" />
-        <path d="${pathD}" fill="none" stroke="#0284C7" stroke-width="2.5" stroke-linecap="round" />
-      `;
-
-      points.forEach(p => {
-        const isCurrent = p.month === state.currentMonth;
-        const dotColor = p.net >= 0 ? '#10B981' : '#F43F5E';
-        svg += `
-          <g class="cursor-pointer group" onclick="jumpToMonth(${p.month})">
-            <circle cx="${p.x}" cy="${p.y}" r="${isCurrent ? 4.5 : 3}" fill="${dotColor}" stroke="#FFFFFF" stroke-width="1.5" class="transition group-hover:scale-125"/>
-            <text x="${p.x}" y="${chartHeight + 14}" text-anchor="middle" font-size="8" font-weight="${isCurrent ? 'bold' : 'normal'}" fill="${isCurrent ? '#0284C7' : '#8E8B85'}">${p.month}月</text>
-          </g>
-        `;
-      });
-
-      svg += `</svg>`;
-      container.innerHTML = svg;
-    }
-
-    function render() {
-      const currentMonthStr = `${state.currentYear}-${String(state.currentMonth).padStart(2, '0')}`;
-      const currentTxs = state.transactions.filter(t => t.date && t.date.startsWith(currentMonthStr));
-
-      renderOverview(currentTxs);
-      renderCategories(currentTxs);
-      renderWishlist();
-      renderTransactions();
-      renderAnnualChart();
-      populateCategorySelect();
-    }
-
-    // 手動執行測試 Ping
-    async function runManualCloudTest() {
-      diagLog("開始執行手動讀寫測試...");
-      try {
-        const testRef = doc(db, 'shared_settings', 'connection_test');
-        await setDoc(testRef, { lastPing: new Date().toISOString() });
-        diagLog("寫入測試成功！資料庫具有讀寫權限。");
-        showToast("雲端連線與寫入測試成功！");
-      } catch (err) {
-        diagLog(`寫入測試失敗: ${err.code || err.message}`, true);
-        if (err.code === 'permission-denied') {
-          diagLog("👉 原因：Firestore 安全規則阻擋！請至 Firebase Console 將規則改為 allow read, write: if true;", true);
-        }
-      }
-    }
-
-    // 初始化雲端即時同步
-    async function initCloudSync() {
-      try {
-        diagLog("正在連線 Firebase 專案 [bank-39b8f]...");
-        app = initializeApp(firebaseConfig);
-        db = getFirestore(app);
-        isCloudReady = true;
-
-        const badgeDot = document.getElementById('cloud-pulse-dot');
-        const badgeText = document.getElementById('cloud-status-text');
-        const badgeBox = document.getElementById('cloud-status-badge');
-        const statusSummary = document.getElementById('diag-status-summary');
-
-        // 1. 監聽交易紀錄 (公共集合 shared_transactions)
-        onSnapshot(collection(db, 'shared_transactions'), (snapshot) => {
-          const loadedTxs = [];
-          snapshot.forEach(docSnap => loadedTxs.push(docSnap.data()));
-          state.transactions = loadedTxs;
-          render();
-          
-          diagLog(`成功接收交易更新，共 ${loadedTxs.length} 筆`);
-          if (badgeDot && badgeText) {
-            badgeDot.className = "w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse";
-            badgeText.innerText = "已連線雲端 (雙向)";
-            badgeBox.className = "inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[9px] font-semibold border border-emerald-200 cursor-pointer";
-          }
-          if (statusSummary) {
-            statusSummary.textContent = "即時連線正常";
-            statusSummary.className = "font-bold text-emerald-600";
-          }
-        }, (err) => {
-          diagLog(`交易集合監聽失敗 [${err.code}]: ${err.message}`, true);
-          showOfflineBadge(err.code || "連線受阻");
-        });
-
-        // 2. 監聽待買清單
-        onSnapshot(collection(db, 'shared_wishlist'), (snapshot) => {
-          const loadedWish = [];
-          snapshot.forEach(docSnap => loadedWish.push(docSnap.data()));
-          state.wishlist = loadedWish;
-          renderWishlist();
-          diagLog(`成功接收待購清單更新，共 ${loadedWish.length} 項`);
-        }, (err) => {
-          diagLog(`待買集合監聽失敗: ${err.message}`, true);
-        });
-
-        // 3. 監聽自訂類別
-        onSnapshot(doc(db, 'shared_settings', 'categories'), (docSnap) => {
-          if (docSnap.exists()) {
-            state.categories = docSnap.data().categories || DEFAULT_CATEGORIES;
-            render();
-            diagLog("自訂類別已更新");
-          }
-        }, (err) => {
-          diagLog(`類別設定監聽失敗: ${err.message}`, true);
-        });
-
-      } catch (err) {
-        diagLog(`Firebase 初始化失敗: ${err.message}`, true);
-        showOfflineBadge("初始化錯誤");
-      }
-    }
-
-    function showOfflineBadge(reason) {
-      const badgeDot = document.getElementById('cloud-pulse-dot');
-      const badgeText = document.getElementById('cloud-status-text');
-      const badgeBox = document.getElementById('cloud-status-badge');
-      const statusSummary = document.getElementById('diag-status-summary');
-      if (badgeDot && badgeText) {
-        badgeDot.className = "w-1.5 h-1.5 rounded-full bg-rose-500";
-        badgeText.innerText = "點擊查看原因";
-        badgeBox.className = "inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-rose-50 text-rose-700 text-[9px] font-semibold border border-rose-200 cursor-pointer";
-      }
-      if (statusSummary) {
-        statusSummary.textContent = `連線異常 (${reason})`;
-        statusSummary.className = "font-bold text-rose-600";
-      }
-    }
-
-    Object.assign(window, {
-      changeMonth,
-      jumpToMonth,
-      setTxFilter,
-      setAnnualChartView,
-      openTransactionModal,
-      closeTransactionModal,
-      setModalType,
-      handleCategorySelectChange,
-      handleTransactionSubmit,
-      editTransaction,
-      deleteTransaction,
-      openWishlistModal,
-      closeWishlistModal,
-      toggleWishlistPurchased,
-      editWishlistItem,
-      deleteWishlistItem,
-      handleWishlistSubmit,
-      openCategoryModal,
-      closeCategoryModal,
-      handleAddCategory,
-      handleDeleteCategory,
-      openDiagModal,
-      closeDiagModal,
-      runManualCloudTest
-    });
-
-    window.onload = function() {
-      render();
-      initCloudSync();
-    };
-  </script>
+  <main class="w-full max-w-md bg-appBg min-h-screen sm:min-h-[860px] sm:rounded-[32px] shadow-2xl flex flex-col overflow-hidden relative border border-[#DDD7CD]">
+    
+    <!-- Header Bar with Title and Month Navigator -->
+    <header class="pt-4 px-4 pb-1">
+      <div class="flex items-center justify-between">
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-2xl font-serif font-bold text-[#1C1A18] tracking-tight">餘額</h1>
+            <button type="button" onclick="openDiagModal()" id="cloud-status-badge" class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-700 text-[9px] font-semibold border border-amber-200 cursor-pointer hover:opacity-80 transition">
+              <span id="cloud-pulse-dot" class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+              <span id="cloud-status-text">連線診斷中...</span>
+            </button>
+          </div>
+          <p class="text-[11px] text-subText tracking-wide mt-0.5">智能財務規劃與預算管理</p>
+        </div>
+
+        <!-- Month Selector Switcher -->
+        <div class="flex items-center bg-[#E8E2D8] p-1 rounded-xl shadow-inner gap-1">
+          <button onclick="changeMonth(-1)" class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-white text-gray-700 transition active:scale-95">
+            <i class="ph ph-caret-left text-sm font-bold"></i>
+          </button>
+          <span id="current-month-display" class="font-bold text-xs text-[#1C1A18] px-1 tracking-wide">2026年10月</span>
+          <button onclick="changeMonth(1)" class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-white text-gray-700 transition active:scale-95">
+            <i class="ph ph-caret-right text-sm font-bold"></i>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Scrollable Area -->
+    <div class="flex-1 overflow-y-auto custom-scroll px-3.5 pb-8 space-y-2.5 pt-2">
+      
+      <!-- Section: Overview & Metrics -->
+      <section class="space-y-2">
+        <div class="bg-cardBg rounded-2xl p-3 shadow-xs border border-[#EBE7E0] flex items-center justify-between">
+          <div>
+            <span class="text-[10px] text-subText font-medium block">本月可用餘額</span>
+            <div class="text-2xl font-bold text-[#1C1A18] font-sans tracking-tight" id="remaining-amount">$40,760</div>
+            <p class="text-[9px] text-subText mt-0.5">總收入扣除總支出後之剩餘額度</p>
+          </div>
+          <div class="text-right">
+            <span class="text-[10px] text-subText font-medium block">支出佔收入比</span>
+            <span id="expense-ratio-text" class="text-sm font-bold text-gray-800">34%</span>
+            <span class="text-[9px] text-emerald-600 font-medium block">財務狀態良好</span>
+          </div>
+        </div>
+
+        <!-- Colorful Metrics Grid: Income, Fixed, Expense -->
+        <div class="grid grid-cols-3 gap-2">
+          <!-- Income Card -->
+          <div class="bg-gradient-to-br from-emerald-50 to-teal-100/60 rounded-xl p-2.5 border border-emerald-200/80 shadow-2xs">
+            <div class="flex items-center justify-between text-emerald-800 mb-0.5">
+              <span class="text-[10px] font-semibold">收入</span>
+              <i class="ph ph-arrow-down-left text-xs"></i>
+            </div>
+            <div id="total-income-display" class="text-base font-bold text-emerald-900 truncate font-sans">62,000</div>
+            <span class="text-[9px] text-emerald-700/80">本月進帳</span>
+          </div>
+
+          <!-- Fixed Expense Card -->
+          <div class="bg-gradient-to-br from-violet-50 to-purple-100/60 rounded-xl p-2.5 border border-purple-200/80 shadow-2xs">
+            <div class="flex items-center justify-between text-purple-800 mb-0.5">
+              <span class="text-[10px] font-semibold">固定支出</span>
+              <i class="ph ph-repeat text-xs"></i>
+            </div>
+            <div id="total-fixed-display" class="text-base font-bold text-purple-900 truncate font-sans">19,280</div>
+            <span class="text-[9px] text-purple-700/80">定期支出</span>
+          </div>
+
+          <!-- Total Expense Card -->
+          <div class="bg-gradient-to-br from-rose-50 to-red-100/60 rounded-xl p-2.5 border border-rose-200/80 shadow-2xs">
+            <div class="flex items-center justify-between text-rose-800 mb-0.5">
+              <span class="text-[10px] font-semibold">支出</span>
+              <i class="ph ph-arrow-up-right text-xs"></i>
+            </div>
+            <div id="total-expense-display" class="text-base font-bold text-rose-900 truncate font-sans">21,240</div>
+            <span class="text-[9px] text-rose-700/80">累計花費</span>
+          </div>
+        </div>
+
+        <!-- Sleek Expense Ratio Track Bar -->
+        <div class="bg-cardBg rounded-xl p-2 border border-[#EBE7E0] shadow-2xs">
+          <div class="flex justify-between items-center text-[10px] text-gray-500 font-medium mb-1">
+            <div class="flex items-center gap-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+              <span>支出進度指標</span>
+            </div>
+            <span id="expense-track-label" class="text-[9px] text-gray-400">上限建議 70%</span>
+          </div>
+          <div class="w-full bg-[#EAE5DC] rounded-full h-1.5 overflow-hidden">
+            <div id="expense-ratio-bar" class="h-full rounded-full transition-all duration-500 bg-gradient-to-r from-emerald-500 via-amber-500 to-rose-500" style="width: 34%;"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="bg-cardBg rounded-2xl p-3 shadow-xs border border-[#EBE7E0] space-y-2">
+        <div class="flex justify-between items-baseline">
+          <div>
+            <h2 class="text-xs font-bold text-[#1C1A18]">類別支出分佈</h2>
+            <p class="text-[9px] text-subText">各類型佔總支出比例</p>
+          </div>
+          <span id="chart-total-expense" class="text-xs font-bold text-[#1C1A18] font-sans">$21,240</span>
+        </div>
+
+        <!-- Donut Chart & Category List Side-by-Side -->
+        <div class="flex items-center gap-3">
+          <div class="relative w-24 h-24 flex-shrink-0 flex items-center justify-center">
+            <svg class="w-full h-full -rotate-90 transform" viewBox="0 0 100 100">
+              <circle cx="50" cy="50" r="38" fill="transparent" stroke="#EFECE6" stroke-width="9"></circle>
+              <g id="donut-segments"></g>
+            </svg>
+            <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+              <span class="text-[8px] text-subText font-medium">總開銷</span>
+              <span id="donut-inner-total" class="text-xs font-bold text-[#1C1A18] mt-0.5 font-sans">21,240</span>
+            </div>
+          </div>
+
+          <div id="category-breakdown-list" class="flex-1 space-y-1.5 overflow-hidden">
+            <!-- Dynamically populated categories -->
+          </div>
+        </div>
+      </section>
+
+      <section class="bg-cardBg rounded-2xl p-3 shadow-xs border border-[#EBE7E0] space-y-2.5">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+            <div>
+              <div class="flex items-center gap-1.5">
+                <h2 class="text-xs font-bold text-[#1C1A18]">待購買區</h2>
+                <span id="wishlist-month-badge" class="text-[9px] font-semibold text-amber-800 bg-amber-100/70 border border-amber-200/80 px-1.5 py-0.2 rounded-full">10月專屬</span>
+              </div>
+              <p class="text-[9px] text-subText">本月心願與待購物品清單（各月獨立）</p>
+            </div>
+          </div>
+
+          <button onclick="openWishlistModal()" class="flex items-center gap-1 px-2.5 py-1 bg-[#EFECE5] hover:bg-[#E5E0D5] text-[#2D2A26] rounded-lg text-[11px] font-semibold transition active:scale-95 border border-[#DDD6C8]">
+            <i class="ph ph-plus font-bold"></i>
+            <span>新增物品</span>
+          </button>
+        </div>
+
+        <!-- Refined Split KPI Cards for Wishlist -->
+        <div class="bg-[#FAF8F5] rounded-xl p-2.5 border border-[#ECE6DB] space-y-2">
+          <div class="grid grid-cols-2 gap-2">
+            <!-- Total Sum of All Items -->
+            <div class="bg-white rounded-lg p-2 border border-gray-100 shadow-2xs">
+              <span class="text-[9px] text-gray-500 font-medium block">全部物品總價</span>
+              <div id="wishlist-total-sum" class="text-sm font-bold text-gray-800 font-sans mt-0.5">$96,500</div>
+            </div>
+
+            <!-- Pending Sum for Unpurchased -->
+            <div class="bg-rose-50/70 rounded-lg p-2 border border-rose-100 shadow-2xs">
+              <span class="text-[9px] text-rose-600 font-medium block">待備未購金額</span>
+              <div id="wishlist-pending-sum" class="text-sm font-bold text-rose-600 font-sans mt-0.5">$50,400</div>
+            </div>
+          </div>
+
+          <!-- Progress bar for purchased value -->
+          <div>
+            <div class="flex justify-between items-center text-[9px] text-gray-500 mb-1">
+              <span>已購達成進度</span>
+              <span id="wishlist-progress-percent" class="font-bold text-emerald-700">47%</span>
+            </div>
+            <div class="w-full bg-[#E8E2D8] rounded-full h-1.5 overflow-hidden">
+              <div id="wishlist-progress-bar" class="bg-emerald-600 h-full rounded-full transition-all duration-300" style="width: 47%;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Wishlist Items List (Checked items stay visible with strike-through) -->
+        <div id="wishlist-items-container" class="space-y-1.5 pt-0.5">
+          <!-- Dynamically populated -->
+        </div>
+      </section>
+
+      <section class="bg-cardBg rounded-2xl p-3 shadow-xs border border-[#EBE7E0] space-y-2">
+        <div class="flex items-center justify-between flex-wrap gap-2">
+          <div>
+            <h2 class="text-xs font-bold text-[#1C1A18]">交易紀錄</h2>
+            <p id="transaction-count" class="text-[9px] text-subText">7 筆本月紀錄</p>
+          </div>
+
+          <div class="flex items-center gap-1.5 ml-auto">
+            <!-- Filter Tabs -->
+            <div class="flex bg-[#EAE5DC] p-0.5 rounded-lg text-[10px] font-medium text-gray-600">
+              <button onclick="setTxFilter('all')" id="filter-btn-all" class="px-2 py-0.5 rounded-md bg-white text-[#1C1A18] shadow-xs font-semibold transition">全部</button>
+              <button onclick="setTxFilter('expense')" id="filter-btn-expense" class="px-2 py-0.5 rounded-md hover:text-gray-900 transition">支出</button>
+              <button onclick="setTxFilter('fixed')" id="filter-btn-fixed" class="px-2 py-0.5 rounded-md hover:text-gray-900 transition flex items-center gap-0.5">
+                <span>固定</span>
+              </button>
+              <button onclick="setTxFilter('income')" id="filter-btn-income" class="px-2 py-0.5 rounded-md hover:text-gray-900 transition">收入</button>
+            </div>
+
+            <!-- Stylized Add Button at far right -->
+            <button onclick="openTransactionModal()" class="flex items-center gap-1 px-2.5 py-1 bg-gradient-to-r from-[#17382B] to-[#22523E] text-white text-[11px] font-semibold rounded-lg hover:opacity-95 active:scale-95 transition shadow-xs border border-emerald-900/20">
+              <i class="ph ph-plus-circle text-xs font-bold text-emerald-300"></i>
+              <span>新增</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Transactions List -->
+        <div id="transactions-list" class="divide-y divide-gray-100 pt-0.5">
+          <!-- Dynamically populated -->
+        </div>
+      </section>
+
+      <section class="bg-cardBg rounded-2xl p-3 shadow-xs border border-[#EBE7E0] space-y-2">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-[#0284C7]"></span>
+            <div>
+              <div class="flex items-center gap-1">
+                <h2 class="text-xs font-bold text-[#1C1A18]">全年金錢波動走勢</h2>
+                <span id="annual-year-badge" class="text-[9px] font-semibold text-sky-700 bg-sky-50 border border-sky-200 px-1 py-0.2 rounded">2026年</span>
+              </div>
+              <p class="text-[9px] text-subText">月度收支對比與結餘波動趨勢</p>
+            </div>
+          </div>
+          
+          <!-- Chart View Switcher -->
+          <div class="flex bg-[#EAE5DC] p-0.5 rounded-lg text-[10px] font-medium text-gray-600">
+            <button type="button" onclick="setAnnualChartView('flow')" id="btn-chart-flow" class="px-2 py-0.5 rounded-md bg-white text-[#1C1A18] shadow-xs font-bold transition">收支對比</button>
+            <button type="button" onclick="setAnnualChartView('trend')" id="btn-chart-trend" class="px-2 py-0.5 rounded-md hover:text-gray-900 transition">結餘波浪</button>
+          </div>
+        </div>
+
+        <!-- Annual Summary KPI Cards -->
+        <div class="grid grid-cols-3 gap-1 bg-[#FAF8F5] p-2 rounded-xl border border-[#EDE8E0] text-center">
+          <div class="p-0.5">
+            <span class="text-[8px] text-subText font-medium block">全年總收入</span>
+            <span id="year-total-income" class="text-[11px] font-bold text-emerald-700 font-sans truncate block mt-0.5">$0</span>
+          </div>
+          <div class="p-0.5 border-x border-gray-200/70">
+            <span class="text-[8px] text-subText font-medium block">全年總支出</span>
+            <span id="year-total-expense" class="text-[11px] font-bold text-rose-700 font-sans truncate block mt-0.5">$0</span>
+          </div>
+          <div class="p-0.5">
+            <span class="text-[8px] text-subText font-medium block">全年淨結餘</span>
+            <span id="year-net-savings" class="text-[11px] font-bold text-sky-700 font-sans truncate block mt-0.5">$0</span>
+          </div>
+        </div>
+
+        <!-- Dynamic SVG Annual Chart -->
+        <div class="relative bg-[#FCFBF9] p-2 rounded-xl border border-[#F0ECE4]">
+          <div id="annual-chart-container" class="w-full h-32 flex items-center justify-center">
+            <!-- Dynamically populated SVG -->
+          </div>
+          <div class="flex items-center justify-between text-[8px] text-subText pt-1 px-0.5">
+            <div id="chart-legend" class="flex items-center gap-2">
+              <span class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-xs bg-emerald-500 inline-block"></span>收入</span>
+              <span class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-xs bg-rose-500 inline-block"></span>支出</span>
+            </div>
+            <span class="text-gray-400">點選月份柱可直接切換當月</span>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- Modal 1: Add/Edit Transaction -->
+    <div id="tx-modal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <div class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-2xl p-4 shadow-2xl space-y-3 border border-[#ECE8E1]">
+        <div class="flex items-center justify-between border-b pb-2.5 border-gray-100">
+          <h3 id="modal-title" class="font-bold text-sm text-gray-800">新增交易</h3>
+          <button onclick="closeTransactionModal()" class="p-1 rounded-full text-gray-400 hover:text-gray-700">
+            <i class="ph ph-x text-base"></i>
+          </button>
+        </div>
+
+        <form id="tx-form" onsubmit="handleTransactionSubmit(event)" class="space-y-2.5 text-xs">
+          <input type="hidden" id="tx-id">
+          
+          <div class="grid grid-cols-2 gap-1.5 bg-[#F3F0E9] p-1 rounded-xl">
+            <button type="button" onclick="setModalType('expense')" id="btn-type-expense" class="py-1.5 rounded-lg text-xs font-bold transition bg-white text-rose-600 shadow-xs">支出</button>
+            <button type="button" onclick="setModalType('income')" id="btn-type-income" class="py-1.5 rounded-lg text-xs font-bold transition text-gray-600">收入</button>
+          </div>
+          <input type="hidden" id="tx-type" value="expense">
+
+          <div>
+            <label class="block text-[11px] font-medium text-gray-500 mb-1">交易名稱</label>
+            <input type="text" id="tx-title" required placeholder="如：超市採買、午餐、房租" class="w-full px-3 py-2 bg-[#FAF8F5] border border-gray-200 rounded-xl focus:outline-none focus:border-brandDark">
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block text-[11px] font-medium text-gray-500 mb-1">金額 ($)</label>
+              <input type="number" id="tx-amount" min="1" required placeholder="100" class="w-full px-3 py-2 bg-[#FAF8F5] border border-gray-200 rounded-xl focus:outline-none focus:border-brandDark">
+            </div>
+            <div>
+              <div class="flex justify-between items-center mb-1">
+                <label class="block text-[11px] font-medium text-gray-500">類別</label>
+                <button type="button" onclick="openCategoryModal()" class="text-[10px] text-emerald-700 font-semibold hover:underline flex items-center gap-0.5">
+                  <i class="ph ph-gear-six"></i>管理
+                </button>
+              </div>
+              <select id="tx-category" onchange="handleCategorySelectChange(this.value)" class="w-full px-2 py-2 bg-[#FAF8F5] border border-gray-200 rounded-xl focus:outline-none focus:border-brandDark">
+                <!-- Dynamically populated -->
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-[11px] font-medium text-gray-500 mb-1">日期</label>
+            <input type="date" id="tx-date" required class="w-full px-3 py-2 bg-[#FAF8F5] border border-gray-200 rounded-xl focus:outline-none focus:border-brandDark">
+          </div>
+
+          <div class="flex items-center gap-2 pt-0.5">
+            <input type="checkbox" id="tx-is-fixed" class="w-4 h-4 rounded accent-emerald-700 cursor-pointer">
+            <label for="tx-is-fixed" class="text-xs text-gray-700 cursor-pointer select-none">
+              設為每月固定開支 <span class="text-[10px] text-subText">(如房租、訂閱、電信費)</span>
+            </label>
+          </div>
+
+          <div class="pt-2 flex gap-2">
+            <button type="button" onclick="closeTransactionModal()" class="flex-1 py-2 bg-[#EAE6DE] text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition">取消</button>
+            <button type="submit" class="flex-1 py-2 bg-brandDark text-white font-semibold rounded-xl hover:opacity-95 transition">儲存交易</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modal 2: Add/Edit Wishlist Item -->
+    <div id="wishlist-modal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <div class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-2xl p-4 shadow-2xl space-y-3 border border-[#ECE8E1]">
+        <div class="flex items-center justify-between border-b pb-2 border-gray-100">
+          <h3 id="wishlist-modal-title" class="font-bold text-sm text-gray-800">新增待購物品</h3>
+          <button onclick="closeWishlistModal()" class="p-1 rounded-full text-gray-400 hover:text-gray-700">
+            <i class="ph ph-x text-base"></i>
+          </button>
+        </div>
+
+        <form id="wishlist-form" onsubmit="handleWishlistSubmit(event)" class="space-y-2.5 text-xs">
+          <input type="hidden" id="wishlist-edit-id">
+
+          <div>
+            <label class="block text-[11px] font-medium text-gray-500 mb-1">物品名稱</label>
+            <input type="text" id="wishlist-item-title" required placeholder="如：降噪耳機、人體工學椅" class="w-full px-3 py-2 bg-[#FAF8F5] border border-gray-200 rounded-xl focus:outline-none focus:border-brandDark">
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block text-[11px] font-medium text-gray-500 mb-1">歸屬月份</label>
+              <input type="month" id="wishlist-item-month" required class="w-full px-2 py-2 bg-[#FAF8F5] border border-gray-200 rounded-xl focus:outline-none focus:border-brandDark font-sans">
+            </div>
+            <div>
+              <label class="block text-[11px] font-medium text-gray-500 mb-1">預估價格 ($)</label>
+              <input type="number" id="wishlist-item-price" min="1" required placeholder="2500" class="w-full px-3 py-2 bg-[#FAF8F5] border border-gray-200 rounded-xl focus:outline-none focus:border-brandDark">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="block text-[11px] font-medium text-gray-500 mb-1">分類</label>
+              <select id="wishlist-item-category" class="w-full px-2 py-2 bg-[#FAF8F5] border border-gray-200 rounded-xl focus:outline-none focus:border-brandDark">
+                <option value="購物">購物</option>
+                <option value="居住">居住</option>
+                <option value="飲食">飲食</option>
+                <option value="交通">交通</option>
+                <option value="其他">其他</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[11px] font-medium text-gray-500 mb-1">備註說明 (選填)</label>
+              <input type="text" id="wishlist-item-note" placeholder="如：雙11特價入手" class="w-full px-3 py-2 bg-[#FAF8F5] border border-gray-200 rounded-xl focus:outline-none focus:border-brandDark">
+            </div>
+          </div>
+
+          <div class="pt-2 flex gap-2">
+            <button type="button" onclick="closeWishlistModal()" class="flex-1 py-2 bg-[#EAE6DE] text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition">取消</button>
+            <button type="submit" class="flex-1 py-2 bg-emerald-800 text-white font-semibold rounded-xl hover:opacity-95 transition">儲存物品</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Modal 3: Category Management Modal -->
+    <div id="category-modal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+      <div class="bg-white w-full max-w-sm rounded-2xl p-4 shadow-2xl space-y-3 border border-[#ECE8E1]">
+        <div class="flex items-center justify-between border-b pb-2 border-gray-100">
+          <div class="flex items-center gap-1.5">
+            <i class="ph ph-squares-four text-emerald-700 text-base"></i>
+            <h3 class="font-bold text-sm text-gray-800">類別管理</h3>
+          </div>
+          <button onclick="closeCategoryModal()" class="p-1 rounded-full text-gray-400 hover:text-gray-700">
+            <i class="ph ph-x text-base"></i>
+          </button>
+        </div>
+
+        <form onsubmit="handleAddCategory(event)" class="flex gap-2">
+          <input type="text" id="new-category-name" required placeholder="輸入新類別名稱 (如: 寵物)" class="flex-1 px-3 py-1.5 bg-[#FAF8F5] border border-gray-200 rounded-xl text-xs focus:outline-none focus:border-brandDark">
+          <button type="submit" class="px-3 py-1.5 bg-emerald-800 text-white rounded-xl text-xs font-semibold hover:opacity-95 transition">新增</button>
+        </form>
+
+        <div class="space-y-1 max-h-48 overflow-y-auto custom-scroll pr-1" id="category-management-list">
+          <!-- Dynamically populated -->
+        </div>
+
+        <div class="pt-2">
+          <button type="button" onclick="closeCategoryModal()" class="w-full py-2 bg-[#EAE6DE] text-gray-700 font-semibold rounded-xl text-xs hover:bg-gray-200 transition">完成</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal 4: Cloud Sync Diagnostic Modal (視覺化排查中心) -->
+    <div id="diag-modal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+      <div class="bg-white w-full max-w-md rounded-2xl p-4 shadow-2xl space-y-3 border border-[#ECE8E1]">
+        <div class="flex items-center justify-between border-b pb-2 border-gray-100">
+          <div class="flex items-center gap-1.5">
+            <i class="ph ph-activity text-emerald-700 text-base"></i>
+            <h3 class="font-bold text-sm text-gray-800">雲端同步即時診斷</h3>
+          </div>
+          <button onclick="closeDiagModal()" class="p-1 rounded-full text-gray-400 hover:text-gray-700">
+            <i class="ph ph-x text-base"></i>
+          </button>
+        </div>
+
+        <div class="space-y-2 text-xs">
+          <div class="flex items-center justify-between p-2 bg-[#FAF8F5] rounded-xl border border-gray-200">
+            <span class="text-gray-600 font-medium">資料庫狀態：</span>
+            <span id="diag-status-summary" class="font-bold text-amber-600">檢測中...</span>
+          </div>
+
+          <div>
+            <div class="flex justify-between items-center mb-1">
+              <span class="text-[11px] font-semibold text-gray-700">即時連線日誌 (Log)</span>
+              <button onclick="runManualCloudTest()" class="text-[10px] bg-emerald-800 text-white px-2 py-0.5 rounded font-bold hover:bg-emerald-900 transition">
+                <i class="ph ph-arrow-counter-clockwise"></i> 重新測試連線
+              </button>
+            </div>
+            <pre id="diag-log-console" class="w-full h-36 bg-gray-900 text-emerald-400 p-2 rounded-xl text-[10px] font-mono overflow-y-auto whitespace-pre-wrap select-all leading-tight">正在初始化連線...</pre>
+          </div>
+
+          <div class="p-2 bg-amber-50 rounded-xl border border-amber-200 text-[10px] text-amber-900 space-y-1">
+            <p class="font-bold flex items-center gap-1"><i class="ph ph-info"></i> 若顯示 Missing or insufficient permissions：</p>
+            <p>請前往 Firebase Console ➔ <strong>Firestore Database</strong> ➔ <strong>Rules (規則)</strong>，將規則設為 <code class="bg-amber-100 px-1 rounded">allow read, write: if true;</code> 並按「發布」。</p>
+          </div>
+        </div>
+
+        <div class="pt-1 flex gap-2">
+          <button type="button" onclick="closeDiagModal()" class="w-full py-2 bg-[#EAE6DE] text-gray-700 font-semibold rounded-xl text-xs hover:bg-gray-200 transition">關閉</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="hidden fixed bottom-5 left-1/2 -translate-x-1/2 bg-[#201D1A] text-white text-xs font-medium px-4 py-2 rounded-full shadow-lg z-50 flex items-center gap-1.5 border border-white/10">
+      <i class="ph ph-check-circle text-emerald-400 text-sm"></i>
+      <span id="toast-message">操作完成</span>
+    </div>
+
+  </main>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { 
+      getFirestore, 
+      doc, 
+      setDoc, 
+      updateDoc, 
+      deleteDoc, 
+      onSnapshot, 
+      collection,
+      getDocs
+    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    // 您的 Firebase Configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyCNnxw-1bOcdR6SUXaTwkn0bFJGyA3Jtz0",
+      authDomain: "bank-39b8f.firebaseapp.com",
+      databaseURL: "https://bank-39b8f-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "bank-39b8f",
+      storageBucket: "bank-39b8f.firebasestorage.app",
+      messagingSenderId: "554175411211",
+      appId: "1:554175411211:web:832deb99712dcb119c830e"
+    };
+
+    let app, db;
+    let isCloudReady = false;
+
+    // 診斷日誌輔助函式
+    function diagLog(msg, isError = false) {
+      const consoleEl = document.getElementById('diag-log-console');
+      const time = new Date().toLocaleTimeString();
+      const prefix = isError ? '❌ [ERR]' : '✅ [OK]';
+      const line = `[${time}] ${prefix} ${msg}\n`;
+      if (consoleEl) {
+        consoleEl.textContent += line;
+        consoleEl.scrollTop = consoleEl.scrollHeight;
+      }
+      if (isError) {
+        console.error(msg);
+      } else {
+        console.log(msg);
+      }
+    }
+
+    const DEFAULT_CATEGORIES = {
+      '飲食': { color: '#EA580C', icon: 'ph-fork-knife' },
+      '交通': { color: '#0284C7', icon: 'ph-car' },
+      '購物': { color: '#7C3AED', icon: 'ph-bag' },
+      '居住': { color: '#1E293B', icon: 'ph-house-line' },
+      '帳單': { color: '#E11D48', icon: 'ph-receipt' },
+      '固定支出': { color: '#8B5CF6', icon: 'ph-repeat' },
+      '薪資': { color: '#059669', icon: 'ph-coins' },
+      '其他': { color: '#64748B', icon: 'ph-tag' }
+    };
+
+    let state = {
+      currentYear: 2026,
+      currentMonth: 10,
+      filter: 'all',
+      annualView: 'flow',
+      categories: JSON.parse(JSON.stringify(DEFAULT_CATEGORIES)),
+      transactions: [],
+      wishlist: []
+    };
+
+    function formatCurrency(num) {
+      return '$' + Number(num || 0).toLocaleString();
+    }
+
+    function formatNumber(num) {
+      return Number(num || 0).toLocaleString();
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      const text = document.getElementById('toast-message');
+      text.innerText = msg;
+      toast.classList.remove('hidden');
+      setTimeout(() => toast.classList.add('hidden'), 2000);
+    }
+
+    function openDiagModal() {
+      document.getElementById('diag-modal').classList.remove('hidden');
+    }
+
+    function closeDiagModal() {
+      document.getElementById('diag-modal').classList.add('hidden');
+    }
+
+    function changeMonth(delta) {
+      state.currentMonth += delta;
+      if (state.currentMonth > 12) {
+        state.currentMonth = 1;
+        state.currentYear += 1;
+      } else if (state.currentMonth < 1) {
+        state.currentMonth = 12;
+        state.currentYear -= 1;
+      }
+      autoCarryForwardFixedExpenses(state.currentYear, state.currentMonth);
+      render();
+    }
+
+    function jumpToMonth(targetMonth) {
+      state.currentMonth = targetMonth;
+      autoCarryForwardFixedExpenses(state.currentYear, state.currentMonth);
+      render();
+      showToast(`已切換至 ${state.currentYear}年${targetMonth}月`);
+    }
+
+    // 自動把固定支出延續至新月份 (獨立持久化)
+    async function autoCarryForwardFixedExpenses(targetYear, targetMonth) {
+      const targetMonthStr = `${targetYear}-${String(targetMonth).padStart(2, '0')}`;
+      
+      const fixedTemplates = new Map();
+      state.transactions.forEach(t => {
+        const isFixed = t.isFixed || t.category === '固定支出';
+        if (isFixed && t.type === 'expense' && !fixedTemplates.has(t.title)) {
+          fixedTemplates.set(t.title, t);
+        }
+      });
+
+      if (fixedTemplates.size === 0) return;
+
+      const targetMonthFixedTitles = new Set(
+        state.transactions
+          .filter(t => t.date && t.date.startsWith(targetMonthStr) && (t.isFixed || t.category === '固定支出'))
+          .map(t => t.title)
+      );
+
+      let newlyAdded = 0;
+      for (const [title, template] of fixedTemplates.entries()) {
+        if (!targetMonthFixedTitles.has(title)) {
+          const newDate = `${targetMonthStr}-01`;
+          const newId = `fx_${targetYear}_${targetMonth}_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+          const autoTx = {
+            id: newId,
+            title: template.title,
+            amount: template.amount,
+            category: template.category || '固定支出',
+            date: newDate,
+            type: 'expense',
+            isFixed: true
+          };
+          state.transactions.unshift(autoTx);
+          newlyAdded++;
+
+          if (isCloudReady) {
+            try {
+              await setDoc(doc(db, 'shared_transactions', newId), autoTx);
+              diagLog(`已將 ${targetMonth} 月固定支出 [${title}] 同步至雲端`);
+            } catch (err) {
+              diagLog(`同步固定支出失敗: ${err.message}`, true);
+            }
+          }
+        }
+      }
+
+      if (newlyAdded > 0) {
+        showToast(`已為 ${targetMonth} 月自動帶入 ${newlyAdded} 筆每月固定開支`);
+      }
+    }
+
+    function setTxFilter(type) {
+      state.filter = type;
+      ['all', 'expense', 'fixed', 'income'].forEach(tab => {
+        const btn = document.getElementById(`filter-btn-${tab}`);
+        if (!btn) return;
+        btn.className = (tab === type) 
+          ? "px-2 py-0.5 rounded-md bg-white text-[#1C1A18] shadow-xs font-semibold transition"
+          : "px-2 py-0.5 rounded-md hover:text-gray-900 transition";
+      });
+      renderTransactions();
+    }
+
+    function setAnnualChartView(viewType) {
+      state.annualView = viewType;
+      const flowBtn = document.getElementById('btn-chart-flow');
+      const trendBtn = document.getElementById('btn-chart-trend');
+      if (viewType === 'flow') {
+        flowBtn.className = "px-2 py-0.5 rounded-md bg-white text-[#1C1A18] shadow-xs font-bold transition";
+        trendBtn.className = "px-2 py-0.5 rounded-md hover:text-gray-900 transition";
+      } else {
+        trendBtn.className = "px-2 py-0.5 rounded-md bg-white text-[#1C1A18] shadow-xs font-bold transition";
+        flowBtn.className = "px-2 py-0.5 rounded-md hover:text-gray-900 transition";
+      }
+      renderAnnualChart();
+    }
+
+    function renderOverview(currentTxs) {
+      document.getElementById('current-month-display').innerText = `${state.currentYear}年${state.currentMonth}月`;
+
+      // 1. 本月指標計算 (當月收支)
+      const income = currentTxs.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
+      const expense = currentTxs.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
+      const fixedExpense = currentTxs.filter(t => t.type === 'expense' && (t.isFixed || t.category === '固定支出')).reduce((sum, t) => sum + t.amount, 0);
+
+      const remaining = income - expense;
+      const ratio = income > 0 ? Math.round((expense / income) * 100) : 0;
+
+      // 2. 總共有的錢計算 (全歷史所有月份總累積淨資產)
+      const allIncome = state.transactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
+      const allExpense = state.transactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
+      const totalWealth = allIncome - allExpense;
+
+      // 渲染至介面 (雙指標並存)
+      const totalWealthEl = document.getElementById('total-wealth-amount');
+      if (totalWealthEl) {
+        totalWealthEl.innerText = formatCurrency(totalWealth);
+        totalWealthEl.className = `text-2xl font-bold font-sans tracking-tight mt-0.5 truncate ${totalWealth >= 0 ? 'text-[#1C1A18]' : 'text-rose-600'}`;
+      }
+
+      const remainingEl = document.getElementById('remaining-amount');
+      if (remainingEl) {
+        remainingEl.innerText = (remaining >= 0 ? '+' : '') + formatCurrency(remaining);
+        remainingEl.className = `text-base font-bold font-sans block mt-0.5 ${remaining >= 0 ? 'text-emerald-800' : 'text-rose-600'}`;
+      }
+
+      document.getElementById('total-income-display').innerText = formatNumber(income);
+      document.getElementById('total-fixed-display').innerText = formatNumber(fixedExpense);
+      document.getElementById('total-expense-display').innerText = formatNumber(expense);
+
+      document.getElementById('expense-ratio-text').innerText = `${ratio}%`;
+      document.getElementById('expense-ratio-bar').style.width = `${Math.min(ratio, 100)}%`;
+
+      document.getElementById('chart-total-expense').innerText = formatCurrency(expense);
+      document.getElementById('donut-inner-total').innerText = formatNumber(expense);
+    }
+
+    function renderCategories(currentTxs) {
+      const expenseTxs = currentTxs.filter(t => t.type === 'expense');
+      const totalExpense = expenseTxs.reduce((sum, t) => sum + t.amount, 0);
+
+      const catMap = {};
+      expenseTxs.forEach(t => {
+        catMap[t.category] = (catMap[t.category] || 0) + t.amount;
+      });
+
+      const sortedCats = Object.keys(catMap).map(cat => ({
+        name: cat,
+        amount: catMap[cat],
+        pct: totalExpense > 0 ? Math.round((catMap[cat] / totalExpense) * 100) : 0,
+        color: state.categories[cat]?.color || '#64748B',
+        icon: state.categories[cat]?.icon || 'ph-tag'
+      })).sort((a, b) => b.amount - a.amount);
+
+      const donutContainer = document.getElementById('donut-segments');
+      donutContainer.innerHTML = '';
+      const circumference = 2 * Math.PI * 38;
+      let accumulatedOffset = 0;
+
+      if (sortedCats.length === 0 || totalExpense === 0) {
+        donutContainer.innerHTML = `<circle cx="50" cy="50" r="38" fill="transparent" stroke="#EAE5DC" stroke-width="9"></circle>`;
+      } else {
+        sortedCats.forEach(cat => {
+          const segmentLength = (cat.amount / totalExpense) * circumference;
+          const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+          circle.setAttribute('cx', '50');
+          circle.setAttribute('cy', '50');
+          circle.setAttribute('r', '38');
+          circle.setAttribute('fill', 'transparent');
+          circle.setAttribute('stroke', cat.color);
+          circle.setAttribute('stroke-width', '9');
+          circle.setAttribute('stroke-dasharray', `${segmentLength} ${circumference}`);
+          circle.setAttribute('stroke-dashoffset', -accumulatedOffset);
+          circle.setAttribute('class', 'donut-segment');
+          donutContainer.appendChild(circle);
+          accumulatedOffset += segmentLength;
+        });
+      }
+
+      const listContainer = document.getElementById('category-breakdown-list');
+      if (sortedCats.length === 0) {
+        listContainer.innerHTML = `<div class="text-[10px] text-subText text-center py-2">本月尚無支出紀錄</div>`;
+        return;
+      }
+
+      listContainer.innerHTML = sortedCats.slice(0, 4).map(cat => `
+        <div class="flex items-center justify-between text-[11px]">
+          <div class="flex items-center gap-1.5 w-20 truncate">
+            <span class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background-color: ${cat.color};"></span>
+            <span class="font-medium text-gray-800 truncate">${cat.name}</span>
+          </div>
+          <div class="flex-1 mx-2">
+            <div class="w-full bg-[#EAE5DC] h-1.5 rounded-full overflow-hidden">
+              <div class="h-full rounded-full transition-all duration-300" style="width: ${cat.pct}%; background-color: ${cat.color}"></div>
+            </div>
+          </div>
+          <div class="text-right font-bold text-gray-800 min-w-[50px] font-sans text-[10px]">
+            ${formatCurrency(cat.amount)}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderWishlist() {
+      const container = document.getElementById('wishlist-items-container');
+      const currentMonthStr = `${state.currentYear}-${String(state.currentMonth).padStart(2, '0')}`;
+      
+      const monthBadge = document.getElementById('wishlist-month-badge');
+      if (monthBadge) monthBadge.innerText = `${state.currentMonth}月專屬`;
+
+      const currentMonthWishlist = state.wishlist.filter(item => {
+        return (item.month || currentMonthStr) === currentMonthStr;
+      });
+
+      const totalSum = currentMonthWishlist.reduce((sum, item) => sum + item.price, 0);
+      const pendingSum = currentMonthWishlist.filter(item => !item.purchased).reduce((sum, item) => sum + item.price, 0);
+      const purchasedSum = totalSum - pendingSum;
+      const progressPercent = totalSum > 0 ? Math.round((purchasedSum / totalSum) * 100) : 0;
+
+      document.getElementById('wishlist-total-sum').innerText = formatCurrency(totalSum);
+      document.getElementById('wishlist-pending-sum').innerText = formatCurrency(pendingSum);
+      document.getElementById('wishlist-progress-percent').innerText = `${progressPercent}%`;
+      document.getElementById('wishlist-progress-bar').style.width = `${progressPercent}%`;
+
+      if (currentMonthWishlist.length === 0) {
+        container.innerHTML = `<div class="text-[10px] text-subText text-center py-4 bg-[#FAF8F5] rounded-xl border border-dashed border-gray-200">
+          ${state.currentYear}年${state.currentMonth}月 目前尚無待購清單<br>
+          <span class="text-[9px] text-gray-400">各月清單獨立，點擊「新增物品」為本月規劃</span>
+        </div>`;
+        return;
+      }
+
+      container.innerHTML = currentMonthWishlist.map(item => {
+        const isPurchased = !!item.purchased;
+        const textStyle = isPurchased ? 'line-through text-gray-400' : 'text-gray-800 font-semibold';
+        const cardBg = isPurchased ? 'bg-[#F5F2ED] opacity-80' : 'bg-white hover:bg-gray-50';
+        const purchasedBadge = isPurchased 
+          ? `<span class="text-[9px] font-bold px-1.5 py-0.2 rounded bg-emerald-100 text-emerald-800">已購</span>`
+          : `<span class="text-[9px] font-medium px-1.5 py-0.2 rounded bg-amber-100 text-amber-800">待買</span>`;
+
+        return `
+          <div class="flex items-center justify-between p-2 rounded-xl border border-[#ECE6DB] ${cardBg} transition group">
+            <div class="flex items-center gap-2 flex-1 min-w-0">
+              <input type="checkbox" ${isPurchased ? 'checked' : ''} onchange="toggleWishlistPurchased('${item.id}')" class="compact-checkbox w-4 h-4 rounded text-emerald-700 cursor-pointer flex-shrink-0">
+              <div class="min-w-0 flex-1">
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  <span class="text-xs ${textStyle} truncate">${item.title}</span>
+                  ${purchasedBadge}
+                  <span class="text-[9px] text-gray-400">· ${item.category}</span>
+                </div>
+                ${item.note ? `<p class="text-[9px] text-gray-400 truncate mt-0.2">${item.note}</p>` : ''}
+              </div>
+            </div>
+
+            <div class="flex items-center gap-2 flex-shrink-0 ml-2">
+              <span class="text-xs font-bold font-sans ${isPurchased ? 'line-through text-gray-400' : 'text-gray-800'}">
+                ${formatCurrency(item.price)}
+              </span>
+              <button onclick="editWishlistItem('${item.id}')" title="編輯" class="w-6 h-6 flex items-center justify-center rounded text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition">
+                <i class="ph ph-pencil-simple text-xs"></i>
+              </button>
+              <button onclick="deleteWishlistItem('${item.id}')" title="刪除" class="w-6 h-6 flex items-center justify-center rounded text-gray-400 hover:text-rose-600 hover:bg-rose-50 transition">
+                <i class="ph ph-trash text-xs"></i>
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function toggleWishlistPurchased(id) {
+      const item = state.wishlist.find(w => w.id === id);
+      if (!item) return;
+      const newStatus = !item.purchased;
+      item.purchased = newStatus;
+      renderWishlist();
+
+      if (isCloudReady) {
+        try {
+          await updateDoc(doc(db, 'shared_wishlist', id), { purchased: newStatus });
+          diagLog(`已同步待購狀態 [${item.title}] ➔ ${newStatus ? '已購' : '未購'}`);
+        } catch (err) {
+          diagLog(`更新待購狀態失敗: ${err.message}`, true);
+        }
+      }
+      showToast(newStatus ? `已標示為已購` : `已還原待買狀態`);
+    }
+
+    function openWishlistModal(editId = null) {
+      const form = document.getElementById('wishlist-form');
+      form.reset();
+      const currentMonthStr = `${state.currentYear}-${String(state.currentMonth).padStart(2, '0')}`;
+
+      if (editId) {
+        const item = state.wishlist.find(w => w.id === editId);
+        if (item) {
+          document.getElementById('wishlist-modal-title').innerText = '編輯待購物品';
+          document.getElementById('wishlist-edit-id').value = item.id;
+          document.getElementById('wishlist-item-title').value = item.title;
+          document.getElementById('wishlist-item-month').value = item.month || currentMonthStr;
+          document.getElementById('wishlist-item-price').value = item.price;
+          document.getElementById('wishlist-item-category').value = item.category;
+          document.getElementById('wishlist-item-note').value = item.note || '';
+        }
+      } else {
+        document.getElementById('wishlist-modal-title').innerText = '新增待購物品';
+        document.getElementById('wishlist-edit-id').value = '';
+        document.getElementById('wishlist-item-month').value = currentMonthStr;
+      }
+      document.getElementById('wishlist-modal').classList.remove('hidden');
+    }
+
+    function closeWishlistModal() {
+      document.getElementById('wishlist-modal').classList.add('hidden');
+    }
+
+    function editWishlistItem(id) {
+      openWishlistModal(id);
+    }
+
+    async function deleteWishlistItem(id) {
+      state.wishlist = state.wishlist.filter(w => w.id !== id);
+      renderWishlist();
+
+      if (isCloudReady) {
+        try {
+          await deleteDoc(doc(db, 'shared_wishlist', id));
+          diagLog(`已自雲端刪除待購項目 [${id}]`);
+        } catch (err) {
+          diagLog(`刪除待購失敗: ${err.message}`, true);
+        }
+      }
+      showToast('物品已移除');
+    }
+
+    async function handleWishlistSubmit(e) {
+      e.preventDefault();
+      const id = document.getElementById('wishlist-edit-id').value;
+      const title = document.getElementById('wishlist-item-title').value.trim();
+      const month = document.getElementById('wishlist-item-month').value;
+      const price = Number(document.getElementById('wishlist-item-price').value);
+      const category = document.getElementById('wishlist-item-category').value;
+      const note = document.getElementById('wishlist-item-note').value.trim();
+
+      const itemData = { title, month, price, category, note };
+      closeWishlistModal();
+
+      if (id) {
+        const idx = state.wishlist.findIndex(w => w.id === id);
+        if (idx !== -1) state.wishlist[idx] = { ...state.wishlist[idx], ...itemData };
+        renderWishlist();
+        if (isCloudReady) {
+          try {
+            await updateDoc(doc(db, 'shared_wishlist', id), itemData);
+            diagLog(`已同步更新待購物品 [${title}]`);
+          } catch (err) {
+            diagLog(`更新待購失敗: ${err.message}`, true);
+          }
+        }
+        showToast('物品資訊已更新');
+      } else {
+        const newId = 'w_' + Date.now();
+        const fullItem = { id: newId, ...itemData, purchased: false };
+        state.wishlist.push(fullItem);
+        renderWishlist();
+        if (isCloudReady) {
+          try {
+            await setDoc(doc(db, 'shared_wishlist', newId), fullItem);
+            diagLog(`已新增待購物品至雲端 [${title}]`);
+          } catch (err) {
+            diagLog(`新增待購失敗: ${err.message}`, true);
+          }
+        }
+        showToast('待購物品已新增');
+      }
+    }
+
+    function renderTransactions() {
+      const container = document.getElementById('transactions-list');
+      const currentMonthStr = `${state.currentYear}-${String(state.currentMonth).padStart(2, '0')}`;
+      let filtered = state.transactions.filter(t => t.date && t.date.startsWith(currentMonthStr));
+
+      document.getElementById('transaction-count').innerText = `${filtered.length} 筆本月紀錄`;
+
+      if (state.filter === 'expense') {
+        filtered = filtered.filter(t => t.type === 'expense' && !t.isFixed && t.category !== '固定支出');
+      } else if (state.filter === 'income') {
+        filtered = filtered.filter(t => t.type === 'income');
+      } else if (state.filter === 'fixed') {
+        filtered = filtered.filter(t => t.type === 'expense' && (t.isFixed || t.category === '固定支出'));
+      }
+
+      filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+      if (filtered.length === 0) {
+        container.innerHTML = `<div class="text-[10px] text-subText text-center py-4">無交易紀錄</div>`;
+        return;
+      }
+
+      container.innerHTML = filtered.map(t => {
+        const isExp = t.type === 'expense';
+        const dateParts = t.date.split('-');
+        const dateDisplay = dateParts.length >= 3 ? `${parseInt(dateParts[1])}/${parseInt(dateParts[2])}` : t.date;
+        const amountDisplay = isExp ? `-$${formatNumber(t.amount)}` : `+$${formatNumber(t.amount)}`;
+        const amountColor = isExp ? 'text-gray-900' : 'text-emerald-700';
+        const isFixed = t.isFixed || t.category === '固定支出';
+        const catInfo = state.categories[t.category] || { color: '#64748B', icon: 'ph-tag' };
+
+        return `
+          <div class="flex items-center justify-between py-2 group">
+            <div class="flex items-center gap-2">
+              <div class="w-7 h-7 rounded-lg flex items-center justify-center text-white flex-shrink-0 shadow-2xs" style="background-color: ${catInfo.color}">
+                <i class="ph ${catInfo.icon} text-xs"></i>
+              </div>
+
+              <div>
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  <span class="font-bold text-xs text-[#1C1A18]">${t.title}</span>
+                  ${isFixed ? `<span class="text-[9px] font-semibold px-1 py-0.2 rounded bg-purple-100 text-purple-700">固定</span>` : ''}
+                </div>
+                <div class="text-[10px] text-subText">
+                  ${dateDisplay} · ${t.category}
+                </div>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <span class="font-bold text-xs ${amountColor} font-sans">
+                ${amountDisplay}
+              </span>
+              <button onclick="editTransaction('${t.id}')" class="p-1 text-gray-400 hover:text-gray-700 transition" title="編輯">
+                <i class="ph ph-pencil-simple text-xs"></i>
+              </button>
+              <button onclick="deleteTransaction('${t.id}')" class="p-1 text-gray-400 hover:text-rose-600 transition" title="刪除">
+                <i class="ph ph-trash text-xs"></i>
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function openTransactionModal(editId = null) {
+      const modal = document.getElementById('tx-modal');
+      const form = document.getElementById('tx-form');
+      form.reset();
+      populateCategorySelect();
+
+      if (editId) {
+        const item = state.transactions.find(t => t.id === editId);
+        if (item) {
+          document.getElementById('modal-title').innerText = '編輯交易';
+          document.getElementById('tx-id').value = item.id;
+          document.getElementById('tx-title').value = item.title;
+          document.getElementById('tx-amount').value = item.amount;
+          document.getElementById('tx-category').value = item.category;
+          document.getElementById('tx-date').value = item.date;
+          document.getElementById('tx-is-fixed').checked = !!item.isFixed || item.category === '固定支出';
+          setModalType(item.type);
+        }
+      } else {
+        document.getElementById('modal-title').innerText = '新增交易';
+        document.getElementById('tx-id').value = '';
+        document.getElementById('tx-is-fixed').checked = false;
+        setModalType('expense');
+        const todayDay = new Date().getDate();
+        const dStr = `${state.currentYear}-${String(state.currentMonth).padStart(2, '0')}-${String(Math.min(todayDay, 28)).padStart(2, '0')}`;
+        document.getElementById('tx-date').value = dStr;
+      }
+
+      modal.classList.remove('hidden');
+    }
+
+    function closeTransactionModal() {
+      document.getElementById('tx-modal').classList.add('hidden');
+    }
+
+    function setModalType(type) {
+      document.getElementById('tx-type').value = type;
+      const expBtn = document.getElementById('btn-type-expense');
+      const incBtn = document.getElementById('btn-type-income');
+
+      if (type === 'expense') {
+        expBtn.className = "py-1.5 rounded-lg text-xs font-bold transition bg-white text-rose-600 shadow-xs";
+        incBtn.className = "py-1.5 rounded-lg text-xs font-bold transition text-gray-600";
+      } else {
+        incBtn.className = "py-1.5 rounded-lg text-xs font-bold transition bg-white text-emerald-700 shadow-xs";
+        expBtn.className = "py-1.5 rounded-lg text-xs font-bold transition text-gray-600";
+      }
+    }
+
+    function handleCategorySelectChange(val) {
+      if (val === '固定支出') {
+        document.getElementById('tx-is-fixed').checked = true;
+      }
+    }
+
+    async function handleTransactionSubmit(e) {
+      e.preventDefault();
+      const id = document.getElementById('tx-id').value;
+      const title = document.getElementById('tx-title').value.trim();
+      const amount = Number(document.getElementById('tx-amount').value);
+      const category = document.getElementById('tx-category').value;
+      const date = document.getElementById('tx-date').value;
+      const type = document.getElementById('tx-type').value;
+      const isFixed = document.getElementById('tx-is-fixed').checked || category === '固定支出';
+
+      const txPayload = { title, amount, category, date, type, isFixed };
+      closeTransactionModal();
+
+      if (id) {
+        const idx = state.transactions.findIndex(t => t.id === id);
+        if (idx !== -1) state.transactions[idx] = { id, ...txPayload };
+        render();
+        if (isCloudReady) {
+          try {
+            await setDoc(doc(db, 'shared_transactions', id), { id, ...txPayload });
+            diagLog(`已同步更新交易 [${title}]`);
+          } catch (err) {
+            diagLog(`更新交易失敗: ${err.message}`, true);
+          }
+        }
+        showToast('交易已更新並同步');
+      } else {
+        const newId = Date.now().toString();
+        const fullTx = { id: newId, ...txPayload };
+        state.transactions.unshift(fullTx);
+        render();
+        if (isCloudReady) {
+          try {
+            await setDoc(doc(db, 'shared_transactions', newId), fullTx);
+            diagLog(`已新增交易至雲端 [${title}]`);
+          } catch (err) {
+            diagLog(`新增交易失敗: ${err.message}`, true);
+          }
+        }
+        showToast('交易已新增並同步');
+      }
+    }
+
+    function editTransaction(id) {
+      openTransactionModal(id);
+    }
+
+    async function deleteTransaction(id) {
+      state.transactions = state.transactions.filter(t => t.id !== id);
+      render();
+      if (isCloudReady) {
+        try {
+          await deleteDoc(doc(db, 'shared_transactions', id));
+          diagLog(`已自雲端刪除交易 [${id}]`);
+        } catch (err) {
+          diagLog(`刪除交易失敗: ${err.message}`, true);
+        }
+      }
+      showToast('交易已刪除');
+    }
+
+    function populateCategorySelect() {
+      const select = document.getElementById('tx-category');
+      if (!select) return;
+      const currentVal = select.value;
+      select.innerHTML = '';
+      Object.keys(state.categories).forEach(cat => {
+        const opt = document.createElement('option');
+        opt.value = cat;
+        opt.textContent = cat;
+        select.appendChild(opt);
+      });
+      if (currentVal && state.categories[currentVal]) {
+        select.value = currentVal;
+      }
+    }
+
+    function openCategoryModal() {
+      renderCategoryManagementList();
+      document.getElementById('category-modal').classList.remove('hidden');
+    }
+
+    function closeCategoryModal() {
+      document.getElementById('category-modal').classList.add('hidden');
+      populateCategorySelect();
+      render();
+    }
+
+    function renderCategoryManagementList() {
+      const container = document.getElementById('category-management-list');
+      const cats = Object.keys(state.categories);
+      
+      container.innerHTML = cats.map(cat => {
+        const isCore = ['飲食', '交通', '居住', '薪資', '固定支出'].includes(cat);
+        const info = state.categories[cat];
+
+        return `
+          <div class="flex items-center justify-between p-1.5 rounded-lg bg-[#FAF8F5] border border-gray-100">
+            <div class="flex items-center gap-2">
+              <span class="w-3 h-3 rounded-full flex-shrink-0" style="background-color: ${info.color}"></span>
+              <span class="text-xs font-medium text-gray-800">${cat}</span>
+              ${isCore ? '<span class="text-[8px] bg-gray-200 text-gray-600 px-1 py-0.2 rounded">內建</span>' : ''}
+            </div>
+            ${!isCore ? `
+              <button onclick="handleDeleteCategory('${cat}')" class="p-1 text-gray-400 hover:text-rose-600 transition" title="刪除類別">
+                <i class="ph ph-trash text-xs"></i>
+              </button>
+            ` : '<span class="text-[9px] text-gray-300">預設</span>'}
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function handleAddCategory(e) {
+      e.preventDefault();
+      const input = document.getElementById('new-category-name');
+      const name = input.value.trim();
+      if (!name) return;
+      if (state.categories[name]) {
+        showToast('該類別已存在');
+        return;
+      }
+
+      const palette = ['#0891B2', '#D97706', '#4F46E5', '#BE185D', '#059669', '#6D28D9'];
+      const randomColor = palette[Object.keys(state.categories).length % palette.length];
+      
+      state.categories[name] = { color: randomColor, icon: 'ph-sparkle' };
+      input.value = '';
+      showToast(`已新增類別「${name}」`);
+      renderCategoryManagementList();
+      populateCategorySelect();
+
+      if (isCloudReady) {
+        try {
+          await setDoc(doc(db, 'shared_settings', 'categories'), { categories: state.categories });
+          diagLog(`已同步新增自訂類別 [${name}]`);
+        } catch (err) {
+          diagLog(`儲存類別失敗: ${err.message}`, true);
+        }
+      }
+    }
+
+    async function handleDeleteCategory(catName) {
+      delete state.categories[catName];
+      state.transactions.forEach(t => {
+        if (t.category === catName) t.category = '其他';
+      });
+      showToast(`已刪除「${catName}」，既有交易歸為「其他」`);
+      renderCategoryManagementList();
+      populateCategorySelect();
+      render();
+
+      if (isCloudReady) {
+        try {
+          await setDoc(doc(db, 'shared_settings', 'categories'), { categories: state.categories });
+          diagLog(`已同步刪除類別 [${catName}]`);
+        } catch (err) {
+          diagLog(`刪除類別失敗: ${err.message}`, true);
+        }
+      }
+    }
+
+    function renderAnnualChart() {
+      const year = state.currentYear;
+      document.getElementById('annual-year-badge').innerText = `${year}年`;
+
+      const monthlyData = [];
+      let totalYearIncome = 0;
+      let totalYearExpense = 0;
+
+      for (let m = 1; m <= 12; m++) {
+        const mStr = `${year}-${String(m).padStart(2, '0')}`;
+        const txs = state.transactions.filter(t => t.date && t.date.startsWith(mStr));
+        const inc = txs.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
+        const exp = txs.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
+        const net = inc - exp;
+        totalYearIncome += inc;
+        totalYearExpense += exp;
+        monthlyData.push({ month: m, income: inc, expense: exp, net: net });
+      }
+
+      const totalYearNet = totalYearIncome - totalYearExpense;
+      document.getElementById('year-total-income').innerText = formatCurrency(totalYearIncome);
+      document.getElementById('year-total-expense').innerText = formatCurrency(totalYearExpense);
+      document.getElementById('year-net-savings').innerText = (totalYearNet >= 0 ? '+' : '') + formatCurrency(totalYearNet);
+
+      const container = document.getElementById('annual-chart-container');
+      const legend = document.getElementById('chart-legend');
+
+      if (state.annualView === 'flow') {
+        legend.innerHTML = `
+          <span class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-xs bg-emerald-500 inline-block"></span>收入</span>
+          <span class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-xs bg-rose-500 inline-block"></span>支出</span>
+        `;
+        renderBarFlowChart(container, monthlyData);
+      } else {
+        legend.innerHTML = `
+          <span class="flex items-center gap-1"><span class="w-2 h-0.5 bg-sky-500 inline-block"></span>月淨結餘波浪</span>
+        `;
+        renderWaveTrendChart(container, monthlyData);
+      }
+    }
+
+    function renderBarFlowChart(container, data) {
+      const maxVal = Math.max(...data.map(d => Math.max(d.income, d.expense, 10000)));
+      const chartHeight = 85;
+      const chartWidth = 320;
+      const colWidth = chartWidth / 12;
+
+      let svg = `<svg viewBox="0 0 ${chartWidth} 115" class="w-full h-full overflow-visible">`;
+      svg += `<line x1="0" y1="${chartHeight}" x2="${chartWidth}" y2="${chartHeight}" stroke="#E5E0D5" stroke-width="1" />`;
+
+      data.forEach((d, idx) => {
+        const x = idx * colWidth;
+        const incHeight = (d.income / maxVal) * (chartHeight - 10);
+        const expHeight = (d.expense / maxVal) * (chartHeight - 10);
+        const isCurrent = d.month === state.currentMonth;
+
+        svg += `
+          <g class="cursor-pointer group" onclick="jumpToMonth(${d.month})">
+            ${isCurrent ? `<rect x="${x + 2}" y="0" width="${colWidth - 4}" height="${chartHeight + 18}" fill="#E8EEF5" rx="4" opacity="0.6"/>` : ''}
+            <rect x="${x + 4}" y="${chartHeight - incHeight}" width="${(colWidth - 10) / 2}" height="${Math.max(incHeight, 2)}" fill="#10B981" rx="1.5" class="transition group-hover:opacity-80"/>
+            <rect x="${x + 4 + (colWidth - 10) / 2 + 1}" y="${chartHeight - expHeight}" width="${(colWidth - 10) / 2}" height="${Math.max(expHeight, 2)}" fill="#F43F5E" rx="1.5" class="transition group-hover:opacity-80"/>
+            <text x="${x + colWidth / 2}" y="${chartHeight + 14}" text-anchor="middle" font-size="8" font-weight="${isCurrent ? 'bold' : 'normal'}" fill="${isCurrent ? '#0284C7' : '#8E8B85'}">${d.month}月</text>
+          </g>
+        `;
+      });
+
+      svg += `</svg>`;
+      container.innerHTML = svg;
+    }
+
+    function renderWaveTrendChart(container, data) {
+      const maxNet = Math.max(...data.map(d => Math.abs(d.net)), 20000);
+      const chartWidth = 320;
+      const chartHeight = 85;
+      const midY = chartHeight / 2;
+      const colWidth = chartWidth / 11;
+
+      const points = data.map((d, idx) => {
+        const x = idx * colWidth;
+        const y = midY - (d.net / maxNet) * (midY - 8);
+        return { x, y, net: d.net, month: d.month };
+      });
+
+      let pathD = `M ${points[0].x} ${points[0].y}`;
+      for (let i = 0; i < points.length - 1; i++) {
+        const p0 = points[i];
+        const p1 = points[i + 1];
+        const cpX = (p0.x + p1.x) / 2;
+        pathD += ` C ${cpX} ${p0.y}, ${cpX} ${p1.y}, ${p1.x} ${p1.y}`;
+      }
+
+      let areaD = `${pathD} L ${points[points.length - 1].x} ${chartHeight} L 0 ${chartHeight} Z`;
+
+      let svg = `<svg viewBox="0 0 ${chartWidth} 115" class="w-full h-full overflow-visible">
+        <defs>
+          <linearGradient id="waveGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="#0284C7" stop-opacity="0.3"/>
+            <stop offset="100%" stop-color="#0284C7" stop-opacity="0.0"/>
+          </linearGradient>
+        </defs>
+        <line x1="0" y1="${midY}" x2="${chartWidth}" y2="${midY}" stroke="#DDD7CD" stroke-dasharray="2 2" stroke-width="1" />
+        <path d="${areaD}" fill="url(#waveGrad)" />
+        <path d="${pathD}" fill="none" stroke="#0284C7" stroke-width="2.5" stroke-linecap="round" />
+      `;
+
+      points.forEach(p => {
+        const isCurrent = p.month === state.currentMonth;
+        const dotColor = p.net >= 0 ? '#10B981' : '#F43F5E';
+        svg += `
+          <g class="cursor-pointer group" onclick="jumpToMonth(${p.month})">
+            <circle cx="${p.x}" cy="${p.y}" r="${isCurrent ? 4.5 : 3}" fill="${dotColor}" stroke="#FFFFFF" stroke-width="1.5" class="transition group-hover:scale-125"/>
+            <text x="${p.x}" y="${chartHeight + 14}" text-anchor="middle" font-size="8" font-weight="${isCurrent ? 'bold' : 'normal'}" fill="${isCurrent ? '#0284C7' : '#8E8B85'}">${p.month}月</text>
+          </g>
+        `;
+      });
+
+      svg += `</svg>`;
+      container.innerHTML = svg;
+    }
+
+    function render() {
+      const currentMonthStr = `${state.currentYear}-${String(state.currentMonth).padStart(2, '0')}`;
+      const currentTxs = state.transactions.filter(t => t.date && t.date.startsWith(currentMonthStr));
+
+      renderOverview(currentTxs);
+      renderCategories(currentTxs);
+      renderWishlist();
+      renderTransactions();
+      renderAnnualChart();
+      populateCategorySelect();
+    }
+
+    // 手動執行測試 Ping
+    async function runManualCloudTest() {
+      diagLog("開始執行手動讀寫測試...");
+      try {
+        const testRef = doc(db, 'shared_settings', 'connection_test');
+        await setDoc(testRef, { lastPing: new Date().toISOString() });
+        diagLog("寫入測試成功！資料庫具有讀寫權限。");
+        showToast("雲端連線與寫入測試成功！");
+      } catch (err) {
+        diagLog(`寫入測試失敗: ${err.code || err.message}`, true);
+        if (err.code === 'permission-denied') {
+          diagLog("👉 原因：Firestore 安全規則阻擋！請至 Firebase Console 將規則改為 allow read, write: if true;", true);
+        }
+      }
+    }
+
+    // 初始化雲端即時同步
+    async function initCloudSync() {
+      try {
+        diagLog("正在連線 Firebase 專案 [bank-39b8f]...");
+        app = initializeApp(firebaseConfig);
+        db = getFirestore(app);
+        isCloudReady = true;
+
+        const badgeDot = document.getElementById('cloud-pulse-dot');
+        const badgeText = document.getElementById('cloud-status-text');
+        const badgeBox = document.getElementById('cloud-status-badge');
+        const statusSummary = document.getElementById('diag-status-summary');
+
+        // 1. 監聽交易紀錄 (公共集合 shared_transactions)
+        onSnapshot(collection(db, 'shared_transactions'), (snapshot) => {
+          const loadedTxs = [];
+          snapshot.forEach(docSnap => loadedTxs.push(docSnap.data()));
+          state.transactions = loadedTxs;
+          render();
+          
+          diagLog(`成功接收交易更新，共 ${loadedTxs.length} 筆`);
+          if (badgeDot && badgeText) {
+            badgeDot.className = "w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse";
+            badgeText.innerText = "已連線雲端 (雙向)";
+            badgeBox.className = "inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[9px] font-semibold border border-emerald-200 cursor-pointer";
+          }
+          if (statusSummary) {
+            statusSummary.textContent = "即時連線正常";
+            statusSummary.className = "font-bold text-emerald-600";
+          }
+        }, (err) => {
+          diagLog(`交易集合監聽失敗 [${err.code}]: ${err.message}`, true);
+          showOfflineBadge(err.code || "連線受阻");
+        });
+
+        // 2. 監聽待買清單
+        onSnapshot(collection(db, 'shared_wishlist'), (snapshot) => {
+          const loadedWish = [];
+          snapshot.forEach(docSnap => loadedWish.push(docSnap.data()));
+          state.wishlist = loadedWish;
+          renderWishlist();
+          diagLog(`成功接收待購清單更新，共 ${loadedWish.length} 項`);
+        }, (err) => {
+          diagLog(`待買集合監聽失敗: ${err.message}`, true);
+        });
+
+        // 3. 監聽自訂類別
+        onSnapshot(doc(db, 'shared_settings', 'categories'), (docSnap) => {
+          if (docSnap.exists()) {
+            state.categories = docSnap.data().categories || DEFAULT_CATEGORIES;
+            render();
+            diagLog("自訂類別已更新");
+          }
+        }, (err) => {
+          diagLog(`類別設定監聽失敗: ${err.message}`, true);
+        });
+
+      } catch (err) {
+        diagLog(`Firebase 初始化失敗: ${err.message}`, true);
+        showOfflineBadge("初始化錯誤");
+      }
+    }
+
+    function showOfflineBadge(reason) {
+      const badgeDot = document.getElementById('cloud-pulse-dot');
+      const badgeText = document.getElementById('cloud-status-text');
+      const badgeBox = document.getElementById('cloud-status-badge');
+      const statusSummary = document.getElementById('diag-status-summary');
+      if (badgeDot && badgeText) {
+        badgeDot.className = "w-1.5 h-1.5 rounded-full bg-rose-500";
+        badgeText.innerText = "點擊查看原因";
+        badgeBox.className = "inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-rose-50 text-rose-700 text-[9px] font-semibold border border-rose-200 cursor-pointer";
+      }
+      if (statusSummary) {
+        statusSummary.textContent = `連線異常 (${reason})`;
+        statusSummary.className = "font-bold text-rose-600";
+      }
+    }
+
+    Object.assign(window, {
+      changeMonth,
+      jumpToMonth,
+      setTxFilter,
+      setAnnualChartView,
+      openTransactionModal,
+      closeTransactionModal,
+      setModalType,
+      handleCategorySelectChange,
+      handleTransactionSubmit,
+      editTransaction,
+      deleteTransaction,
+      openWishlistModal,
+      closeWishlistModal,
+      toggleWishlistPurchased,
+      editWishlistItem,
+      deleteWishlistItem,
+      handleWishlistSubmit,
+      openCategoryModal,
+      closeCategoryModal,
+      handleAddCategory,
+      handleDeleteCategory,
+      openDiagModal,
+      closeDiagModal,
+      runManualCloudTest
+    });
+
+    window.onload = function() {
+      render();
+      initCloudSync();
+    };
+  </script>
 </body>
-</html>
+</html> 
