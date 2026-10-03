@@ -182,8 +182,11 @@
           <div class="flex items-center gap-1.5">
             <span class="w-2 h-2 rounded-full bg-amber-500"></span>
             <div>
-              <h2 class="text-xs font-bold text-[#1C1A18]">待購買區</h2>
-              <p class="text-[9px] text-subText">心願與待購物品清單</p>
+              <div class="flex items-center gap-1.5">
+                <h2 class="text-xs font-bold text-[#1C1A18]">待購買區</h2>
+                <span id="wishlist-month-badge" class="text-[9px] font-semibold text-amber-800 bg-amber-100/70 border border-amber-200/80 px-1.5 py-0.2 rounded-full">10月專屬</span>
+              </div>
+              <p class="text-[9px] text-subText">本月心願與待購物品清單（各月獨立）</p>
             </div>
           </div>
 
@@ -394,9 +397,16 @@
 
           <div class="grid grid-cols-2 gap-2">
             <div>
+              <label class="block text-[11px] font-medium text-gray-500 mb-1">歸屬月份</label>
+              <input type="month" id="wishlist-item-month" required class="w-full px-2 py-2 bg-[#FAF8F5] border border-gray-200 rounded-xl focus:outline-none focus:border-brandDark font-sans">
+            </div>
+            <div>
               <label class="block text-[11px] font-medium text-gray-500 mb-1">預估價格 ($)</label>
               <input type="number" id="wishlist-item-price" min="1" required placeholder="2500" class="w-full px-3 py-2 bg-[#FAF8F5] border border-gray-200 rounded-xl focus:outline-none focus:border-brandDark">
             </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
             <div>
               <label class="block text-[11px] font-medium text-gray-500 mb-1">分類</label>
               <select id="wishlist-item-category" class="w-full px-2 py-2 bg-[#FAF8F5] border border-gray-200 rounded-xl focus:outline-none focus:border-brandDark">
@@ -407,11 +417,10 @@
                 <option value="其他">其他</option>
               </select>
             </div>
-          </div>
-
-          <div>
-            <label class="block text-[11px] font-medium text-gray-500 mb-1">備註說明 (選填)</label>
-            <input type="text" id="wishlist-item-note" placeholder="如：趁雙11特價入手" class="w-full px-3 py-2 bg-[#FAF8F5] border border-gray-200 rounded-xl focus:outline-none focus:border-brandDark">
+            <div>
+              <label class="block text-[11px] font-medium text-gray-500 mb-1">備註說明 (選填)</label>
+              <input type="text" id="wishlist-item-note" placeholder="如：雙11特價入手" class="w-full px-3 py-2 bg-[#FAF8F5] border border-gray-200 rounded-xl focus:outline-none focus:border-brandDark">
+            </div>
           </div>
 
           <div class="pt-2 flex gap-2">
@@ -572,11 +581,11 @@
     ];
 
     const initialWishlist = [
-      { id: 'w1', title: 'iPad Pro 11吋', price: 27900, category: '購物', note: '生產力繪圖工具', purchased: true },
-      { id: 'w2', title: 'Sony 降噪耳機 XM5', price: 11900, category: '購物', note: '通勤降噪專用', purchased: false },
-      { id: 'w3', title: '人體工學辦公椅', price: 16500, category: '居住', note: '久坐護腰改善健康', purchased: false },
-      { id: 'w4', title: '日本東京機票', price: 18200, category: '其他', note: '已購預定行程', purchased: true },
-      { id: 'w5', title: '4K 雙螢幕工作站', price: 22000, category: '購物', note: '提升工作效率', purchased: false }
+      { id: 'w1', title: 'iPad Pro 11吋', price: 27900, category: '購物', note: '生產力繪圖工具', purchased: true, month: '2026-10' },
+      { id: 'w2', title: 'Sony 降噪耳機 XM5', price: 11900, category: '購物', note: '通勤降噪專用', purchased: false, month: '2026-10' },
+      { id: 'w3', title: '人體工學辦公椅', price: 16500, category: '居住', note: '久坐護腰改善健康', purchased: false, month: '2026-10' },
+      { id: 'w4', title: '日本東京機票', price: 18200, category: '其他', note: '已購預定行程', purchased: true, month: '2026-09' },
+      { id: 'w5', title: '4K 雙螢幕工作站', price: 22000, category: '購物', note: '提升工作效率', purchased: false, month: '2026-11' }
     ];
 
     let state = {
@@ -640,13 +649,70 @@
         state.currentMonth = 12;
         state.currentYear -= 1;
       }
+      autoCarryForwardFixedExpenses(state.currentYear, state.currentMonth);
       render();
     }
 
     function jumpToMonth(targetMonth) {
       state.currentMonth = targetMonth;
+      autoCarryForwardFixedExpenses(state.currentYear, state.currentMonth);
       render();
       showToast(`已切換至 ${state.currentYear}年${targetMonth}月`);
+    }
+
+    function autoCarryForwardFixedExpenses(targetYear, targetMonth) {
+      const targetMonthStr = `${targetYear}-${String(targetMonth).padStart(2, '0')}`;
+      
+      // 找出歷史上所有被標註為固定支出的唯一範本（依名稱識別）
+      const fixedTemplates = new Map();
+      state.transactions.forEach(t => {
+        const isFixed = t.isFixed || t.category === '固定支出';
+        if (isFixed && t.type === 'expense') {
+          // 以名稱為基準，保留最新設定
+          if (!fixedTemplates.has(t.title)) {
+            fixedTemplates.set(t.title, t);
+          }
+        }
+      });
+
+      if (fixedTemplates.size === 0) return;
+
+      // 檢查目標月份是否已經存在這些固定支出
+      const targetMonthFixedTitles = new Set(
+        state.transactions
+          .filter(t => t.date && t.date.startsWith(targetMonthStr) && (t.isFixed || t.category === '固定支出'))
+          .map(t => t.title)
+      );
+
+      let newlyAdded = 0;
+      fixedTemplates.forEach((template, title) => {
+        if (!targetMonthFixedTitles.has(title)) {
+          // 在目標月份自動帶入該固定支出
+          const newDate = `${targetMonthStr}-01`;
+          const newId = `fx_${targetYear}_${targetMonth}_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+          const autoTx = {
+            id: newId,
+            title: template.title,
+            amount: template.amount,
+            category: template.category || '固定支出',
+            date: newDate,
+            type: 'expense',
+            isFixed: true
+          };
+          state.transactions.unshift(autoTx);
+          newlyAdded++;
+
+          if (isCloudReady && userId) {
+            setDoc(doc(db, 'artifacts', appId, 'users', userId, 'transactions', newId), autoTx).catch(err => {
+              console.error("Auto carry-forward sync error:", err);
+            });
+          }
+        }
+      });
+
+      if (newlyAdded > 0) {
+        showToast(`已為 ${targetMonth} 月自動帶入 ${newlyAdded} 筆每月固定開支`);
+      }
     }
 
     function setTxFilter(type) {
@@ -775,8 +841,22 @@
 
     function renderWishlist() {
       const container = document.getElementById('wishlist-items-container');
-      const totalSum = state.wishlist.reduce((sum, item) => sum + item.price, 0);
-      const pendingSum = state.wishlist.filter(item => !item.purchased).reduce((sum, item) => sum + item.price, 0);
+      const currentMonthStr = `${state.currentYear}-${String(state.currentMonth).padStart(2, '0')}`;
+      
+      // 更新標題月份標籤
+      const monthBadge = document.getElementById('wishlist-month-badge');
+      if (monthBadge) {
+        monthBadge.innerText = `${state.currentMonth}月專屬`;
+      }
+
+      // 僅篩選當前月份的待購買項目（若舊項目無 month 屬性則預設相容至目前月份）
+      const currentMonthWishlist = state.wishlist.filter(item => {
+        const itemMonth = item.month || currentMonthStr;
+        return itemMonth === currentMonthStr;
+      });
+
+      const totalSum = currentMonthWishlist.reduce((sum, item) => sum + item.price, 0);
+      const pendingSum = currentMonthWishlist.filter(item => !item.purchased).reduce((sum, item) => sum + item.price, 0);
       const purchasedSum = totalSum - pendingSum;
       const progressPercent = totalSum > 0 ? Math.round((purchasedSum / totalSum) * 100) : 0;
 
@@ -785,12 +865,15 @@
       document.getElementById('wishlist-progress-percent').innerText = `${progressPercent}%`;
       document.getElementById('wishlist-progress-bar').style.width = `${progressPercent}%`;
 
-      if (state.wishlist.length === 0) {
-        container.innerHTML = `<div class="text-[10px] text-subText text-center py-3">心願單目前是空的</div>`;
+      if (currentMonthWishlist.length === 0) {
+        container.innerHTML = `<div class="text-[10px] text-subText text-center py-4 bg-[#FAF8F5] rounded-xl border border-dashed border-gray-200">
+          ${state.currentYear}年${state.currentMonth}月 目前尚無待購清單<br>
+          <span class="text-[9px] text-gray-400">各月清單獨立，點擊「新增物品」為本月規劃</span>
+        </div>`;
         return;
       }
 
-      container.innerHTML = state.wishlist.map(item => {
+      container.innerHTML = currentMonthWishlist.map(item => {
         const isPurchased = !!item.purchased;
         const textStyle = isPurchased ? 'line-through text-gray-400' : 'text-gray-800 font-semibold';
         const cardBg = isPurchased ? 'bg-[#F5F2ED] opacity-80' : 'bg-white hover:bg-gray-50';
@@ -852,6 +935,7 @@
     function openWishlistModal(editId = null) {
       const form = document.getElementById('wishlist-form');
       form.reset();
+      const currentMonthStr = `${state.currentYear}-${String(state.currentMonth).padStart(2, '0')}`;
 
       if (editId) {
         const item = state.wishlist.find(w => w.id === editId);
@@ -859,6 +943,7 @@
           document.getElementById('wishlist-modal-title').innerText = '編輯待購物品';
           document.getElementById('wishlist-edit-id').value = item.id;
           document.getElementById('wishlist-item-title').value = item.title;
+          document.getElementById('wishlist-item-month').value = item.month || currentMonthStr;
           document.getElementById('wishlist-item-price').value = item.price;
           document.getElementById('wishlist-item-category').value = item.category;
           document.getElementById('wishlist-item-note').value = item.note || '';
@@ -866,6 +951,7 @@
       } else {
         document.getElementById('wishlist-modal-title').innerText = '新增待購物品';
         document.getElementById('wishlist-edit-id').value = '';
+        document.getElementById('wishlist-item-month').value = currentMonthStr;
       }
       document.getElementById('wishlist-modal').classList.remove('hidden');
     }
@@ -898,12 +984,14 @@
       e.preventDefault();
       const id = document.getElementById('wishlist-edit-id').value;
       const title = document.getElementById('wishlist-item-title').value.trim();
+      const month = document.getElementById('wishlist-item-month').value || `${state.currentYear}-${String(state.currentMonth).padStart(2, '0')}`;
       const price = Number(document.getElementById('wishlist-item-price').value);
       const category = document.getElementById('wishlist-item-category').value;
       const note = document.getElementById('wishlist-item-note').value.trim();
 
       const itemData = {
         title,
+        month,
         price,
         category,
         note
@@ -1494,6 +1582,7 @@
     });
 
     window.onload = function() {
+      autoCarryForwardFixedExpenses(state.currentYear, state.currentMonth);
       render();
       initCloudSync();
     };
