@@ -142,13 +142,13 @@
         <div class="bg-cardBg rounded-xl p-2 border border-[#EBE7E0] shadow-sm">
           <div class="flex justify-between items-center text-[10px] text-gray-500 font-medium mb-1">
             <div class="flex items-center gap-1">
-              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500" id="expense-track-dot"></span>
               <span>支出進度指標</span>
             </div>
             <span id="expense-track-label" class="text-[9px] text-gray-400">上限建議 70%</span>
           </div>
           <div class="w-full bg-[#EAE5DC] rounded-full h-1.5 overflow-hidden">
-            <div id="expense-ratio-bar" class="h-full rounded-full transition-all duration-500 bg-gradient-to-r from-emerald-500 via-amber-500 to-rose-500" style="width: 0%;"></div>
+            <div id="expense-ratio-bar" class="h-full rounded-full transition-all duration-500 bg-emerald-500" style="width: 0%;"></div>
           </div>
         </div>
       </section>
@@ -175,7 +175,7 @@
             </div>
           </div>
 
-          <div id="category-breakdown-list" class="flex-1 space-y-1.5 overflow-hidden"></div>
+          <div id="category-breakdown-list" class="flex-1 space-y-1.5 overflow-hidden max-h-36 overflow-y-auto custom-scroll pr-1"></div>
         </div>
       </section>
 
@@ -268,7 +268,7 @@
           
           <div class="flex bg-[#EAE5DC] p-0.5 rounded-lg text-[10px] font-medium text-gray-600">
             <button type="button" onclick="setAnnualChartView('flow')" id="btn-chart-flow" class="px-2 py-0.5 rounded-md bg-white text-[#1C1A18] shadow-sm font-bold transition">收支對比</button>
-            <button type="button" onclick="setAnnualChartView('trend')" id="btn-chart-trend" class="px-2 py-0.5 rounded-md hover:text-gray-900 transition">結餘趨勢</button>
+            <button type="button" onclick="setAnnualChartView('trend')" id="btn-chart-trend" class="px-2 py-0.5 rounded-md hover:text-gray-900 transition">結餘走勢</button>
           </div>
         </div>
 
@@ -291,7 +291,7 @@
           <div id="annual-chart-container" class="w-full h-32 flex items-center justify-center"></div>
           <div class="flex items-center justify-between text-[8px] text-subText pt-1 px-0.5">
             <div id="chart-legend" class="flex items-center gap-2"></div>
-            <span class="text-gray-400">點選月份柱可切換當月</span>
+            <span class="text-gray-400">點選月份柱位可切換</span>
           </div>
         </div>
       </section>
@@ -312,8 +312,8 @@
           <input type="hidden" id="tx-id">
           
           <div class="grid grid-cols-2 gap-1.5 bg-[#F3F0E9] p-1 rounded-xl">
-            <button type="button" onclick="setModalType('expense')" id="btn-type-expense" class="py-1.5 rounded-lg text-xs font-bold transition bg-white text-rose-600 shadow-sm">支出</button>
-            <button type="button" onclick="setModalType('income')" id="btn-type-income" class="py-1.5 rounded-lg text-xs font-bold transition text-gray-600">收入</button>
+            <button type="button" onclick="setModalType('expense', true)" id="btn-type-expense" class="py-1.5 rounded-lg text-xs font-bold transition bg-white text-rose-600 shadow-sm">支出</button>
+            <button type="button" onclick="setModalType('income', true)" id="btn-type-income" class="py-1.5 rounded-lg text-xs font-bold transition text-gray-600">收入</button>
           </div>
           <input type="hidden" id="tx-type" value="expense">
 
@@ -325,7 +325,7 @@
           <div class="grid grid-cols-2 gap-2">
             <div>
               <label class="block text-[11px] font-medium text-gray-500 mb-1">金額 ($)</label>
-              <input type="number" step="any" id="tx-amount" min="0.01" required placeholder="100" class="w-full px-3 py-2 bg-[#FAF8F5] border border-gray-200 rounded-xl focus:outline-none focus:border-brandDark">
+              <input type="number" step="any" id="tx-amount" min="0.01" required placeholder="100" class="w-full px-3 py-2 bg-[#FAF8F5] border border-gray-200 rounded-xl focus:outline-none focus:border-brandDark font-sans">
             </div>
             <div>
               <div class="flex justify-between items-center mb-1">
@@ -340,10 +340,10 @@
 
           <div>
             <label class="block text-[11px] font-medium text-gray-500 mb-1">日期</label>
-            <input type="date" id="tx-date" required class="w-full px-3 py-2 bg-[#FAF8F5] border border-gray-200 rounded-xl focus:outline-none focus:border-brandDark">
+            <input type="date" id="tx-date" required class="w-full px-3 py-2 bg-[#FAF8F5] border border-gray-200 rounded-xl focus:outline-none focus:border-brandDark font-sans">
           </div>
 
-          <div class="flex items-center gap-2 pt-0.5">
+          <div id="tx-fixed-container" class="flex items-center gap-2 pt-0.5">
             <input type="checkbox" id="tx-is-fixed" class="w-4 h-4 rounded accent-emerald-700 cursor-pointer">
             <label for="tx-is-fixed" class="text-xs text-gray-700 cursor-pointer select-none">
               設為每月固定開支 <span class="text-[10px] text-subText">(如房租、定期訂閱)</span>
@@ -383,7 +383,7 @@
             </div>
             <div>
               <label class="block text-[11px] font-medium text-gray-500 mb-1">預估價格 ($)</label>
-              <input type="number" step="any" id="wishlist-item-price" min="0.01" required placeholder="2500" class="w-full px-3 py-2 bg-[#FAF8F5] border border-gray-200 rounded-xl focus:outline-none focus:border-brandDark">
+              <input type="number" step="any" id="wishlist-item-price" min="0.01" required placeholder="2500" class="w-full px-3 py-2 bg-[#FAF8F5] border border-gray-200 rounded-xl focus:outline-none focus:border-brandDark font-sans">
             </div>
           </div>
 
@@ -481,19 +481,8 @@
 
   </main>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { 
-      getFirestore, 
-      doc, 
-      setDoc, 
-      updateDoc, 
-      deleteDoc, 
-      onSnapshot, 
-      collection,
-      writeBatch
-    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
+  <script>
+    // 核心資料庫與快取初始化 (動態載入防護，保證斷網環境下也能 100% 正常載入)
     const firebaseConfig = {
       apiKey: "AIzaSyCNnxw-1bOcdR6SUXaTwkn0bFJGyA3Jtz0",
       authDomain: "bank-39b8f.firebaseapp.com",
@@ -504,8 +493,14 @@
       appId: "1:554175411211:web:832deb99712dcb119c830e"
     };
 
-    let app, db;
+    let app = null, db = null;
     let isCloudReady = false;
+    let hasInitialTxSync = false;
+    let hasInitialWishSync = false;
+    let toastTimer = null;
+
+    // 動態加載之 Firestore 模組介面
+    let fbDoc, fbSetDoc, fbUpdateDoc, fbDeleteDoc, fbOnSnapshot, fbCollection, fbWriteBatch;
 
     function escapeHtml(str) {
       if (!str) return '';
@@ -541,7 +536,9 @@
       '其他': { color: '#64748B', icon: 'ph-tag' }
     };
 
-    // 本地快取讀取
+    const CORE_CATEGORIES = Object.keys(DEFAULT_CATEGORIES);
+
+    // 優先讀取本地持久化快取
     const localCategories = localStorage.getItem('budget_categories');
     const localTransactions = localStorage.getItem('budget_transactions');
     const localWishlist = localStorage.getItem('budget_wishlist');
@@ -564,7 +561,9 @@
     }
 
     function formatCurrency(num) {
-      return '$' + Number(num || 0).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+      const n = Number(num || 0);
+      const sign = n < 0 ? '-' : '';
+      return sign + '$' + Math.abs(n).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 });
     }
 
     function formatNumber(num) {
@@ -576,7 +575,8 @@
       const text = document.getElementById('toast-message');
       text.innerText = msg;
       toast.classList.remove('hidden');
-      setTimeout(() => toast.classList.add('hidden'), 2000);
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.add('hidden'), 2000);
     }
 
     function handleBackdropClick(event, modalId) {
@@ -669,7 +669,7 @@
 
       const remainingEl = document.getElementById('remaining-amount');
       if (remainingEl) {
-        remainingEl.innerText = (remaining >= 0 ? '' : '-') + formatCurrency(Math.abs(remaining));
+        remainingEl.innerText = formatCurrency(remaining);
         remainingEl.className = `text-2xl font-bold font-sans tracking-tight ${remaining >= 0 ? 'text-[#1C1A18]' : 'text-rose-600'}`;
       }
 
@@ -678,18 +678,27 @@
       document.getElementById('total-expense-display').innerText = formatNumber(expense);
 
       document.getElementById('expense-ratio-text').innerText = `${ratio}%`;
-      document.getElementById('expense-ratio-bar').style.width = `${Math.min(ratio, 100)}%`;
+      
+      const ratioBar = document.getElementById('expense-ratio-bar');
+      const trackDot = document.getElementById('expense-track-dot');
+      ratioBar.style.width = `${Math.min(ratio, 100)}%`;
 
       const statusTag = document.getElementById('expense-status-tag');
       if (ratio > 80) {
         statusTag.innerText = "支出偏高";
         statusTag.className = "text-[9px] text-rose-600 font-medium block";
+        ratioBar.className = "h-full rounded-full transition-all duration-500 bg-rose-500";
+        if (trackDot) trackDot.className = "w-1.5 h-1.5 rounded-full bg-rose-500";
       } else if (ratio > 50) {
         statusTag.innerText = "收支平穩";
         statusTag.className = "text-[9px] text-amber-600 font-medium block";
+        ratioBar.className = "h-full rounded-full transition-all duration-500 bg-amber-500";
+        if (trackDot) trackDot.className = "w-1.5 h-1.5 rounded-full bg-amber-500";
       } else {
         statusTag.innerText = "財務狀態良好";
         statusTag.className = "text-[9px] text-emerald-600 font-medium block";
+        ratioBar.className = "h-full rounded-full transition-all duration-500 bg-emerald-500";
+        if (trackDot) trackDot.className = "w-1.5 h-1.5 rounded-full bg-emerald-500";
       }
 
       document.getElementById('chart-total-expense').innerText = formatCurrency(expense);
@@ -719,9 +728,7 @@
       const circumference = 2 * Math.PI * 38;
       let accumulatedOffset = 0;
 
-      if (sortedCats.length === 0 || totalExpense === 0) {
-        donutContainer.innerHTML = `<circle cx="50" cy="50" r="38" fill="transparent" stroke="#EAE5DC" stroke-width="9"></circle>`;
-      } else {
+      if (sortedCats.length > 0 && totalExpense > 0) {
         sortedCats.forEach(cat => {
           const segmentLength = (cat.amount / totalExpense) * circumference;
           const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
@@ -741,11 +748,11 @@
 
       const listContainer = document.getElementById('category-breakdown-list');
       if (sortedCats.length === 0) {
-        listContainer.innerHTML = `<div class="text-[10px] text-subText text-center py-2">本月尚無支出紀錄</div>`;
+        listContainer.innerHTML = `<div class="text-[10px] text-subText text-center py-4">本月尚無支出紀錄</div>`;
         return;
       }
 
-      listContainer.innerHTML = sortedCats.slice(0, 4).map(cat => `
+      listContainer.innerHTML = sortedCats.map(cat => `
         <div class="flex items-center justify-between text-[11px]">
           <div class="flex items-center gap-1.5 w-20 truncate">
             <span class="w-1.5 h-1.5 rounded-full flex-shrink-0" style="background-color: ${cat.color};"></span>
@@ -771,7 +778,8 @@
       if (monthBadge) monthBadge.innerText = `${state.currentMonth}月專屬`;
 
       const currentMonthWishlist = state.wishlist.filter(item => {
-        return (item.month || currentMonthStr) === currentMonthStr;
+        const itemMonth = (item.month || '').replace(/\//g, '-');
+        return itemMonth === currentMonthStr;
       });
 
       const totalSum = currentMonthWishlist.reduce((sum, item) => sum + Number(item.price || 0), 0);
@@ -787,7 +795,7 @@
       if (currentMonthWishlist.length === 0) {
         container.innerHTML = `<div class="text-[10px] text-subText text-center py-4 bg-[#FAF8F5] rounded-xl border border-dashed border-gray-200">
           ${state.currentYear}年${state.currentMonth}月 目前尚無待購清單<br>
-          <span class="text-[9px] text-gray-400">各月清單獨立，點擊「新增物品」為本月規劃</span>
+          <span class="text-[9px] text-gray-400">點擊「新增物品」為本月規劃心願</span>
         </div>`;
         return;
       }
@@ -837,9 +845,9 @@
       saveToLocalStorage();
       renderWishlist();
 
-      if (isCloudReady) {
+      if (isCloudReady && fbUpdateDoc && fbDoc) {
         try {
-          await updateDoc(doc(db, 'shared_wishlist', id), { purchased: item.purchased });
+          await fbUpdateDoc(fbDoc(db, 'shared_wishlist', id), { purchased: item.purchased });
           diagLog(`已同步待購狀態 [${item.title}] ➔ ${item.purchased ? '已購' : '未購'}`);
         } catch (err) {
           diagLog(`更新待購狀態失敗: ${err.message}`, true);
@@ -869,6 +877,9 @@
         document.getElementById('wishlist-modal-title').innerText = '新增待購物品';
         document.getElementById('wishlist-edit-id').value = '';
         document.getElementById('wishlist-item-month').value = currentMonthStr;
+        if (state.categories['購物']) {
+          document.getElementById('wishlist-item-category').value = '購物';
+        }
       }
       document.getElementById('wishlist-modal').classList.remove('hidden');
     }
@@ -882,13 +893,14 @@
     }
 
     async function deleteWishlistItem(id) {
+      if (!confirm('確定要移除此待購物品嗎？')) return;
       state.wishlist = state.wishlist.filter(w => w.id !== id);
       saveToLocalStorage();
       renderWishlist();
 
-      if (isCloudReady) {
+      if (isCloudReady && fbDeleteDoc && fbDoc) {
         try {
-          await deleteDoc(doc(db, 'shared_wishlist', id));
+          await fbDeleteDoc(fbDoc(db, 'shared_wishlist', id));
           diagLog(`已自雲端刪除待購項目 [${id}]`);
         } catch (err) {
           diagLog(`刪除待購失敗: ${err.message}`, true);
@@ -899,12 +911,18 @@
 
     async function handleWishlistSubmit(e) {
       e.preventDefault();
+      const currentMonthStr = `${state.currentYear}-${String(state.currentMonth).padStart(2, '0')}`;
       const id = document.getElementById('wishlist-edit-id').value;
       const title = document.getElementById('wishlist-item-title').value.trim();
-      const month = document.getElementById('wishlist-item-month').value;
+      const month = document.getElementById('wishlist-item-month').value || currentMonthStr;
       const price = Number(document.getElementById('wishlist-item-price').value);
-      const category = document.getElementById('wishlist-item-category').value;
+      const category = document.getElementById('wishlist-item-category').value || '購物';
       const note = document.getElementById('wishlist-item-note').value.trim();
+
+      if (isNaN(price) || price <= 0) {
+        showToast('請輸入有效預估價格');
+        return;
+      }
 
       const itemData = { title, month, price, category, note };
       closeWishlistModal();
@@ -914,9 +932,9 @@
         if (idx !== -1) state.wishlist[idx] = { ...state.wishlist[idx], ...itemData };
         saveToLocalStorage();
         renderWishlist();
-        if (isCloudReady) {
+        if (isCloudReady && fbUpdateDoc && fbDoc) {
           try {
-            await updateDoc(doc(db, 'shared_wishlist', id), itemData);
+            await fbUpdateDoc(fbDoc(db, 'shared_wishlist', id), itemData);
             diagLog(`已同步更新待購物品 [${title}]`);
           } catch (err) {
             diagLog(`更新待購失敗: ${err.message}`, true);
@@ -929,9 +947,9 @@
         state.wishlist.push(fullItem);
         saveToLocalStorage();
         renderWishlist();
-        if (isCloudReady) {
+        if (isCloudReady && fbSetDoc && fbDoc) {
           try {
-            await setDoc(doc(db, 'shared_wishlist', newId), fullItem);
+            await fbSetDoc(fbDoc(db, 'shared_wishlist', newId), fullItem);
             diagLog(`已新增待購物品至雲端 [${title}]`);
           } catch (err) {
             diagLog(`新增待購失敗: ${err.message}`, true);
@@ -944,7 +962,7 @@
     function renderTransactions() {
       const container = document.getElementById('transactions-list');
       const currentMonthStr = `${state.currentYear}-${String(state.currentMonth).padStart(2, '0')}`;
-      let filtered = state.transactions.filter(t => t.date && t.date.startsWith(currentMonthStr));
+      let filtered = state.transactions.filter(t => t.date && t.date.replace(/\//g, '-').startsWith(currentMonthStr));
 
       document.getElementById('transaction-count').innerText = `${filtered.length} 筆本月紀錄`;
 
@@ -956,16 +974,24 @@
         filtered = filtered.filter(t => t.type === 'expense' && (t.isFixed || t.category === '固定支出'));
       }
 
-      filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
+      filtered.sort((a, b) => {
+        const dateA = (a.date || '').replace(/\//g, '-');
+        const dateB = (b.date || '').replace(/\//g, '-');
+        if (dateB !== dateA) return dateB.localeCompare(dateA);
+        return String(b.id || '').localeCompare(String(a.id || ''));
+      });
 
       if (filtered.length === 0) {
-        container.innerHTML = `<div class="text-[10px] text-subText text-center py-4">無交易紀錄</div>`;
+        container.innerHTML = `<div class="text-[10px] text-subText text-center py-4 bg-[#FAF8F5] rounded-xl border border-dashed border-gray-200 mt-1">
+          本月尚無交易紀錄<br>
+          <span class="text-[9px] text-gray-400">點擊右上角「新增」即可開始記帳</span>
+        </div>`;
         return;
       }
 
       container.innerHTML = filtered.map(t => {
         const isExp = t.type === 'expense';
-        const dateParts = (t.date || '').split('-');
+        const dateParts = (t.date || '').replace(/\//g, '-').split('-');
         const dateDisplay = dateParts.length >= 3 ? `${parseInt(dateParts[1])}/${parseInt(dateParts[2])}` : t.date;
         const amountDisplay = isExp ? `-$${formatNumber(t.amount)}` : `+$${formatNumber(t.amount)}`;
         const amountColor = isExp ? 'text-gray-900' : 'text-emerald-700';
@@ -1019,20 +1045,27 @@
           document.getElementById('tx-id').value = item.id;
           document.getElementById('tx-title').value = item.title;
           document.getElementById('tx-amount').value = item.amount;
-          document.getElementById('tx-category').value = item.category;
-          document.getElementById('tx-date').value = item.date;
+          document.getElementById('tx-date').value = (item.date || '').replace(/\//g, '-');
           document.getElementById('tx-is-fixed').checked = !!item.isFixed || item.category === '固定支出';
-          setModalType(item.type);
+          
+          setModalType(item.type, false);
+          document.getElementById('tx-category').value = item.category;
         }
       } else {
         document.getElementById('modal-title').innerText = '新增交易';
         document.getElementById('tx-id').value = '';
         document.getElementById('tx-is-fixed').checked = false;
-        setModalType('expense');
+        setModalType('expense', false);
         
-        // 智能預設日期：當天日期
-        const today = new Date();
-        const dStr = `${state.currentYear}-${String(state.currentMonth).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+        // 打開新增支出時，避免殘留上次的「薪資」分類
+        const catSelect = document.getElementById('tx-category');
+        if (catSelect && catSelect.value === '薪資') {
+          catSelect.value = state.categories['飲食'] ? '飲食' : Object.keys(state.categories)[0];
+        }
+
+        const maxDaysInMonth = new Date(state.currentYear, state.currentMonth, 0).getDate();
+        const safeDay = Math.min(new Date().getDate(), maxDaysInMonth);
+        const dStr = `${state.currentYear}-${String(state.currentMonth).padStart(2, '0')}-${String(safeDay).padStart(2, '0')}`;
         document.getElementById('tx-date').value = dStr;
       }
 
@@ -1043,17 +1076,27 @@
       document.getElementById('tx-modal').classList.add('hidden');
     }
 
-    function setModalType(type) {
+    function setModalType(type, isUserAction = false) {
       document.getElementById('tx-type').value = type;
       const expBtn = document.getElementById('btn-type-expense');
       const incBtn = document.getElementById('btn-type-income');
+      const catSelect = document.getElementById('tx-category');
+      const fixedContainer = document.getElementById('tx-fixed-container');
 
       if (type === 'expense') {
         expBtn.className = "py-1.5 rounded-lg text-xs font-bold transition bg-white text-rose-600 shadow-sm";
         incBtn.className = "py-1.5 rounded-lg text-xs font-bold transition text-gray-600";
+        if (fixedContainer) fixedContainer.classList.remove('hidden');
+        if (isUserAction && catSelect && catSelect.value === '薪資') {
+          catSelect.value = state.categories['飲食'] ? '飲食' : Object.keys(state.categories)[0];
+        }
       } else {
         incBtn.className = "py-1.5 rounded-lg text-xs font-bold transition bg-white text-emerald-700 shadow-sm";
         expBtn.className = "py-1.5 rounded-lg text-xs font-bold transition text-gray-600";
+        if (fixedContainer) fixedContainer.classList.add('hidden');
+        if (isUserAction && catSelect && state.categories['薪資']) {
+          catSelect.value = '薪資';
+        }
       }
     }
 
@@ -1065,13 +1108,19 @@
 
     async function handleTransactionSubmit(e) {
       e.preventDefault();
+      const currentMonthStr = `${state.currentYear}-${String(state.currentMonth).padStart(2, '0')}`;
       const id = document.getElementById('tx-id').value;
       const title = document.getElementById('tx-title').value.trim();
       const amount = Number(document.getElementById('tx-amount').value);
-      const category = document.getElementById('tx-category').value;
-      const date = document.getElementById('tx-date').value;
+      const category = document.getElementById('tx-category').value || '其他';
+      const date = document.getElementById('tx-date').value || `${currentMonthStr}-01`;
       const type = document.getElementById('tx-type').value;
-      const isFixed = document.getElementById('tx-is-fixed').checked || category === '固定支出';
+      const isFixed = (type === 'expense') && (document.getElementById('tx-is-fixed').checked || category === '固定支出');
+
+      if (isNaN(amount) || amount <= 0) {
+        showToast('請輸入有效金額');
+        return;
+      }
 
       const txPayload = { title, amount, category, date, type, isFixed };
       closeTransactionModal();
@@ -1081,9 +1130,9 @@
         if (idx !== -1) state.transactions[idx] = { id, ...txPayload };
         saveToLocalStorage();
         render();
-        if (isCloudReady) {
+        if (isCloudReady && fbSetDoc && fbDoc) {
           try {
-            await setDoc(doc(db, 'shared_transactions', id), { id, ...txPayload });
+            await fbSetDoc(fbDoc(db, 'shared_transactions', id), { id, ...txPayload });
             diagLog(`已同步更新交易 [${title}]`);
           } catch (err) {
             diagLog(`更新交易失敗: ${err.message}`, true);
@@ -1096,9 +1145,9 @@
         state.transactions.unshift(fullTx);
         saveToLocalStorage();
         render();
-        if (isCloudReady) {
+        if (isCloudReady && fbSetDoc && fbDoc) {
           try {
-            await setDoc(doc(db, 'shared_transactions', newId), fullTx);
+            await fbSetDoc(fbDoc(db, 'shared_transactions', newId), fullTx);
             diagLog(`已新增交易至雲端 [${title}]`);
           } catch (err) {
             diagLog(`新增交易失敗: ${err.message}`, true);
@@ -1113,12 +1162,13 @@
     }
 
     async function deleteTransaction(id) {
+      if (!confirm('確定要刪除此筆交易紀錄嗎？')) return;
       state.transactions = state.transactions.filter(t => t.id !== id);
       saveToLocalStorage();
       render();
-      if (isCloudReady) {
+      if (isCloudReady && fbDeleteDoc && fbDoc) {
         try {
-          await deleteDoc(doc(db, 'shared_transactions', id));
+          await fbDeleteDoc(fbDoc(db, 'shared_transactions', id));
           diagLog(`已自雲端刪除交易 [${id}]`);
         } catch (err) {
           diagLog(`刪除交易失敗: ${err.message}`, true);
@@ -1134,6 +1184,8 @@
         const currentVal = select.value;
         select.innerHTML = '';
         Object.keys(state.categories).forEach(cat => {
+          // 待購清單合理排除「薪資」選項
+          if (selectId === 'wishlist-item-category' && cat === '薪資') return;
           const opt = document.createElement('option');
           opt.value = cat;
           opt.textContent = cat;
@@ -1161,7 +1213,7 @@
       const cats = Object.keys(state.categories);
       
       container.innerHTML = cats.map(cat => {
-        const isCore = ['飲食', '交通', '居住', '薪資', '固定支出'].includes(cat);
+        const isCore = CORE_CATEGORIES.includes(cat);
         const info = state.categories[cat];
 
         return `
@@ -1172,10 +1224,10 @@
               ${isCore ? '<span class="text-[8px] bg-gray-200 text-gray-600 px-1 py-0.5 rounded">內建</span>' : ''}
             </div>
             ${!isCore ? `
-              <button onclick="handleDeleteCategory('${cat}')" class="p-1 text-gray-400 hover:text-rose-600 transition" title="刪除類別">
+              <button onclick="handleDeleteCategory(this.getAttribute('data-cat'))" data-cat="${escapeHtml(cat)}" class="p-1 text-gray-400 hover:text-rose-600 transition" title="刪除類別">
                 <i class="ph ph-trash text-xs"></i>
               </button>
-            ` : '<span class="text-[9px] text-gray-300">預設</span>'}
+            ` : '<span class="text-[9px] text-gray-300">固定</span>'}
           </div>
         `;
       }).join('');
@@ -1184,7 +1236,7 @@
     async function handleAddCategory(e) {
       e.preventDefault();
       const input = document.getElementById('new-category-name');
-      const name = input.value.trim();
+      const name = input.value.trim().replace(/['"<>]/g, '');
       if (!name) return;
       if (state.categories[name]) {
         showToast('該類別已存在');
@@ -1201,9 +1253,9 @@
       renderCategoryManagementList();
       populateCategorySelects();
 
-      if (isCloudReady) {
+      if (isCloudReady && fbSetDoc && fbDoc) {
         try {
-          await setDoc(doc(db, 'shared_settings', 'categories'), { categories: state.categories });
+          await fbSetDoc(fbDoc(db, 'shared_settings', 'categories'), { categories: state.categories });
           diagLog(`已同步新增自訂類別 [${name}]`);
         } catch (err) {
           diagLog(`儲存類別失敗: ${err.message}`, true);
@@ -1212,6 +1264,15 @@
     }
 
     async function handleDeleteCategory(catName) {
+      if (!catName || CORE_CATEGORIES.includes(catName)) {
+        showToast('內建分類不可刪除');
+        return;
+      }
+
+      if (!confirm(`確定要刪除類別「${catName}」嗎？關聯紀錄將自動轉歸為「其他」。`)) {
+        return;
+      }
+
       delete state.categories[catName];
       const affectedTxs = [];
       state.transactions.forEach(t => {
@@ -1220,8 +1281,12 @@
           affectedTxs.push(t);
         }
       });
+      const affectedWish = [];
       state.wishlist.forEach(w => {
-        if (w.category === catName) w.category = '其他';
+        if (w.category === catName) {
+          w.category = '其他';
+          affectedWish.push(w);
+        }
       });
 
       saveToLocalStorage();
@@ -1230,15 +1295,18 @@
       populateCategorySelects();
       render();
 
-      if (isCloudReady) {
+      if (isCloudReady && fbWriteBatch && fbDoc) {
         try {
-          const batch = writeBatch(db);
-          batch.set(doc(db, 'shared_settings', 'categories'), { categories: state.categories });
+          const batch = fbWriteBatch(db);
+          batch.set(fbDoc(db, 'shared_settings', 'categories'), { categories: state.categories });
           affectedTxs.forEach(t => {
-            batch.update(doc(db, 'shared_transactions', t.id), { category: '其他' });
+            batch.set(fbDoc(db, 'shared_transactions', t.id), { category: '其他' }, { merge: true });
+          });
+          affectedWish.forEach(w => {
+            batch.set(fbDoc(db, 'shared_wishlist', w.id), { category: '其他' }, { merge: true });
           });
           await batch.commit();
-          diagLog(`已同步刪除類別 [${catName}] 並批次更新關聯交易`);
+          diagLog(`已同步刪除類別 [${catName}] 並安全批次更新關聯交易及待購清單`);
         } catch (err) {
           diagLog(`刪除類別失敗: ${err.message}`, true);
         }
@@ -1255,7 +1323,7 @@
 
       for (let m = 1; m <= 12; m++) {
         const mStr = `${year}-${String(m).padStart(2, '0')}`;
-        const txs = state.transactions.filter(t => t.date && t.date.startsWith(mStr));
+        const txs = state.transactions.filter(t => t.date && t.date.replace(/\//g, '-').startsWith(mStr));
         const inc = txs.filter(t => t.type === 'income').reduce((sum, t) => sum + Number(t.amount || 0), 0);
         const exp = txs.filter(t => t.type === 'expense').reduce((sum, t) => sum + Number(t.amount || 0), 0);
         const net = inc - exp;
@@ -1267,7 +1335,12 @@
       const totalYearNet = totalYearIncome - totalYearExpense;
       document.getElementById('year-total-income').innerText = formatCurrency(totalYearIncome);
       document.getElementById('year-total-expense').innerText = formatCurrency(totalYearExpense);
-      document.getElementById('year-net-savings').innerText = (totalYearNet >= 0 ? '+' : '') + formatCurrency(totalYearNet);
+      
+      const yearNetEl = document.getElementById('year-net-savings');
+      if (yearNetEl) {
+        yearNetEl.innerText = formatCurrency(totalYearNet);
+        yearNetEl.className = `text-[11px] font-bold font-sans truncate block mt-0.5 ${totalYearNet >= 0 ? 'text-sky-700' : 'text-rose-700'}`;
+      }
 
       const container = document.getElementById('annual-chart-container');
       const legend = document.getElementById('chart-legend');
@@ -1280,7 +1353,7 @@
         renderBarFlowChart(container, monthlyData);
       } else {
         legend.innerHTML = `
-          <span class="flex items-center gap-1"><span class="w-2 h-0.5 bg-sky-500 inline-block"></span>月淨結餘走勢</span>
+          <span class="flex items-center gap-1"><span class="w-2 h-0.5 bg-sky-500 inline-block"></span>月結餘趨勢</span>
         `;
         renderWaveTrendChart(container, monthlyData);
       }
@@ -1303,6 +1376,7 @@
 
         svg += `
           <g class="cursor-pointer group" onclick="jumpToMonth(${d.month})">
+            <rect x="${x}" y="0" width="${colWidth}" height="${chartHeight + 20}" fill="black" opacity="0" pointer-events="all" />
             ${isCurrent ? `<rect x="${x + 2}" y="0" width="${colWidth - 4}" height="${chartHeight + 18}" fill="#E8EEF5" rx="4" opacity="0.6"/>` : ''}
             ${incHeight > 0 ? `<rect x="${x + 3}" y="${chartHeight - incHeight}" width="${(colWidth - 8) / 2}" height="${incHeight}" fill="#10B981" rx="1.5" class="transition group-hover:opacity-80"/>` : ''}
             ${expHeight > 0 ? `<rect x="${x + 3 + (colWidth - 8) / 2 + 1}" y="${chartHeight - expHeight}" width="${(colWidth - 8) / 2}" height="${expHeight}" fill="#F43F5E" rx="1.5" class="transition group-hover:opacity-80"/>` : ''}
@@ -1320,10 +1394,12 @@
       const chartWidth = 320;
       const chartHeight = 85;
       const midY = chartHeight / 2;
-      const colWidth = chartWidth / 11;
+      const paddingX = 14;
+      const innerWidth = chartWidth - paddingX * 2;
+      const colWidth = innerWidth / 11;
 
       const points = data.map((d, idx) => {
-        const x = idx * colWidth;
+        const x = paddingX + idx * colWidth;
         const y = midY - (d.net / maxNet) * (midY - 8);
         return { x, y, net: d.net, month: d.month };
       });
@@ -1336,8 +1412,17 @@
         pathD += ` C ${cpX} ${p0.y}, ${cpX} ${p1.y}, ${p1.x} ${p1.y}`;
       }
 
+      let areaD = `${pathD} L ${points[points.length - 1].x} ${chartHeight} L ${points[0].x} ${chartHeight} Z`;
+
       let svg = `<svg viewBox="0 0 ${chartWidth} 115" class="w-full h-full overflow-visible">
+        <defs>
+          <linearGradient id="waveGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="#0284C7" stop-opacity="0.25"/>
+            <stop offset="100%" stop-color="#0284C7" stop-opacity="0.0"/>
+          </linearGradient>
+        </defs>
         <line x1="0" y1="${midY}" x2="${chartWidth}" y2="${midY}" stroke="#DDD7CD" stroke-dasharray="2 2" stroke-width="1" />
+        <path d="${areaD}" fill="url(#waveGrad)" />
         <path d="${pathD}" fill="none" stroke="#0284C7" stroke-width="2.5" stroke-linecap="round" />
       `;
 
@@ -1346,6 +1431,7 @@
         const dotColor = p.net > 0 ? '#10B981' : (p.net < 0 ? '#F43F5E' : '#94A3B8');
         svg += `
           <g class="cursor-pointer group" onclick="jumpToMonth(${p.month})">
+            <rect x="${p.x - colWidth / 2}" y="0" width="${colWidth}" height="${chartHeight + 20}" fill="black" opacity="0" pointer-events="all" />
             <circle cx="${p.x}" cy="${p.y}" r="${isCurrent ? 4.5 : 3}" fill="${dotColor}" stroke="#FFFFFF" stroke-width="1.5" class="transition group-hover:scale-125"/>
             <text x="${p.x}" y="${chartHeight + 14}" text-anchor="middle" font-size="8" font-weight="${isCurrent ? 'bold' : 'normal'}" fill="${isCurrent ? '#0284C7' : '#8E8B85'}">${p.month}月</text>
           </g>
@@ -1358,7 +1444,7 @@
 
     function render() {
       const currentMonthStr = `${state.currentYear}-${String(state.currentMonth).padStart(2, '0')}`;
-      const currentTxs = state.transactions.filter(t => t.date && t.date.startsWith(currentMonthStr));
+      const currentTxs = state.transactions.filter(t => t.date && t.date.replace(/\//g, '-').startsWith(currentMonthStr));
 
       renderOverview(currentTxs);
       renderCategories(currentTxs);
@@ -1370,19 +1456,46 @@
 
     async function runManualCloudTest() {
       diagLog("開始執行手動讀寫測試...");
+      if (!db || !fbDoc || !fbSetDoc) {
+        diagLog("Firebase SDK 尚未載入，請確認網路連線。", true);
+        showToast("資料庫尚未就緒");
+        return;
+      }
       try {
-        const testRef = doc(db, 'shared_settings', 'connection_test');
-        await setDoc(testRef, { lastPing: new Date().toISOString() });
+        const testRef = fbDoc(db, 'shared_settings', 'connection_test');
+        await fbSetDoc(testRef, { lastPing: new Date().toISOString() });
         diagLog("寫入測試成功！資料庫具有讀寫權限。");
         showToast("雲端連線與寫入測試成功！");
+        
+        isCloudReady = true;
+        const badgeDot = document.getElementById('cloud-pulse-dot');
+        const badgeText = document.getElementById('cloud-status-text');
+        const badgeBox = document.getElementById('cloud-status-badge');
+        const statusSummary = document.getElementById('diag-status-summary');
+        if (badgeDot && badgeText) {
+          badgeDot.className = "w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse";
+          badgeText.innerText = "已連線雲端";
+          badgeBox.className = "inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[9px] font-semibold border border-emerald-200 cursor-pointer hover:opacity-80 transition";
+        }
+        if (statusSummary) {
+          statusSummary.textContent = "即時連線正常";
+          statusSummary.className = "font-bold text-emerald-600";
+        }
       } catch (err) {
         diagLog(`寫入測試失敗: ${err.code || err.message}`, true);
+        showToast("寫入測試失敗，請檢查規則");
+        const statusSummary = document.getElementById('diag-status-summary');
+        if (statusSummary) {
+          statusSummary.textContent = `寫入失敗 (${err.code || '權限不足'})`;
+          statusSummary.className = "font-bold text-rose-600";
+        }
         if (err.code === 'permission-denied') {
           diagLog("👉 原因：Firestore 安全規則阻擋！請至 Firebase Console 改為 allow read, write: if true;", true);
         }
       }
     }
 
+    // 智能動態載入 Firebase (保障在無網路離線環境下整個介面依然正常可用)
     async function initCloudSync() {
       const badgeDot = document.getElementById('cloud-pulse-dot');
       const badgeText = document.getElementById('cloud-status-text');
@@ -1397,26 +1510,53 @@
       }, 5000);
 
       try {
-        diagLog("正在連線 Firebase 專案 [bank-39b8f]...");
-        app = initializeApp(firebaseConfig);
-        db = getFirestore(app);
+        diagLog("正在載入雲端模組並連線 Firebase 專案 [bank-39b8f]...");
+        
+        // 使用動態 import 防止斷網時整個 JS 腳本被瀏覽器拋棄
+        const appModule = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js");
+        const fsModule = await import("https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js");
+        
+        app = appModule.initializeApp(firebaseConfig);
+        db = fsModule.getFirestore(app);
 
-        // 1. 監聽交易紀錄
-        onSnapshot(collection(db, 'shared_transactions'), (snapshot) => {
+        fbDoc = fsModule.doc;
+        fbSetDoc = fsModule.setDoc;
+        fbUpdateDoc = fsModule.updateDoc;
+        fbDeleteDoc = fsModule.deleteDoc;
+        fbOnSnapshot = fsModule.onSnapshot;
+        fbCollection = fsModule.collection;
+        fbWriteBatch = fsModule.writeBatch;
+
+        // 1. 監聽交易紀錄（具備離線智慧合併防覆蓋保護）
+        fbOnSnapshot(fbCollection(db, 'shared_transactions'), (snapshot) => {
           clearTimeout(connectionTimeout);
           isCloudReady = true;
 
-          const loadedTxs = [];
-          snapshot.forEach(docSnap => loadedTxs.push({ id: docSnap.id, ...docSnap.data() }));
-          state.transactions = loadedTxs;
+          const remoteMap = new Map();
+          snapshot.forEach(docSnap => remoteMap.set(docSnap.id, { id: docSnap.id, ...docSnap.data() }));
+
+          if (!hasInitialTxSync && state.transactions.length > 0) {
+            // 首次同步檢查：若有本地新增但尚未上傳至雲端的紀錄，智慧補傳並合併
+            const missingInRemote = state.transactions.filter(t => !remoteMap.has(t.id));
+            if (missingInRemote.length > 0) {
+              diagLog(`智慧同步：自動補傳本地 ${missingInRemote.length} 筆離線紀錄至雲端...`);
+              missingInRemote.forEach(async (tx) => {
+                try { await fbSetDoc(fbDoc(db, 'shared_transactions', tx.id), tx); } catch (e) {}
+              });
+              missingInRemote.forEach(tx => remoteMap.set(tx.id, tx));
+            }
+          }
+
+          state.transactions = Array.from(remoteMap.values());
           saveToLocalStorage();
           render();
-          
-          diagLog(`成功接收交易更新，共 ${loadedTxs.length} 筆`);
+          hasInitialTxSync = true;
+          diagLog(`成功接收交易更新，共 ${state.transactions.length} 筆`);
+
           if (badgeDot && badgeText) {
             badgeDot.className = "w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse";
             badgeText.innerText = "已連線雲端";
-            badgeBox.className = "inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[9px] font-semibold border border-emerald-200 cursor-pointer";
+            badgeBox.className = "inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[9px] font-semibold border border-emerald-200 cursor-pointer hover:opacity-80 transition";
           }
           if (statusSummary) {
             statusSummary.textContent = "即時連線正常";
@@ -1424,26 +1564,40 @@
           }
         }, (err) => {
           clearTimeout(connectionTimeout);
+          isCloudReady = false;
           diagLog(`交易集合監聽失敗 [${err.code}]: ${err.message}`, true);
           showOfflineBadge(err.code || "連線受阻");
         });
 
-        // 2. 監聽待購清單
-        onSnapshot(collection(db, 'shared_wishlist'), (snapshot) => {
-          const loadedWish = [];
-          snapshot.forEach(docSnap => loadedWish.push({ id: docSnap.id, ...docSnap.data() }));
-          state.wishlist = loadedWish;
+        // 2. 監聽待購清單（具備離線智慧合併防覆蓋保護）
+        fbOnSnapshot(fbCollection(db, 'shared_wishlist'), (snapshot) => {
+          const remoteWishMap = new Map();
+          snapshot.forEach(docSnap => remoteWishMap.set(docSnap.id, { id: docSnap.id, ...docSnap.data() }));
+
+          if (!hasInitialWishSync && state.wishlist.length > 0) {
+            const missingWish = state.wishlist.filter(w => !remoteWishMap.has(w.id));
+            if (missingWish.length > 0) {
+              diagLog(`智慧同步：自動補傳本地 ${missingWish.length} 項離線待購至雲端...`);
+              missingWish.forEach(async (item) => {
+                try { await fbSetDoc(fbDoc(db, 'shared_wishlist', item.id), item); } catch (e) {}
+              });
+              missingWish.forEach(item => remoteWishMap.set(item.id, item));
+            }
+          }
+
+          state.wishlist = Array.from(remoteWishMap.values());
           saveToLocalStorage();
           renderWishlist();
-          diagLog(`成功接收待購清單更新，共 ${loadedWish.length} 項`);
+          hasInitialWishSync = true;
+          diagLog(`成功接收待購清單更新，共 ${state.wishlist.length} 項`);
         }, (err) => {
           diagLog(`待買集合監聽失敗: ${err.message}`, true);
         });
 
         // 3. 監聽自訂類別
-        onSnapshot(doc(db, 'shared_settings', 'categories'), (docSnap) => {
+        fbOnSnapshot(fbDoc(db, 'shared_settings', 'categories'), (docSnap) => {
           if (docSnap.exists()) {
-            state.categories = docSnap.data().categories || DEFAULT_CATEGORIES;
+            state.categories = { ...DEFAULT_CATEGORIES, ...(docSnap.data().categories || {}) };
             saveToLocalStorage();
             render();
             diagLog("自訂類別已更新");
@@ -1454,8 +1608,9 @@
 
       } catch (err) {
         clearTimeout(connectionTimeout);
-        diagLog(`Firebase 初始化失敗: ${err.message}`, true);
-        showOfflineBadge("初始化錯誤");
+        isCloudReady = false;
+        diagLog(`Firebase 載入或連線失敗: ${err.message}，已自動切換純本地模式`, true);
+        showOfflineBadge("純離線模式");
       }
     }
 
@@ -1467,7 +1622,7 @@
       if (badgeDot && badgeText) {
         badgeDot.className = "w-1.5 h-1.5 rounded-full bg-rose-500";
         badgeText.innerText = "本地離線運作中";
-        badgeBox.className = "inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 text-[9px] font-semibold border border-rose-200 cursor-pointer";
+        badgeBox.className = "inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 text-[9px] font-semibold border border-rose-200 cursor-pointer hover:opacity-80 transition";
       }
       if (statusSummary) {
         statusSummary.textContent = `未連線 (${reason})`;
@@ -1475,7 +1630,7 @@
       }
     }
 
-    // 全域暴露給 inline onclick
+    // 暴露全域事件供 HTML 行內調用
     Object.assign(window, {
       changeMonth,
       jumpToMonth,
@@ -1504,7 +1659,7 @@
       handleBackdropClick
     });
 
-    // 啟動渲染
+    // 啟動頁面本地渲染與背景雲端連線
     render();
     initCloudSync();
   </script>
