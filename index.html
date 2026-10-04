@@ -817,23 +817,23 @@
           const cardBg = isPurchased ? 'bg-[#F5F2ED] opacity-80' : 'bg-white hover:bg-gray-50';
 
           return `
-            <div class="flex items-center justify-between p-1.5 rounded-lg border border-[#ECE6DB] ${cardBg} transition group">
-              <div class="flex items-center gap-1.5 flex-1 min-w-0">
+            <div class="flex items-center justify-between px-1 py-1.5 rounded-lg border border-[#ECE6DB] ${cardBg} transition group">
+              <div class="flex items-center gap-1 flex-1 min-w-0 pr-1">
                 <input type="checkbox" ${isPurchased ? 'checked' : ''} onchange="toggleWishlistPurchased('${item.id}')" class="compact-checkbox w-3.5 h-3.5 rounded text-emerald-700 cursor-pointer flex-shrink-0" title="勾選代表已付款扣錢">
                 <div class="min-w-0 flex-1">
-                  <span class="text-[11px] ${textStyle} truncate block">${escapeHtml(item.title)}</span>
+                  <span class="text-[11px] ${textStyle} truncate block leading-tight">${escapeHtml(item.title)}</span>
                 </div>
               </div>
 
-              <div class="flex items-center gap-1 flex-shrink-0 ml-1">
-                <span class="text-[11px] font-bold font-sans ${isPurchased ? 'line-through text-gray-400' : 'text-gray-800'}">
+              <div class="flex items-center gap-0.5 flex-shrink-0 -mr-0.5">
+                <span class="text-[10px] sm:text-[11px] font-bold font-sans ${isPurchased ? 'line-through text-gray-400' : 'text-gray-800'} mr-0.5">
                   ${formatCurrency(item.price)}
                 </span>
-                <button onclick="editWishlistItem('${item.id}')" title="編輯" class="w-5 h-5 flex items-center justify-center rounded text-gray-400 hover:text-gray-700 transition">
-                  <i class="ph ph-pencil-simple text-[10px]"></i>
+                <button onclick="editWishlistItem('${item.id}')" title="編輯" class="w-4 h-5 flex items-center justify-center text-gray-400 hover:text-gray-700 transition">
+                  <i class="ph ph-pencil-simple text-[11px]"></i>
                 </button>
-                <button onclick="deleteWishlistItem('${item.id}')" title="刪除" class="w-5 h-5 flex items-center justify-center rounded text-gray-400 hover:text-rose-600 transition">
-                  <i class="ph ph-trash text-[10px]"></i>
+                <button onclick="deleteWishlistItem('${item.id}')" title="刪除" class="w-4 h-5 flex items-center justify-center text-gray-400 hover:text-rose-600 transition">
+                  <i class="ph ph-trash text-[11px]"></i>
                 </button>
               </div>
             </div>
@@ -977,8 +977,16 @@
         
         if (isFixed) {
           const [yr, mo] = month.split('-').map(Number);
-          for (let m = mo + 1; m <= 12; m++) {
+          // 改為 1 到 12 月全年度同步（包括 9 月等過去月份）
+          for (let m = 1; m <= 12; m++) {
             const mStr = `${yr}-${String(m).padStart(2, '0')}`;
+            // 同時清理該月份的忽略黑名單，確保能正常寫入
+            const ignoredKey = `budget_ignored_fixed_${mStr}`;
+            const ignoredList = safeJSONParse(localStorage.getItem(ignoredKey), []);
+            if (ignoredList.includes(title)) {
+              localStorage.setItem(ignoredKey, JSON.stringify(ignoredList.filter(t => t !== title)));
+            }
+
             const exists = state.wishlist.some(w => w.month === mStr && w.title === title);
             if (!exists) {
               const cloneId = `w_${Date.now()}_${Math.floor(Math.random()*1000)}`;
