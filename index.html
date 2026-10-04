@@ -48,6 +48,13 @@
       background-color: #15803D;
       border-color: #15803D;
     }
+    .chart-num-label {
+      paint-order: stroke fill;
+      stroke: #FFFFFF;
+      stroke-width: 2.5px;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
   </style>
 </head>
 <body class="flex justify-center min-h-screen py-0 sm:py-4 text-[#24211E]">
@@ -215,7 +222,7 @@
         </div>
       </section>
 
-      <!-- Annual Trends (全年總支出與淨結餘已嚴格限制僅統計剔選項) -->
+      <!-- Annual Trends -->
       <section class="bg-cardBg rounded-2xl p-3 shadow-sm border border-[#EBE7E0] space-y-2">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-1.5">
@@ -250,18 +257,18 @@
           </div>
         </div>
 
-        <div class="relative bg-[#FCFBF9] p-2 rounded-xl border border-[#F0ECE4]">
-          <div id="annual-chart-container" class="w-full h-32 flex items-center justify-center"></div>
-          <div class="flex items-center justify-between text-[8px] text-subText pt-1 px-0.5">
+        <!-- 圖表外框：加高至 h-44，上下填充更舒適，空間完全釋放 -->
+        <div class="relative bg-[#FCFBF9] p-2.5 rounded-xl border border-[#F0ECE4]">
+          <div id="annual-chart-container" class="w-full h-44 flex items-center justify-center"></div>
+          <div class="flex items-center justify-between text-[8px] text-subText pt-1.5 px-0.5 border-t border-gray-100/80 mt-1">
             <div id="chart-legend" class="flex items-center gap-2"></div>
-            <span class="text-gray-400">點選月份柱位可切換</span>
           </div>
         </div>
       </section>
 
     </div>
 
-    <!-- Modal: 新增/編輯待付項目（手機端與電腦端皆垂直居中 items-center） -->
+    <!-- Modal: 新增/編輯待付項目 -->
     <div id="wishlist-modal" onclick="handleBackdropClick(event, 'wishlist-modal')" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div class="bg-white w-full max-w-md rounded-2xl p-4 shadow-2xl space-y-3 border border-[#ECE8E1]">
         <div class="flex items-center justify-between border-b pb-2 border-gray-100">
@@ -295,6 +302,15 @@
             <input type="text" id="wishlist-item-note" class="w-full px-3 py-2 bg-[#FAF8F5] border border-gray-200 rounded-xl focus:outline-none focus:border-brandDark">
           </div>
 
+          <!-- 自動順延開關 -->
+          <div id="rollover-setting-container" class="flex items-center justify-between p-2 bg-[#FAF8F5] rounded-xl border border-gray-200">
+            <div>
+              <span class="text-[11px] font-semibold text-gray-700 block">自動順延至下月</span>
+              <span class="text-[9px] text-gray-400 block">若當月結束前未付款，自動順延至新月份</span>
+            </div>
+            <input type="checkbox" id="wishlist-item-rollover" class="compact-checkbox w-4 h-4 rounded text-emerald-700 cursor-pointer">
+          </div>
+
           <div class="pt-2 flex gap-2">
             <button type="button" onclick="closeWishlistModal()" class="flex-1 py-2 bg-[#EAE6DE] text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition">取消</button>
             <button type="submit" class="flex-1 py-2 bg-emerald-800 text-white font-semibold rounded-xl hover:opacity-95 transition">儲存項目</button>
@@ -303,7 +319,7 @@
       </div>
     </div>
 
-    <!-- Modal: 新增/編輯收入項目（手機端與電腦端皆垂直居中 items-center） -->
+    <!-- Modal: 新增/編輯收入項目 -->
     <div id="income-modal" onclick="handleBackdropClick(event, 'income-modal')" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div class="bg-white w-full max-w-md rounded-2xl p-4 shadow-2xl space-y-3 border border-[#ECE8E1]">
         <div class="flex items-center justify-between border-b pb-2 border-gray-100">
@@ -347,7 +363,7 @@
 
   </main>
 
-  <script>
+<script>
     const firebaseConfig = {
       apiKey: "AIzaSyCNnxw-1bOcdR6SUXaTwkn0bFJGyA3Jtz0",
       authDomain: "bank-39b8f.firebaseapp.com",
@@ -436,9 +452,7 @@
       toastTimer = setTimeout(() => toast.classList.add('hidden'), 2000);
     }
 
-    // 解決選取文字滑動到視窗外被誤關閉的問題
     function handleBackdropClick(event, modalId) {
-      // 確保點擊起始與釋放都在背景本身，且不是在選取文字操作
       const selection = window.getSelection();
       if (selection && selection.toString().length > 0) return;
       if (event.target.id === modalId) {
@@ -503,17 +517,47 @@
       }
     }
 
+    async function rolloverUnpurchasedItems() {
+      const realNow = new Date();
+      const realYear = realNow.getFullYear();
+      const realMonth = realNow.getMonth() + 1;
+      const realMonthStr = `${realYear}-${String(realMonth).padStart(2, '0')}`;
+      
+      let movedCount = 0;
+
+      for (let item of state.wishlist) {
+        if (!item.isFixed && item.category !== '固定' && !item.purchased && item.autoRollover) {
+          if (item.month && item.month < realMonthStr) {
+            item.month = realMonthStr;
+            movedCount++;
+            if (isCloudReady && fbSetDoc && fbDoc) {
+              try { 
+                await fbSetDoc(fbDoc(db, 'shared_wishlist', item.id), { month: realMonthStr }, { merge: true }); 
+              } catch (e) {}
+            }
+          }
+        }
+      }
+
+      if (movedCount > 0) {
+        saveToLocalStorage();
+        showToast(`已依現實時間自動順延 ${movedCount} 項未購買物品至本月`);
+      }
+    }
+
     async function changeMonth(delta) {
       state.currentMonth += delta;
       if (state.currentMonth > 12) { state.currentMonth = 1; state.currentYear++; }
       else if (state.currentMonth < 1) { state.currentMonth = 12; state.currentYear--; }
       await syncFixedItemsToMonth(state.currentYear, state.currentMonth);
+      await rolloverUnpurchasedItems();
       render();
     }
 
     async function jumpToMonth(targetMonth) {
       state.currentMonth = targetMonth;
       await syncFixedItemsToMonth(state.currentYear, state.currentMonth);
+      await rolloverUnpurchasedItems();
       render();
       showToast(`已切換至 ${state.currentYear}年${targetMonth}月`);
     }
@@ -540,7 +584,6 @@
       renderAnnualChart();
     }
 
-    // 核心概覽計算：嚴格保證只有「打剔（purchased/received === true）」的款項才扣款／入帳
     function renderOverview() {
       document.getElementById('current-month-display').innerText = `${state.currentYear}年${state.currentMonth}月`;
 
@@ -550,21 +593,16 @@
       const fixedItems = currentMonthItems.filter(i => i.category === '固定' || i.isFixed);
       const variableItems = currentMonthItems.filter(i => i.category !== '固定' && !i.isFixed);
 
-      // 固定欄位與不固定欄位的預估待付總額 (不管打不打勾皆顯示預算總額)
       const fixedSum = fixedItems.reduce((s, i) => s + Number(i.price || 0), 0);
       const variableSum = variableItems.reduce((s, i) => s + Number(i.price || 0), 0);
 
-      // 真正扣款的開支（只有勾選 purchased === true 才是真實支出）
       const currentPurchasedExpense = currentMonthItems.filter(i => i.purchased).reduce((s, i) => s + Number(i.price || 0), 0);
       const allPurchasedExpense = state.wishlist.filter(i => i.purchased).reduce((s, i) => s + Number(i.price || 0), 0);
 
-      // 真正入帳的收入（只有勾選 received === true 才是真實進帳）
       const currentSettledIncome = currentMonthIncomes.filter(i => i.received).reduce((s, i) => s + Number(i.price || 0), 0);
       const allSettledIncome = state.incomes.filter(i => i.received).reduce((s, i) => s + Number(i.price || 0), 0);
       
-      // 總資產 = 歷史已入帳收入 - 歷史已打剔支出
       const totalWealth = allSettledIncome - allPurchasedExpense;
-      // 本月可用餘額 = 當月已入帳收入 - 當月已打剔支出
       const remaining = currentSettledIncome - currentPurchasedExpense;
 
       document.getElementById('total-wealth-amount').innerText = formatCurrency(totalWealth);
@@ -714,7 +752,7 @@
         document.getElementById('income-item-month').value = currentMonthStr;
       }
       document.getElementById('income-modal').classList.remove('hidden');
-    } // 👈 補上這個括號
+    }
 
     function closeIncomeModal() {
       document.getElementById('income-modal').classList.add('hidden');
@@ -801,14 +839,12 @@
       document.getElementById('wishlist-progress-percent').innerText = `${progressPercent}%`;
       document.getElementById('wishlist-progress-bar').style.width = `${progressPercent}%`;
 
-      // 輔助函式：提取項目的建立時間戳，若無則回退比對 ID 字串
       const getItemTimestamp = (item) => {
         const idStr = String(item.id || '');
         const match = idStr.match(/\d{13}/) || idStr.match(/\d{10,}/);
         return match ? parseInt(match[0], 10) : 0;
       };
 
-      // 固定區：最新新增的排在最上面 (由新到舊倒序)
       const fixedItems = currentMonthWishlist
         .filter(i => i.category === '固定' || i.isFixed)
         .sort((a, b) => {
@@ -818,7 +854,6 @@
           return String(b.id || '').localeCompare(String(a.id || ''));
         });
 
-      // 不固定區：最新新增的排在最上面 (由新到舊倒序)
       const variableItems = currentMonthWishlist
         .filter(i => i.category !== '固定' && !i.isFixed)
         .sort((a, b) => {
@@ -885,6 +920,8 @@
       const form = document.getElementById('wishlist-form');
       form.reset();
       const currentMonthStr = `${state.currentYear}-${String(state.currentMonth).padStart(2, '0')}`;
+      const rolloverContainer = document.getElementById('rollover-setting-container');
+      const rolloverCheck = document.getElementById('wishlist-item-rollover');
 
       if (editId) {
         const item = state.wishlist.find(w => w.id === editId);
@@ -896,12 +933,16 @@
           document.getElementById('wishlist-item-price').value = item.price;
           document.getElementById('wishlist-item-category').value = item.category || '不固定';
           document.getElementById('wishlist-item-note').value = item.note || '';
+          if (rolloverCheck) rolloverCheck.checked = !!item.autoRollover;
+          if (rolloverContainer) rolloverContainer.style.display = (item.category === '固定' || item.isFixed) ? 'none' : 'flex';
         }
       } else {
         document.getElementById('wishlist-modal-title').innerText = defaultCategory === '固定' ? '新增固定項目' : '新增不固定項目';
         document.getElementById('wishlist-edit-id').value = '';
         document.getElementById('wishlist-item-month').value = currentMonthStr;
         document.getElementById('wishlist-item-category').value = defaultCategory;
+        if (rolloverCheck) rolloverCheck.checked = (defaultCategory !== '固定');
+        if (rolloverContainer) rolloverContainer.style.display = (defaultCategory === '固定') ? 'none' : 'flex';
       }
       document.getElementById('wishlist-modal').classList.remove('hidden');
     }
@@ -971,13 +1012,14 @@
       const category = document.getElementById('wishlist-item-category').value || '不固定';
       const note = document.getElementById('wishlist-item-note').value.trim();
       const isFixed = (category === '固定');
+      const autoRollover = !isFixed && document.getElementById('wishlist-item-rollover').checked;
 
       if (isNaN(price) || price <= 0) {
         showToast('請輸入有效金額');
         return;
       }
 
-      const itemData = { title, month, price, category, note, isFixed };
+      const itemData = { title, month, price, category, note, isFixed, autoRollover };
       closeWishlistModal();
 
       if (id) {
@@ -998,10 +1040,8 @@
         
         if (isFixed) {
           const [yr, mo] = month.split('-').map(Number);
-          // 改為 1 到 12 月全年度同步（包括 9 月等過去月份）
           for (let m = 1; m <= 12; m++) {
             const mStr = `${yr}-${String(m).padStart(2, '0')}`;
-            // 同時清理該月份的忽略黑名單，確保能正常寫入
             const ignoredKey = `budget_ignored_fixed_${mStr}`;
             const ignoredList = safeJSONParse(localStorage.getItem(ignoredKey), []);
             if (ignoredList.includes(title)) {
@@ -1031,7 +1071,6 @@
       }
     }
 
-    // 全年走勢圖計算修復：嚴格限定只有打勾的收入與打勾的支出才納入統計！
     function renderAnnualChart() {
       const year = state.currentYear;
       document.getElementById('annual-year-badge').innerText = `${year}年`;
@@ -1072,7 +1111,7 @@
         renderBarFlowChart(container, monthlyData);
       } else {
         legend.innerHTML = `
-          <div class="flex items-center gap-2 flex-wrap">
+          <div class="flex items-center gap-2.5 flex-wrap">
             <span class="flex items-center gap-1"><span class="w-2.5 h-0.5 bg-[#10B981] rounded inline-block"></span>收入</span>
             <span class="flex items-center gap-1"><span class="w-2.5 h-0.5 bg-[#F43F5E] rounded inline-block"></span>支出</span>
             <span class="flex items-center gap-1"><span class="w-2.5 h-0.5 bg-[#0284C7] rounded inline-block"></span>結餘</span>
@@ -1084,26 +1123,26 @@
 
     function renderBarFlowChart(container, data) {
       const maxVal = Math.max(...data.map(d => Math.max(d.income, d.expense)), 10000);
-      const chartHeight = 85;
-      const chartWidth = 330;
+      const chartHeight = 110;
+      const chartWidth = 360;
       const colWidth = chartWidth / 12;
 
-      let svg = `<svg viewBox="0 0 ${chartWidth} 115" class="w-full h-full overflow-visible">`;
+      let svg = `<svg viewBox="0 0 ${chartWidth} 140" class="w-full h-full overflow-visible">`;
       svg += `<line x1="0" y1="${chartHeight}" x2="${chartWidth}" y2="${chartHeight}" stroke="#E5E0D5" stroke-width="1" />`;
 
       data.forEach((d, idx) => {
         const x = idx * colWidth;
-        const incHeight = d.income > 0 ? (d.income / maxVal) * (chartHeight - 10) : 0;
-        const expHeight = d.expense > 0 ? (d.expense / maxVal) * (chartHeight - 10) : 0;
+        const incHeight = d.income > 0 ? (d.income / maxVal) * (chartHeight - 12) : 0;
+        const expHeight = d.expense > 0 ? (d.expense / maxVal) * (chartHeight - 12) : 0;
         const isCurrent = d.month === state.currentMonth;
 
         svg += `
           <g class="cursor-pointer group" onclick="jumpToMonth(${d.month})">
-            <rect x="${x}" y="0" width="${colWidth}" height="${chartHeight + 20}" fill="black" opacity="0" pointer-events="all" />
-            ${isCurrent ? `<rect x="${x + 2}" y="0" width="${colWidth - 4}" height="${chartHeight + 18}" fill="#E8EEF5" rx="4" opacity="0.6"/>` : ''}
+            <rect x="${x}" y="0" width="${colWidth}" height="${chartHeight + 24}" fill="black" opacity="0" pointer-events="all" />
+            ${isCurrent ? `<rect x="${x + 2}" y="0" width="${colWidth - 4}" height="${chartHeight + 22}" fill="#E8EEF5" rx="4" opacity="0.6"/>` : ''}
             ${incHeight > 0 ? `<rect x="${x + 2}" y="${chartHeight - incHeight}" width="${(colWidth - 6) / 2}" height="${incHeight}" fill="#10B981" rx="1.5" class="transition group-hover:opacity-80"/>` : ''}
             ${expHeight > 0 ? `<rect x="${x + 2 + (colWidth - 6) / 2 + 1}" y="${chartHeight - expHeight}" width="${(colWidth - 6) / 2}" height="${expHeight}" fill="#F43F5E" rx="1.5" class="transition group-hover:opacity-80"/>` : ''}
-            <text x="${x + colWidth / 2}" y="${chartHeight + 14}" text-anchor="middle" font-size="8" font-weight="${isCurrent ? 'bold' : 'normal'}" fill="${isCurrent ? '#0284C7' : '#8E8B85'}">${d.month}月</text>
+            <text x="${x + colWidth / 2}" y="${chartHeight + 16}" text-anchor="middle" font-size="8" font-weight="${isCurrent ? 'bold' : 'normal'}" fill="${isCurrent ? '#0284C7' : '#8E8B85'}">${d.month}月</text>
           </g>
         `;
       });
@@ -1113,22 +1152,21 @@
     }
 
     function renderWaveTrendChart(container, data) {
-      const svgWidth = 330;
-      const svgHeight = 118;
+      // 外框加高加寬，滿版舒展
+      const svgWidth = 380;
+      const svgHeight = 160;
       
-      const plotLeft = 34;
-      const plotRight = 320;
-      const plotTop = 18;
-      const plotBottom = 92;
+      const plotLeft = 24;
+      const plotRight = 372;
+      const plotTop = 26;
+      const plotBottom = 122;
       const plotWidth = plotRight - plotLeft;
       const plotHeight = plotBottom - plotTop;
 
-      // 取得三條線的所有數值以決定統一的 Y 軸範圍
-      const allValues = data.flatMap(d => [d.income, d.expense, d.net]);
-      const maxVal = Math.max(...allValues, 1000);
-      const minVal = Math.min(...allValues, 0);
+      const allVals = data.flatMap(d => [d.income, d.expense, d.net]);
+      const maxVal = Math.max(...allVals, 1000);
+      const minVal = Math.min(...allVals, 0);
 
-      // 計算漂亮的等距步長 (Step)
       const absMax = Math.max(Math.abs(maxVal), Math.abs(minVal), 2000);
       let step = 1000;
       if (absMax > 30000) step = 10000;
@@ -1138,61 +1176,70 @@
 
       const topVal = Math.max(Math.ceil(maxVal / step) * step, step);
       const bottomVal = minVal < 0 ? Math.floor(minVal / step) * step : 0;
+      const range = topVal - bottomVal || 1;
 
-      // 生成完全等距的 Y 軸刻度線
+      // 嚴格依照 12 等分置中對齊
+      const colStep = plotWidth / 11;
+      const valToY = (v) => plotBottom - ((v - bottomVal) / range) * plotHeight;
+
+      const points = data.map((d, idx) => {
+        const x = plotLeft + idx * colStep;
+        return {
+          month: d.month,
+          x: x,
+          yInc: valToY(d.income),
+          yExp: valToY(d.expense),
+          yNet: valToY(d.net),
+          income: d.income,
+          expense: d.expense,
+          net: d.net
+        };
+      });
+
+      // 自然平滑路徑
+      const getSmoothPath = (pts, key) => {
+        if (!pts || pts.length === 0) return '';
+        let path = `M ${pts[0].x} ${pts[0][key]}`;
+        const n = pts.length;
+
+        for (let i = 0; i < n - 1; i++) {
+          const p1 = pts[i];
+          const p2 = pts[i + 1];
+          const cpX = (p1.x + p2.x) / 2;
+          let cp1y = p1[key];
+          let cp2y = p2[key];
+          path += ` C ${cpX} ${cp1y}, ${cpX} ${cp2y}, ${p2.x} ${p2[key]}`;
+        }
+        return path;
+      };
+
+      const pathIncome = getSmoothPath(points, 'yInc');
+      const pathExpense = getSmoothPath(points, 'yExp');
+      const pathNet = getSmoothPath(points, 'yNet');
+
+      const zeroY = Math.min(Math.max(valToY(0), plotTop), plotBottom);
+      const areaNet = `${pathNet} L ${points[points.length - 1].x} ${zeroY} L ${points[0].x} ${zeroY} Z`;
+
       let ticks = [];
       for (let v = bottomVal; v <= topVal; v += step) ticks.push(v);
       if (!ticks.includes(0)) ticks.push(0);
       ticks.sort((a, b) => a - b);
 
-      const valToY = (v) => {
-        const range = topVal - bottomVal || 1;
-        const ratio = (v - bottomVal) / range;
-        return plotBottom - ratio * plotHeight;
-      };
-
-      const colStep = (plotWidth - 10) / 11;
-
-      // 生成貝茲曲線路徑指令
-      const buildCurvePath = (pts) => {
-        let p = `M ${pts[0].x} ${pts[0].y}`;
-        for (let i = 0; i < pts.length - 1; i++) {
-          const cpX = (pts[i].x + pts[i + 1].x) / 2;
-          p += ` C ${cpX} ${pts[i].y}, ${cpX} ${pts[i + 1].y}, ${pts[i + 1].x} ${pts[i + 1].y}`;
-        }
-        return p;
-      };
-
-      // 計算 3 條線的座標點
-      const incomePoints = data.map((d, idx) => ({ x: plotLeft + 5 + idx * colStep, y: valToY(d.income), val: d.income, month: d.month }));
-      const expensePoints = data.map((d, idx) => ({ x: plotLeft + 5 + idx * colStep, y: valToY(d.expense), val: d.expense, month: d.month }));
-      const netPoints = data.map((d, idx) => ({ x: plotLeft + 5 + idx * colStep, y: valToY(d.net), val: d.net, month: d.month }));
-
-      const pathIncome = buildCurvePath(incomePoints);
-      const pathExpense = buildCurvePath(expensePoints);
-      const pathNet = buildCurvePath(netPoints);
-
-      // 結餘底部的半透明陰影區域
-      const zeroY = Math.min(Math.max(valToY(0), plotTop), plotBottom);
-      const areaNet = `${pathNet} L ${netPoints[netPoints.length - 1].x} ${zeroY} L ${netPoints[0].x} ${zeroY} Z`;
-
       let svg = `<svg viewBox="0 0 ${svgWidth} ${svgHeight}" class="w-full h-full overflow-visible">
         <defs>
           <linearGradient id="netAreaGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#0284C7" stop-opacity="0.25"/>
+            <stop offset="0%" stop-color="#0284C7" stop-opacity="0.22"/>
             <stop offset="100%" stop-color="#0284C7" stop-opacity="0.0"/>
           </linearGradient>
         </defs>
       `;
 
-      // 繪製背景水平網格刻度線
+      // 1. 繪製橫向參考線
       ticks.forEach(t => {
         const yPos = valToY(t);
         const isZero = (t === 0);
         const labelText = Math.abs(t) >= 10000 ? `${t / 1000}k` : Number(t).toLocaleString();
-
-        svg += `<text x="${plotLeft - 4}" y="${yPos + 2.5}" text-anchor="end" font-size="7" font-family="Inter, sans-serif" font-weight="${isZero ? '600' : '400'}" fill="${isZero ? '#475569' : '#94A3B8'}">${labelText}</text>`;
-
+        svg += `<text x="${plotLeft - 4}" y="${yPos + 2.5}" text-anchor="end" font-size="6.5" font-family="Inter, sans-serif" font-weight="${isZero ? '600' : '400'}" fill="${isZero ? '#475569' : '#94A3B8'}">${labelText}</text>`;
         if (isZero) {
           svg += `<line x1="${plotLeft}" y1="${yPos}" x2="${plotRight}" y2="${yPos}" stroke="#CBD5E1" stroke-width="1.2" />`;
         } else {
@@ -1200,7 +1247,7 @@
         }
       });
 
-      // 繪製路徑（結餘陰影、3 條走勢曲線）
+      // 2. 繪製折線與陰影（處於文字與圓點下方）
       svg += `
         <path d="${areaNet}" fill="url(#netAreaGrad)" />
         <path d="${pathIncome}" fill="none" stroke="#10B981" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
@@ -1208,51 +1255,67 @@
         <path d="${pathNet}" fill="none" stroke="#0284C7" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
       `;
 
-      // 繪製 12 個月份的節點與互動
-      data.forEach((d, idx) => {
-        const isCurrent = d.month === state.currentMonth;
-        const x = plotLeft + 5 + idx * colStep;
-        const pInc = incomePoints[idx];
-        const pExp = expensePoints[idx];
-        const pNet = netPoints[idx];
+      // 3. 繪製圓點、對齊線與月份文字
+      points.forEach(p => {
+        const isCurrent = p.month === state.currentMonth;
 
-        svg += `<g class="cursor-pointer group" onclick="jumpToMonth(${d.month})">`;
+        svg += `<g>`;
 
-        // 當前選中月份的高亮指示線與浮動標籤
         if (isCurrent) {
-          svg += `<line x1="${x}" y1="${plotTop}" x2="${x}" y2="${plotBottom}" stroke="#0284C7" stroke-width="1" stroke-dasharray="2 2" opacity="0.6"/>`;
-
-          // 浮動提示小氣泡（顯示結餘淨值）
-          const displayNet = d.net > 0 ? ('+' + formatCurrency(d.net)) : formatCurrency(d.net);
-          const badgeY = (pNet.y < 30) ? (pNet.y + 7) : (pNet.y - 17);
-          const tooltipY = (pNet.y < 30) ? (pNet.y + 15) : (pNet.y - 8);
-          const badgeX = Math.min(Math.max(x, 32), 295);
-
-          svg += `
-            <g pointer-events="none">
-              <rect x="${badgeX - 27}" y="${badgeY}" width="54" height="12" rx="3.5" fill="#1E293B" filter="drop-shadow(0 1px 2px rgba(0,0,0,0.18))"/>
-              <text x="${badgeX}" y="${tooltipY}" text-anchor="middle" font-size="6.5" font-family="Inter, sans-serif" font-weight="bold" fill="#FFFFFF">${displayNet}</text>
-            </g>
-          `;
+          svg += `<line x1="${p.x}" y1="${plotTop}" x2="${plotBottom}" stroke="#0284C7" stroke-width="1" stroke-dasharray="2 2" opacity="0.35"/>`;
         }
 
-        // 3 條線的數據圓點
+        // 3 條線的節點圓點
         svg += `
-          <circle cx="${x}" cy="${pInc.y}" r="${isCurrent ? 3.5 : 2}" fill="#10B981" stroke="#FFFFFF" stroke-width="1" class="transition group-hover:scale-125"/>
-          <circle cx="${x}" cy="${pExp.y}" r="${isCurrent ? 3.5 : 2}" fill="#F43F5E" stroke="#FFFFFF" stroke-width="1" class="transition group-hover:scale-125"/>
-          <circle cx="${x}" cy="${pNet.y}" r="${isCurrent ? 4.5 : 2.5}" fill="#0284C7" stroke="#FFFFFF" stroke-width="1.5" class="transition group-hover:scale-125"/>
+          <circle cx="${p.x}" cy="${p.yInc}" r="${p.income > 0 ? 2.5 : 1.5}" fill="#10B981" stroke="#FFFFFF" stroke-width="0.8"/>
+          <circle cx="${p.x}" cy="${p.yExp}" r="${p.expense > 0 ? 2.5 : 1.5}" fill="#F43F5E" stroke="#FFFFFF" stroke-width="0.8"/>
+          <circle cx="${p.x}" cy="${p.yNet}" r="${p.net !== 0 ? 3.2 : 2}" fill="#0284C7" stroke="#FFFFFF" stroke-width="1"/>
         `;
 
-        // 月份標籤 (當前月帶有淺藍膠囊背景)
+        // 月份文字
         if (isCurrent) {
-          svg += `<rect x="${x - 10}" y="98" width="20" height="12" rx="3.5" fill="#E0F2FE" />`;
+          svg += `<rect x="${p.x - 9}" y="130" width="18" height="12" rx="3.5" fill="#E0F2FE" />`;
         }
-        svg += `<text x="${x}" y="107" text-anchor="middle" font-size="7.5" font-family="Inter, sans-serif" font-weight="${isCurrent ? 'bold' : 'normal'}" fill="${isCurrent ? '#0284C7' : '#8E8B85'}">${d.month}月</text>`;
+        svg += `<text x="${p.x}" y="139" text-anchor="middle" font-size="7.5" font-family="Inter, sans-serif" font-weight="${isCurrent ? 'bold' : 'normal'}" fill="${isCurrent ? '#0284C7' : '#8E8B85'}">${p.month}月</text>`;
 
-        // 透明點擊感應熱區
-        svg += `<rect x="${x - colStep / 2}" y="0" width="${colStep}" height="${svgHeight}" fill="black" opacity="0" pointer-events="all" />`;
         svg += `</g>`;
       });
+
+      // 數值簡寫輔助函式
+      const fmtVal = (val) => {
+        if (!val) return '';
+        if (Math.abs(val) >= 10000) return (val / 1000).toFixed(1) + 'k';
+        return Number(val).toLocaleString();
+      };
+
+      // 4. 🌟 數值文字獨立圖層（置於 SVG 最頂層，帶白色描邊光暈，100% 絕不被擋住！）
+      svg += `<g id="chart-val-labels-topmost">`;
+      points.forEach(p => {
+        // 收入數值 (綠色)：預設置於綠點上方
+        if (p.income > 0) {
+          svg += `<text class="chart-num-label" x="${p.x}" y="${p.yInc - 6}" text-anchor="middle" font-size="7.5" font-family="Inter, sans-serif" font-weight="700" fill="#047857">${fmtVal(p.income)}</text>`;
+        }
+
+        // 支出數值 (紅色)：預設置於紅點下方
+        if (p.expense > 0) {
+          svg += `<text class="chart-num-label" x="${p.x}" y="${p.yExp + 11}" text-anchor="middle" font-size="7.5" font-family="Inter, sans-serif" font-weight="700" fill="#E11D48">${fmtVal(p.expense)}</text>`;
+        }
+
+        // 結餘數值 (藍色)：智慧排斥定位，防止與收入或支出文字撞在一起
+        if (p.net !== 0) {
+          let netY = p.yNet - 6;
+          // 若與收入點距離小於 14px，強制往上移避開
+          if (p.income > 0 && Math.abs(p.yNet - p.yInc) < 14) {
+            netY = p.yInc - 16;
+          }
+          // 若與支出點距離小於 14px 且在下方，往下方避開
+          else if (p.expense > 0 && Math.abs(p.yNet - p.yExp) < 14) {
+            netY = p.yExp + 21;
+          }
+          svg += `<text class="chart-num-label" x="${p.x}" y="${netY}" text-anchor="middle" font-size="8" font-family="Inter, sans-serif" font-weight="800" fill="#0284C7">${p.net > 0 ? '+' : ''}${fmtVal(p.net)}</text>`;
+        }
+      });
+      svg += `</g>`;
 
       svg += `</svg>`;
       container.innerHTML = svg;
@@ -1271,10 +1334,10 @@
         fbUpdateDoc = fsModule.updateDoc;
         fbDeleteDoc = fsModule.deleteDoc;
         fbOnSnapshot = fsModule.onSnapshot;
-        fbCollection = fsModule.collection;
+        fbCollection = fbCollection = fsModule.collection;
         fbWriteBatch = fsModule.writeBatch;
 
-        fbOnSnapshot(fbCollection(db, 'shared_wishlist'), (snapshot) => {
+        fbOnSnapshot(fbCollection(db, 'shared_wishlist'), async (snapshot) => {
           isCloudReady = true;
           updateSyncBadge('online', '已連線雲端');
 
@@ -1294,6 +1357,7 @@
 
           state.wishlist = Array.from(remoteWishMap.values());
           saveToLocalStorage();
+          await rolloverUnpurchasedItems();
           render();
         }, (err) => {
           isCloudReady = false;
@@ -1345,7 +1409,9 @@
       handleBackdropClick
     });
 
-    render();
+    rolloverUnpurchasedItems().then(() => {
+      render();
+    });
     initCloudSync();
   </script>
 </body>
