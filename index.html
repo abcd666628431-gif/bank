@@ -797,13 +797,15 @@
       document.getElementById('wishlist-progress-percent').innerText = `${progressPercent}%`;
       document.getElementById('wishlist-progress-bar').style.width = `${progressPercent}%`;
 
-      // 依項目名稱 (title) 字母/筆畫固定排序，確保每個月順序一致
+      // 依項目名稱 (title) 筆畫排序，確保每個月固定區的項目順序永遠一模一樣！
       const fixedItems = currentMonthWishlist
         .filter(i => i.category === '固定' || i.isFixed)
-        .sort((a, b) => String(a.id || '').localeCompare(String(b.id || '')))
+        .sort((a, b) => (a.title || '').localeCompare(b.title || '', 'zh-Hant'));
 
+      // 右邊不固定區也建議依建立時間排序，防止順序跳動
       const variableItems = currentMonthWishlist
-        .filter(i => i.category !== '固定' && !i.isFixed);
+        .filter(i => i.category !== '固定' && !i.isFixed)
+        .sort((a, b) => (a.title || '').localeCompare(b.title || '', 'zh-Hant'));
 
       const renderItemsList = (items) => {
         if (items.length === 0) {
