@@ -1104,36 +1104,23 @@
       const maxNet = Math.max(...data.map(d => d.net), 0);
       const minNet = Math.min(...data.map(d => d.net), 0);
 
-      let topVal = 5000;
-      if (maxNet > 5000) {
-        if (maxNet <= 10000) topVal = 10000;
-        else if (maxNet <= 25000) topVal = 25000;
-        else if (maxNet <= 50000) topVal = 50000;
-        else topVal = Math.ceil(maxNet / 10000) * 10000;
-      }
+      // 依實際最大/最小值自動計算最漂亮的整數上限與等距步長 (Step)
+      const absMax = Math.max(Math.abs(maxNet), Math.abs(minNet), 2000);
+      let step = 1000;
+      if (absMax > 20000) step = 5000;
+      else if (absMax > 10000) step = 2500;
+      else if (absMax > 4000) step = 2000;
 
-      let bottomVal = 0;
-      if (minNet < 0) {
-        if (minNet >= -1000) bottomVal = -1000;
-        else if (minNet >= -5000) bottomVal = -5000;
-        else bottomVal = Math.floor(minNet / 5000) * 5000;
-      }
+      const topVal = Math.max(Math.ceil(maxNet / step) * step, step);
+      const bottomVal = minNet < 0 ? Math.floor(minNet / step) * step : 0;
 
-      let ticks = [0];
-      if (topVal <= 5000) {
-        ticks = [0, 1000, 2500, 5000];
-      } else if (topVal <= 10000) {
-        ticks = [0, 2500, 5000, 10000];
-      } else if (topVal <= 25000) {
-        ticks = [0, 5000, 12500, 25000];
-      } else {
-        ticks = [0, 10000, Math.round(topVal / 2), topVal];
+      // 生成完全等距、標準均勻劃分的刻度線 (例如 0, 2000, 4000 或 0, 2500, 5000)
+      let ticks = [];
+      for (let v = bottomVal; v <= topVal; v += step) {
+        ticks.push(v);
       }
-
-      if (bottomVal < 0) {
-        ticks.unshift(bottomVal);
-      }
-      ticks = Array.from(new Set(ticks)).sort((a, b) => a - b);
+      if (!ticks.includes(0)) ticks.push(0);
+      ticks.sort((a, b) => a - b);
 
       const valToY = (v) => {
         const ratio = (v - bottomVal) / (topVal - bottomVal);
