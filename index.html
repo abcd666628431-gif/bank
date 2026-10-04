@@ -436,7 +436,11 @@
       toastTimer = setTimeout(() => toast.classList.add('hidden'), 2000);
     }
 
+    // 解決選取文字滑動到視窗外被誤關閉的問題
     function handleBackdropClick(event, modalId) {
+      // 確保點擊起始與釋放都在背景本身，且不是在選取文字操作
+      const selection = window.getSelection();
+      if (selection && selection.toString().length > 0) return;
       if (event.target.id === modalId) {
         document.getElementById(modalId).classList.add('hidden');
       }
@@ -651,15 +655,15 @@
         const cardBg = isReceived ? 'bg-emerald-50/40 border-emerald-200' : 'bg-white border-gray-100 opacity-80';
 
         return `
-          <div class="flex items-center justify-between p-1.5 rounded-lg border ${cardBg} transition group">
-            <div class="flex items-center gap-1.5 flex-1 min-w-0">
-              <input type="checkbox" ${isReceived ? 'checked' : ''} onchange="toggleIncomeReceived('${item.id}')" class="compact-checkbox w-3.5 h-3.5 rounded text-emerald-700 cursor-pointer flex-shrink-0" title="勾選代表已實際入帳">
+          <div onclick="toggleIncomeReceived('${item.id}')" class="flex items-center justify-between p-1.5 rounded-lg border ${cardBg} transition group cursor-pointer active:scale-[0.98]">
+            <div class="flex items-center gap-1.5 flex-1 min-w-0 pointer-events-none">
+              <input type="checkbox" ${isReceived ? 'checked' : ''} class="compact-checkbox w-4 h-4 rounded text-emerald-700 cursor-pointer flex-shrink-0">
               <div class="min-w-0 flex-1">
-                <span class="text-[11px] ${textStyle} truncate block">${escapeHtml(item.title)}</span>
+                <span class="text-[11px] ${textStyle} truncate block select-none">${escapeHtml(item.title)}</span>
               </div>
             </div>
 
-            <div class="flex items-center gap-1 flex-shrink-0 ml-1">
+            <div class="flex items-center gap-1 flex-shrink-0 ml-1" onclick="event.stopPropagation()">
               <span class="text-[11px] font-bold font-sans ${isReceived ? 'text-emerald-700' : 'text-gray-400 line-through'}">
                 +${formatCurrency(item.price)}
               </span>
@@ -834,22 +838,22 @@
           const cardBg = isPurchased ? 'bg-[#F5F2ED] opacity-80' : 'bg-white hover:bg-gray-50';
 
           return `
-            <div class="flex items-center justify-between px-1 py-1.5 rounded-lg border border-[#ECE6DB] ${cardBg} transition group">
-              <div class="flex items-center gap-1 flex-1 min-w-0 pr-1">
-                <input type="checkbox" ${isPurchased ? 'checked' : ''} onchange="toggleWishlistPurchased('${item.id}')" class="compact-checkbox w-3.5 h-3.5 rounded text-emerald-700 cursor-pointer flex-shrink-0" title="勾選代表已付款扣錢">
+            <div onclick="toggleWishlistPurchased('${item.id}')" class="flex items-center justify-between px-1.5 py-2 rounded-lg border border-[#ECE6DB] ${cardBg} transition group cursor-pointer active:scale-[0.98]">
+              <div class="flex items-center gap-1.5 flex-1 min-w-0 pr-1 pointer-events-none">
+                <input type="checkbox" ${isPurchased ? 'checked' : ''} class="compact-checkbox w-4 h-4 rounded text-emerald-700 cursor-pointer flex-shrink-0">
                 <div class="min-w-0 flex-1">
-                  <span class="text-[11px] ${textStyle} truncate block leading-tight">${escapeHtml(item.title)}</span>
+                  <span class="text-[11px] ${textStyle} truncate block leading-tight select-none">${escapeHtml(item.title)}</span>
                 </div>
               </div>
 
-              <div class="flex items-center gap-0.5 flex-shrink-0 -mr-0.5">
+              <div class="flex items-center gap-0.5 flex-shrink-0 -mr-0.5" onclick="event.stopPropagation()">
                 <span class="text-[10px] sm:text-[11px] font-bold font-sans ${isPurchased ? 'line-through text-gray-400' : 'text-gray-800'} mr-0.5">
                   ${formatCurrency(item.price)}
                 </span>
-                <button onclick="editWishlistItem('${item.id}')" title="編輯" class="w-4 h-5 flex items-center justify-center text-gray-400 hover:text-gray-700 transition">
+                <button onclick="editWishlistItem('${item.id}')" title="編輯" class="w-5 h-5 flex items-center justify-center text-gray-400 hover:text-gray-700 transition">
                   <i class="ph ph-pencil-simple text-[11px]"></i>
                 </button>
-                <button onclick="deleteWishlistItem('${item.id}')" title="刪除" class="w-4 h-5 flex items-center justify-center text-gray-400 hover:text-rose-600 transition">
+                <button onclick="deleteWishlistItem('${item.id}')" title="刪除" class="w-5 h-5 flex items-center justify-center text-gray-400 hover:text-rose-600 transition">
                   <i class="ph ph-trash text-[11px]"></i>
                 </button>
               </div>
@@ -1068,10 +1072,11 @@
         renderBarFlowChart(container, monthlyData);
       } else {
         legend.innerHTML = `
-          <span class="flex items-center gap-1.5">
-            <span class="w-2.5 h-0.5 bg-[#0284C7] rounded inline-block"></span>
-            <span>月結餘走勢 (僅計已結算項目)</span>
-          </span>
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="flex items-center gap-1"><span class="w-2.5 h-0.5 bg-[#10B981] rounded inline-block"></span>收入</span>
+            <span class="flex items-center gap-1"><span class="w-2.5 h-0.5 bg-[#F43F5E] rounded inline-block"></span>支出</span>
+            <span class="flex items-center gap-1"><span class="w-2.5 h-0.5 bg-[#0284C7] rounded inline-block"></span>結餘</span>
+          </div>
         `;
         renderWaveTrendChart(container, monthlyData);
       }
@@ -1109,76 +1114,84 @@
 
     function renderWaveTrendChart(container, data) {
       const svgWidth = 330;
-      const svgHeight = 115;
+      const svgHeight = 118;
       
       const plotLeft = 34;
       const plotRight = 320;
-      const plotTop = 16;
-      const plotBottom = 88;
+      const plotTop = 18;
+      const plotBottom = 92;
       const plotWidth = plotRight - plotLeft;
       const plotHeight = plotBottom - plotTop;
 
-      const maxNet = Math.max(...data.map(d => d.net), 0);
-      const minNet = Math.min(...data.map(d => d.net), 0);
+      // 取得三條線的所有數值以決定統一的 Y 軸範圍
+      const allValues = data.flatMap(d => [d.income, d.expense, d.net]);
+      const maxVal = Math.max(...allValues, 1000);
+      const minVal = Math.min(...allValues, 0);
 
-      // 依實際最大/最小值自動計算最漂亮的整數上限與等距步長 (Step)
-      const absMax = Math.max(Math.abs(maxNet), Math.abs(minNet), 2000);
+      // 計算漂亮的等距步長 (Step)
+      const absMax = Math.max(Math.abs(maxVal), Math.abs(minVal), 2000);
       let step = 1000;
-      if (absMax > 20000) step = 5000;
-      else if (absMax > 10000) step = 2500;
-      else if (absMax > 4000) step = 2000;
+      if (absMax > 30000) step = 10000;
+      else if (absMax > 15000) step = 5000;
+      else if (absMax > 5000) step = 2500;
+      else if (absMax > 2000) step = 2000;
 
-      const topVal = Math.max(Math.ceil(maxNet / step) * step, step);
-      const bottomVal = minNet < 0 ? Math.floor(minNet / step) * step : 0;
+      const topVal = Math.max(Math.ceil(maxVal / step) * step, step);
+      const bottomVal = minVal < 0 ? Math.floor(minVal / step) * step : 0;
 
-      // 生成完全等距、標準均勻劃分的刻度線 (例如 0, 2000, 4000 或 0, 2500, 5000)
+      // 生成完全等距的 Y 軸刻度線
       let ticks = [];
-      for (let v = bottomVal; v <= topVal; v += step) {
-        ticks.push(v);
-      }
+      for (let v = bottomVal; v <= topVal; v += step) ticks.push(v);
       if (!ticks.includes(0)) ticks.push(0);
       ticks.sort((a, b) => a - b);
 
       const valToY = (v) => {
-        const ratio = (v - bottomVal) / (topVal - bottomVal);
+        const range = topVal - bottomVal || 1;
+        const ratio = (v - bottomVal) / range;
         return plotBottom - ratio * plotHeight;
       };
 
       const colStep = (plotWidth - 10) / 11;
-      const points = data.map((d, idx) => {
-        const x = plotLeft + 5 + idx * colStep;
-        const y = valToY(d.net);
-        return { x, y, net: d.net, month: d.month };
-      });
 
-      let pathD = `M ${points[0].x} ${points[0].y}`;
-      for (let i = 0; i < points.length - 1; i++) {
-        const p0 = points[i];
-        const p1 = points[i + 1];
-        const cpX = (p0.x + p1.x) / 2;
-        pathD += ` C ${cpX} ${p0.y}, ${cpX} ${p1.y}, ${p1.x} ${p1.y}`;
-      }
+      // 生成貝茲曲線路徑指令
+      const buildCurvePath = (pts) => {
+        let p = `M ${pts[0].x} ${pts[0].y}`;
+        for (let i = 0; i < pts.length - 1; i++) {
+          const cpX = (pts[i].x + pts[i + 1].x) / 2;
+          p += ` C ${cpX} ${pts[i].y}, ${cpX} ${pts[i + 1].y}, ${pts[i + 1].x} ${pts[i + 1].y}`;
+        }
+        return p;
+      };
 
-      let areaD = `${pathD} L ${points[points.length - 1].x} ${plotBottom} L ${points[0].x} ${plotBottom} Z`;
+      // 計算 3 條線的座標點
+      const incomePoints = data.map((d, idx) => ({ x: plotLeft + 5 + idx * colStep, y: valToY(d.income), val: d.income, month: d.month }));
+      const expensePoints = data.map((d, idx) => ({ x: plotLeft + 5 + idx * colStep, y: valToY(d.expense), val: d.expense, month: d.month }));
+      const netPoints = data.map((d, idx) => ({ x: plotLeft + 5 + idx * colStep, y: valToY(d.net), val: d.net, month: d.month }));
+
+      const pathIncome = buildCurvePath(incomePoints);
+      const pathExpense = buildCurvePath(expensePoints);
+      const pathNet = buildCurvePath(netPoints);
+
+      // 結餘底部的半透明陰影區域
+      const zeroY = Math.min(Math.max(valToY(0), plotTop), plotBottom);
+      const areaNet = `${pathNet} L ${netPoints[netPoints.length - 1].x} ${zeroY} L ${netPoints[0].x} ${zeroY} Z`;
 
       let svg = `<svg viewBox="0 0 ${svgWidth} ${svgHeight}" class="w-full h-full overflow-visible">
         <defs>
-          <linearGradient id="balanceAreaGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#0284C7" stop-opacity="0.32"/>
-            <stop offset="75%" stop-color="#0284C7" stop-opacity="0.06"/>
+          <linearGradient id="netAreaGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#0284C7" stop-opacity="0.25"/>
             <stop offset="100%" stop-color="#0284C7" stop-opacity="0.0"/>
           </linearGradient>
         </defs>
       `;
 
+      // 繪製背景水平網格刻度線
       ticks.forEach(t => {
         const yPos = valToY(t);
         const isZero = (t === 0);
         const labelText = Math.abs(t) >= 10000 ? `${t / 1000}k` : Number(t).toLocaleString();
 
-        svg += `
-          <text x="${plotLeft - 4}" y="${yPos + 2.5}" text-anchor="end" font-size="7" font-family="Inter, sans-serif" font-weight="${isZero ? '600' : '400'}" fill="${isZero ? '#475569' : '#94A3B8'}">${labelText}</text>
-        `;
+        svg += `<text x="${plotLeft - 4}" y="${yPos + 2.5}" text-anchor="end" font-size="7" font-family="Inter, sans-serif" font-weight="${isZero ? '600' : '400'}" fill="${isZero ? '#475569' : '#94A3B8'}">${labelText}</text>`;
 
         if (isZero) {
           svg += `<line x1="${plotLeft}" y1="${yPos}" x2="${plotRight}" y2="${yPos}" stroke="#CBD5E1" stroke-width="1.2" />`;
@@ -1187,50 +1200,58 @@
         }
       });
 
+      // 繪製路徑（結餘陰影、3 條走勢曲線）
       svg += `
-        <path d="${areaD}" fill="url(#balanceAreaGrad)" />
-        <path d="${pathD}" fill="none" stroke="#0284C7" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
+        <path d="${areaNet}" fill="url(#netAreaGrad)" />
+        <path d="${pathIncome}" fill="none" stroke="#10B981" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+        <path d="${pathExpense}" fill="none" stroke="#F43F5E" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+        <path d="${pathNet}" fill="none" stroke="#0284C7" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
       `;
 
-      points.forEach(p => {
-        const isCurrent = p.month === state.currentMonth;
-        const dotColor = p.net > 0 ? '#10B981' : (p.net < 0 ? '#F43F5E' : '#94A3B8');
+      // 繪製 12 個月份的節點與互動
+      data.forEach((d, idx) => {
+        const isCurrent = d.month === state.currentMonth;
+        const x = plotLeft + 5 + idx * colStep;
+        const pInc = incomePoints[idx];
+        const pExp = expensePoints[idx];
+        const pNet = netPoints[idx];
 
-        svg += `<g class="cursor-pointer group" onclick="jumpToMonth(${p.month})">`;
+        svg += `<g class="cursor-pointer group" onclick="jumpToMonth(${d.month})">`;
 
+        // 當前選中月份的高亮指示線與浮動標籤
         if (isCurrent) {
-          svg += `
-            <line x1="${p.x}" y1="${plotTop}" x2="${p.x}" y2="${plotBottom}" stroke="#0284C7" stroke-width="1" stroke-dasharray="2 2" opacity="0.6"/>
-            <circle cx="${p.x}" cy="${p.y}" r="6.5" fill="#0284C7" fill-opacity="0.18" />
-          `;
+          svg += `<line x1="${x}" y1="${plotTop}" x2="${x}" y2="${plotBottom}" stroke="#0284C7" stroke-width="1" stroke-dasharray="2 2" opacity="0.6"/>`;
 
-          const displayNet = p.net > 0 ? ('+' + formatCurrency(p.net)) : formatCurrency(p.net);
-          const tooltipY = (p.y < 26) ? (p.y + 14) : (p.y - 8);
-          const badgeY = (p.y < 26) ? (p.y + 6) : (p.y - 17);
-          const badgeX = Math.min(Math.max(p.x, 30), 296);
+          // 浮動提示小氣泡（顯示結餘淨值）
+          const displayNet = d.net > 0 ? ('+' + formatCurrency(d.net)) : formatCurrency(d.net);
+          const badgeY = (pNet.y < 30) ? (pNet.y + 7) : (pNet.y - 17);
+          const tooltipY = (pNet.y < 30) ? (pNet.y + 15) : (pNet.y - 8);
+          const badgeX = Math.min(Math.max(x, 32), 295);
 
           svg += `
             <g pointer-events="none">
-              <rect x="${badgeX - 27}" y="${badgeY}" width="54" height="12" rx="3.5" fill="#1E293B" filter="drop-shadow(0 1px 2px rgba(0,0,0,0.15))"/>
+              <rect x="${badgeX - 27}" y="${badgeY}" width="54" height="12" rx="3.5" fill="#1E293B" filter="drop-shadow(0 1px 2px rgba(0,0,0,0.18))"/>
               <text x="${badgeX}" y="${tooltipY}" text-anchor="middle" font-size="6.5" font-family="Inter, sans-serif" font-weight="bold" fill="#FFFFFF">${displayNet}</text>
             </g>
           `;
         }
 
+        // 3 條線的數據圓點
         svg += `
-          <circle cx="${p.x}" cy="${p.y}" r="${isCurrent ? 4 : 2.5}" fill="${dotColor}" stroke="#FFFFFF" stroke-width="1.5" class="transition group-hover:scale-125"/>
+          <circle cx="${x}" cy="${pInc.y}" r="${isCurrent ? 3.5 : 2}" fill="#10B981" stroke="#FFFFFF" stroke-width="1" class="transition group-hover:scale-125"/>
+          <circle cx="${x}" cy="${pExp.y}" r="${isCurrent ? 3.5 : 2}" fill="#F43F5E" stroke="#FFFFFF" stroke-width="1" class="transition group-hover:scale-125"/>
+          <circle cx="${x}" cy="${pNet.y}" r="${isCurrent ? 4.5 : 2.5}" fill="#0284C7" stroke="#FFFFFF" stroke-width="1.5" class="transition group-hover:scale-125"/>
         `;
 
+        // 月份標籤 (當前月帶有淺藍膠囊背景)
         if (isCurrent) {
-          svg += `<rect x="${p.x - 10}" y="95" width="20" height="12" rx="3.5" fill="#E0F2FE" />`;
+          svg += `<rect x="${x - 10}" y="98" width="20" height="12" rx="3.5" fill="#E0F2FE" />`;
         }
-        svg += `
-          <text x="${p.x}" y="104" text-anchor="middle" font-size="7.5" font-family="Inter, sans-serif" font-weight="${isCurrent ? 'bold' : 'normal'}" fill="${isCurrent ? '#0284C7' : '#8E8B85'}">${p.month}月</text>
-        `;
+        svg += `<text x="${x}" y="107" text-anchor="middle" font-size="7.5" font-family="Inter, sans-serif" font-weight="${isCurrent ? 'bold' : 'normal'}" fill="${isCurrent ? '#0284C7' : '#8E8B85'}">${d.month}月</text>`;
 
-        svg += `
-          <rect x="${p.x - colStep / 2}" y="0" width="${colStep}" height="${svgHeight}" fill="black" opacity="0" pointer-events="all" />
-        </g>`;
+        // 透明點擊感應熱區
+        svg += `<rect x="${x - colStep / 2}" y="0" width="${colStep}" height="${svgHeight}" fill="black" opacity="0" pointer-events="all" />`;
+        svg += `</g>`;
       });
 
       svg += `</svg>`;
