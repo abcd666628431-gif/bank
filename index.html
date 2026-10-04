@@ -797,15 +797,32 @@
       document.getElementById('wishlist-progress-percent').innerText = `${progressPercent}%`;
       document.getElementById('wishlist-progress-bar').style.width = `${progressPercent}%`;
 
-      // 依項目名稱 (title) 筆畫排序，確保每個月固定區的項目順序永遠一模一樣！
+      // 輔助函式：提取項目的建立時間戳，若無則回退比對 ID 字串
+      const getItemTimestamp = (item) => {
+        const idStr = String(item.id || '');
+        const match = idStr.match(/\d{13}/) || idStr.match(/\d{10,}/);
+        return match ? parseInt(match[0], 10) : 0;
+      };
+
+      // 固定區：最新新增的排在最上面 (由新到舊倒序)
       const fixedItems = currentMonthWishlist
         .filter(i => i.category === '固定' || i.isFixed)
-        .sort((a, b) => (a.title || '').localeCompare(b.title || '', 'zh-Hant'));
+        .sort((a, b) => {
+          const timeA = getItemTimestamp(a);
+          const timeB = getItemTimestamp(b);
+          if (timeB !== timeA) return timeB - timeA;
+          return String(b.id || '').localeCompare(String(a.id || ''));
+        });
 
-      // 右邊不固定區也建議依建立時間排序，防止順序跳動
+      // 不固定區：最新新增的排在最上面 (由新到舊倒序)
       const variableItems = currentMonthWishlist
         .filter(i => i.category !== '固定' && !i.isFixed)
-        .sort((a, b) => (a.title || '').localeCompare(b.title || '', 'zh-Hant'));
+        .sort((a, b) => {
+          const timeA = getItemTimestamp(a);
+          const timeB = getItemTimestamp(b);
+          if (timeB !== timeA) return timeB - timeA;
+          return String(b.id || '').localeCompare(String(a.id || ''));
+        });
 
       const renderItemsList = (items) => {
         if (items.length === 0) {
