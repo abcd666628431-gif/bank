@@ -268,7 +268,7 @@
 
     </div>
 
-    <!-- Modal: 新增/編輯待付項目 (不固定預設自動順延，無須手動勾選) -->
+    <!-- Modal: 新增/編輯待付項目 (不固定項目預設全面自動順延，免手動勾選) -->
     <div id="wishlist-modal" onclick="handleBackdropClick(event, 'wishlist-modal')" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div class="bg-white w-full max-w-md rounded-2xl p-4 shadow-2xl space-y-3 border border-[#ECE8E1]">
         <div class="flex items-center justify-between border-b pb-2 border-gray-100">
@@ -346,20 +346,6 @@
       </div>
     </div>
 
-    <!-- 自訂刪除確認彈窗 (取代 iOS 系統彈窗，徹底杜絕攔截問題) -->
-    <div id="custom-delete-modal" onclick="handleBackdropClick(event, 'custom-delete-modal')" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div class="bg-white w-full max-w-xs rounded-2xl p-4 shadow-2xl space-y-3 border border-[#ECE8E1] text-center" onclick="event.stopPropagation()">
-        <div class="w-10 h-10 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center mx-auto text-xl">
-          <i class="ph ph-trash"></i>
-        </div>
-        <div>
-          <h4 id="delete-modal-title" class="font-bold text-sm text-gray-800">確定要移除此項目嗎？</h4>
-          <p id="delete-modal-desc" class="text-[11px] text-gray-500 mt-1">此操作無法復原</p>
-        </div>
-        <div id="delete-modal-actions" class="flex gap-2 pt-1"></div>
-      </div>
-    </div>
-
     <!-- Toast Notification -->
     <div id="toast" class="hidden fixed bottom-5 left-1/2 -translate-x-1/2 bg-[#201D1A] text-white text-xs font-medium px-4 py-2 rounded-full shadow-lg z-50 flex items-center gap-1.5 border border-white/10">
       <i class="ph ph-check-circle text-emerald-400 text-sm"></i>
@@ -367,6 +353,20 @@
     </div>
 
   </main>
+
+  <!-- 🌟 自訂刪除彈窗置於 main 外層，徹底避開 iOS 容器裁剪問題 -->
+  <div id="custom-delete-modal" onclick="handleBackdropClick(event, 'custom-delete-modal')" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-[9999] flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-xs rounded-2xl p-4 shadow-2xl space-y-3 border border-[#ECE8E1] text-center" onclick="event.stopPropagation()">
+      <div class="w-10 h-10 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center mx-auto text-xl">
+        <i class="ph ph-trash"></i>
+      </div>
+      <div>
+        <h4 id="delete-modal-title" class="font-bold text-sm text-gray-800">確定要移除此項目嗎？</h4>
+        <p id="delete-modal-desc" class="text-[11px] text-gray-500 mt-1">此操作無法復原</p>
+      </div>
+      <div id="delete-modal-actions" class="flex gap-2 pt-1"></div>
+    </div>
+  </div>
 
 <script>
     const firebaseConfig = {
@@ -425,13 +425,14 @@
       } catch (err) {}
     }
 
-    // 持久刪除黑名單（防止手機端因網路延遲被 Firebase Snapshot 再次拉回）
+    // 🌟 持久刪除黑名單（防止手機網路延遲被 Firebase Snapshot 再次拉回）
     function recordOfflineDeletion(type, id) {
       const key = type === 'income' ? 'budget_deleted_income' : 'budget_deleted_wish';
       try {
         const list = safeJSONParse(localStorage.getItem(key), []);
-        if (!list.includes(id)) {
-          list.push(id);
+        const strId = String(id);
+        if (!list.includes(strId)) {
+          list.push(strId);
           localStorage.setItem(key, JSON.stringify(list));
         }
       } catch (e) {}
@@ -532,14 +533,13 @@
 
       for (let item of state.wishlist) {
         const isVariable = (item.category !== '固定' && !item.isFixed);
-        // 所有不固定且未購買項目，預設全部順延
         if (isVariable && !item.purchased) {
           if (item.month && item.month < realMonthStr) {
             item.month = realMonthStr;
             movedCount++;
             if (isCloudReady && fbSetDoc && fbDoc) {
               try { 
-                await fbSetDoc(fbDoc(db, 'shared_wishlist', item.id), { month: realMonthStr }, { merge: true }); 
+                await fbSetDoc(fbDoc(db, 'shared_wishlist', String(item.id)), { month: realMonthStr }, { merge: true }); 
               } catch (e) {}
             }
           }
@@ -725,7 +725,7 @@
     }
 
     async function toggleIncomeReceived(id) {
-      const item = state.incomes.find(i => i.id === id);
+      const item = state.incomes.find(i => String(i.id) === String(id));
       if (!item) return;
       item.received = !item.received;
       saveToLocalStorage();
@@ -733,7 +733,7 @@
 
       if (isCloudReady && fbSetDoc && fbDoc) {
         try {
-          await fbSetDoc(fbDoc(db, 'shared_incomes', id), { received: item.received }, { merge: true });
+          await fbSetDoc(fbDoc(db, 'shared_incomes', String(id)), { received: item.received }, { merge: true });
         } catch (err) {}
       }
       showToast(item.received ? `已確認入帳` : `已取消入帳`);
@@ -745,7 +745,7 @@
       const currentMonthStr = `${state.currentYear}-${String(state.currentMonth).padStart(2, '0')}`;
 
       if (editId) {
-        const item = state.incomes.find(i => i.id === editId);
+        const item = state.incomes.find(i => String(i.id) === String(editId));
         if (item) {
           document.getElementById('income-modal-title').innerText = '編輯收入';
           document.getElementById('income-edit-id').value = item.id;
@@ -770,7 +770,7 @@
     }
 
     function deleteIncomeItem(id) {
-      const item = state.incomes.find(i => i.id === id);
+      const item = state.incomes.find(i => String(i.id) === String(id));
       if (!item) return;
 
       const modal = document.getElementById('custom-delete-modal');
@@ -789,13 +789,14 @@
 
     async function executeIncomeDelete(id) {
       closeCustomDeleteModal();
-      recordOfflineDeletion('income', id);
-      state.incomes = state.incomes.filter(i => i.id !== id);
+      const strId = String(id);
+      recordOfflineDeletion('income', strId);
+      state.incomes = state.incomes.filter(i => String(i.id) !== strId);
       saveToLocalStorage();
       render();
 
       if (isCloudReady && fbDeleteDoc && fbDoc) {
-        try { await fbDeleteDoc(fbDoc(db, 'shared_incomes', id)); } catch (err) {}
+        try { await fbDeleteDoc(fbDoc(db, 'shared_incomes', strId)); } catch (err) {}
       }
       showToast('收入已移除');
     }
@@ -817,13 +818,13 @@
       closeIncomeModal();
 
       if (id) {
-        const idx = state.incomes.findIndex(i => i.id === id);
+        const idx = state.incomes.findIndex(i => String(i.id) === String(id));
         if (idx !== -1) state.incomes[idx] = { ...state.incomes[idx], ...itemData };
         saveToLocalStorage();
         render();
         if (isCloudReady && fbSetDoc && fbDoc) {
           try {
-            await fbSetDoc(fbDoc(db, 'shared_incomes', id), itemData, { merge: true });
+            await fbSetDoc(fbDoc(db, 'shared_incomes', String(id)), itemData, { merge: true });
           } catch (err) {}
         }
         showToast('收入已更新');
@@ -885,7 +886,7 @@
           return String(b.id || '').localeCompare(String(a.id || ''));
         });
 
-      // 🌟 核心結構解耦：左半邊負責打勾，右半邊獨立負責金額與修改刪除，手機點擊零衝突！
+      // 🌟 核心結構解耦：左側打勾，右側獨立操作，手機點擊零衝突
       const renderItemsList = (items) => {
         if (items.length === 0) {
           return `<div class="text-[9px] text-subText text-center py-2 bg-white rounded-lg border border-dashed border-gray-200">無項目</div>`;
@@ -897,7 +898,6 @@
 
           return `
             <div class="flex items-center justify-between pl-1.5 pr-0.5 py-1.5 rounded-lg border border-[#ECE6DB] ${cardBg} transition group">
-              <!-- 左側點擊區：打勾與名稱 -->
               <div onclick="toggleWishlistPurchased('${item.id}')" class="flex items-center gap-1 flex-1 min-w-0 pr-1 cursor-pointer active:opacity-70">
                 <input type="checkbox" ${isPurchased ? 'checked' : ''} class="compact-checkbox w-3.5 h-3.5 rounded text-emerald-700 cursor-pointer flex-shrink-0 pointer-events-none">
                 <div class="min-w-0 flex-1">
@@ -905,7 +905,6 @@
                 </div>
               </div>
 
-              <!-- 右側獨立操作區：金額、修改、刪除，與打勾完全分開 -->
               <div class="flex items-center gap-0 flex-shrink-0">
                 <span class="text-[10px] sm:text-[11px] font-bold font-sans ${isPurchased ? 'line-through text-gray-400' : 'text-gray-800'} pr-0.5">
                   ${formatCurrency(item.price)}
@@ -927,7 +926,7 @@
     }
 
     async function toggleWishlistPurchased(id) {
-      const item = state.wishlist.find(w => w.id === id);
+      const item = state.wishlist.find(w => String(w.id) === String(id));
       if (!item) return;
       item.purchased = !item.purchased;
       saveToLocalStorage();
@@ -935,7 +934,7 @@
 
       if (isCloudReady && fbSetDoc && fbDoc) {
         try {
-          await fbSetDoc(fbDoc(db, 'shared_wishlist', id), { purchased: item.purchased }, { merge: true });
+          await fbSetDoc(fbDoc(db, 'shared_wishlist', String(id)), { purchased: item.purchased }, { merge: true });
         } catch (err) {}
       }
       showToast(item.purchased ? `已付費 (已扣款)` : `已還原未付費`);
@@ -947,7 +946,7 @@
       const currentMonthStr = `${state.currentYear}-${String(state.currentMonth).padStart(2, '0')}`;
 
       if (editId) {
-        const item = state.wishlist.find(w => w.id === editId);
+        const item = state.wishlist.find(w => String(w.id) === String(editId));
         if (item) {
           document.getElementById('wishlist-modal-title').innerText = '編輯待付項目';
           document.getElementById('wishlist-edit-id').value = item.id;
@@ -974,9 +973,9 @@
       openWishlistModal(id);
     }
 
-    // 🌟 自訂刪除彈窗：手機版 100% 穩定彈出並執行
+    // 🌟 自訂刪除彈窗：全面相容字串與數字型態 ID，手機版 100% 穩定彈出
     function deleteWishlistItem(id) {
-      const item = state.wishlist.find(w => w.id === id);
+      const item = state.wishlist.find(w => String(w.id) === String(id));
       if (!item) return;
 
       const modal = document.getElementById('custom-delete-modal');
@@ -1013,19 +1012,20 @@
 
     async function executeWishlistDelete(id, deleteAll) {
       closeCustomDeleteModal();
-      const item = state.wishlist.find(w => w.id === id);
+      const strId = String(id);
+      const item = state.wishlist.find(w => String(w.id) === strId);
       if (!item) return;
 
       if (deleteAll) {
         const toDelete = state.wishlist.filter(w => (w.category === '固定' || w.isFixed) && w.title === item.title);
-        toDelete.forEach(d => recordOfflineDeletion('wish', d.id));
+        toDelete.forEach(d => recordOfflineDeletion('wish', String(d.id)));
         state.wishlist = state.wishlist.filter(w => !((w.category === '固定' || w.isFixed) && w.title === item.title));
         saveToLocalStorage();
         render();
 
         if (isCloudReady && fbDeleteDoc && fbDoc) {
           toDelete.forEach(async d => {
-            try { await fbDeleteDoc(fbDoc(db, 'shared_wishlist', d.id)); } catch (err) {}
+            try { await fbDeleteDoc(fbDoc(db, 'shared_wishlist', String(d.id))); } catch (err) {}
           });
         }
         showToast(`已徹底刪除所有月份的「${item.title}」`);
@@ -1037,13 +1037,13 @@
           localStorage.setItem(ignoredKey, JSON.stringify(ignoredList));
         }
 
-        recordOfflineDeletion('wish', id); // 紀錄黑名單，防止 Snapshot 覆寫還原
-        state.wishlist = state.wishlist.filter(w => w.id !== id);
+        recordOfflineDeletion('wish', strId); // 記錄黑名單，防止 Snapshot 覆寫還原
+        state.wishlist = state.wishlist.filter(w => String(w.id) !== strId);
         saveToLocalStorage();
         render();
 
         if (isCloudReady && fbDeleteDoc && fbDoc) {
-          try { await fbDeleteDoc(fbDoc(db, 'shared_wishlist', id)); } catch (err) {}
+          try { await fbDeleteDoc(fbDoc(db, 'shared_wishlist', strId)); } catch (err) {}
         }
         showToast('項目已移除');
       }
@@ -1059,8 +1059,7 @@
       const category = document.getElementById('wishlist-item-category').value || '不固定';
       const note = document.getElementById('wishlist-item-note').value.trim();
       const isFixed = (category === '固定');
-      // 🌟 不固定項目預設 autoRollover = true
-      const autoRollover = !isFixed;
+      const autoRollover = !isFixed; // 🌟 不固定項目預設全面自動順延
 
       if (isNaN(price) || price <= 0) {
         showToast('請輸入有效金額');
@@ -1071,13 +1070,14 @@
       closeWishlistModal();
 
       if (id) {
-        const idx = state.wishlist.findIndex(w => w.id === id);
+        const strId = String(id);
+        const idx = state.wishlist.findIndex(w => String(w.id) === strId);
         if (idx !== -1) state.wishlist[idx] = { ...state.wishlist[idx], ...itemData };
         saveToLocalStorage();
         render();
         if (isCloudReady && fbSetDoc && fbDoc) {
           try {
-            await fbSetDoc(fbDoc(db, 'shared_wishlist', id), itemData, { merge: true });
+            await fbSetDoc(fbDoc(db, 'shared_wishlist', strId), itemData, { merge: true });
           } catch (err) {}
         }
         showToast('項目已更新');
@@ -1304,7 +1304,7 @@
         svg += `<g>`;
 
         if (isCurrent) {
-          svg += `<line x1="${p.x}" y1="${plotTop}" x2="${plotBottom}" stroke="#0284C7" stroke-width="1" stroke-dasharray="2 2" opacity="0.35"/>`;
+          svg += `<line x1="${p.x}" y1="${plotTop}" x2="${p.x}" y2="${plotBottom}" stroke="#0284C7" stroke-width="1" stroke-dasharray="2 2" opacity="0.35"/>`;
         }
 
         svg += `
@@ -1375,15 +1375,15 @@
           updateSyncBadge('online', '已連線雲端');
 
           const remoteWishMap = new Map();
-          const deletedWishList = safeJSONParse(localStorage.getItem('budget_deleted_wish'), []);
+          const deletedWishList = safeJSONParse(localStorage.getItem('budget_deleted_wish'), []).map(String);
 
           snapshot.forEach(docSnap => {
-            // 🌟 核心防拉回：只要本地曾刪除，即使 Firebase 還沒處理完，也絕對不載入
-            if (!deletedWishList.includes(docSnap.id)) {
-              remoteWishMap.set(docSnap.id, { id: docSnap.id, ...docSnap.data() });
+            const docId = String(docSnap.id);
+            // 🌟 核心防拉回：只要本地曾刪除，即便 Firebase 還沒處理完，也絕對不載入
+            if (!deletedWishList.includes(docId)) {
+              remoteWishMap.set(docId, { ...docSnap.data(), id: docId });
             } else {
-              // 補發刪除確認
-              try { fbDeleteDoc(fbDoc(db, 'shared_wishlist', docSnap.id)); } catch (e) {}
+              try { fbDeleteDoc(fbDoc(db, 'shared_wishlist', docId)); } catch (e) {}
             }
           });
 
@@ -1398,13 +1398,14 @@
 
         fbOnSnapshot(fbCollection(db, 'shared_incomes'), (snapshot) => {
           const remoteIncMap = new Map();
-          const deletedIncList = safeJSONParse(localStorage.getItem('budget_deleted_income'), []);
+          const deletedIncList = safeJSONParse(localStorage.getItem('budget_deleted_income'), []).map(String);
 
           snapshot.forEach(docSnap => {
-            if (!deletedIncList.includes(docSnap.id)) {
-              remoteIncMap.set(docSnap.id, { id: docSnap.id, ...docSnap.data() });
+            const docId = String(docSnap.id);
+            if (!deletedIncList.includes(docId)) {
+              remoteIncMap.set(docId, { ...docSnap.data(), id: docId });
             } else {
-              try { fbDeleteDoc(fbDoc(db, 'shared_incomes', docSnap.id)); } catch (e) {}
+              try { fbDeleteDoc(fbDoc(db, 'shared_incomes', docId)); } catch (e) {}
             }
           });
 
