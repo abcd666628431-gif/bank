@@ -87,7 +87,8 @@
       </div>
     </header>
 
-    <div class="flex-1 overflow-y-auto custom-scroll px-3.5 pb-8 space-y-2.5 pt-2">
+    <!-- 外框拓寬 2px (px-3) -->
+    <div class="flex-1 overflow-y-auto custom-scroll px-3 pb-8 space-y-2.5 pt-2">
       <!-- Section: Overview & Metrics -->
       <section class="space-y-2">
         <div class="bg-cardBg rounded-2xl p-3 shadow-sm border border-[#EBE7E0] flex items-center justify-between">
@@ -155,8 +156,8 @@
         </div>
       </section>
 
-      <!-- 待付費區 -->
-      <section class="bg-cardBg rounded-2xl p-3 shadow-sm border border-[#EBE7E0] space-y-2.5">
+      <!-- 待付費區（內邊距收窄為 px-2.5 拓寬內部內容空間） -->
+      <section class="bg-cardBg rounded-2xl px-2.5 py-3 shadow-sm border border-[#EBE7E0] space-y-2.5">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-1.5">
             <span class="w-2 h-2 rounded-full bg-amber-500"></span>
@@ -194,8 +195,8 @@
           </div>
         </div>
 
-        <!-- 左右雙欄容器 -->
-        <div class="grid grid-cols-2 gap-2 pt-0.5">
+        <!-- 左右雙欄容器（中間雙欄間距加寬至 gap-2.5） -->
+        <div class="grid grid-cols-2 gap-2.5 pt-0.5">
           <!-- 左欄：固定區 -->
           <div class="space-y-1.5">
             <div class="flex items-center justify-between px-1.5 bg-purple-50 border border-purple-200/60 rounded-lg py-1">
@@ -257,7 +258,7 @@
           </div>
         </div>
 
-        <!-- 圖表外框：加高至 h-44，邊界滿版 -->
+        <!-- 圖表外框加高至 h-44 -->
         <div class="relative bg-[#FCFBF9] p-2.5 rounded-xl border border-[#F0ECE4]">
           <div id="annual-chart-container" class="w-full h-44 flex items-center justify-center"></div>
           <div class="flex items-center justify-between text-[8px] text-subText pt-1.5 px-0.5 border-t border-gray-100/80 mt-1">
@@ -354,7 +355,7 @@
 
   </main>
 
-  <!-- 🌟 自訂刪除彈窗置於 main 外層，徹底避開 iOS 容器裁剪問題 -->
+  <!-- 🌟 自訂刪除彈窗放置在 main 外層最底端，避免被容器裁切，行動端保證置頂 -->
   <div id="custom-delete-modal" onclick="handleBackdropClick(event, 'custom-delete-modal')" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-[9999] flex items-center justify-center p-4">
     <div class="bg-white w-full max-w-xs rounded-2xl p-4 shadow-2xl space-y-3 border border-[#ECE8E1] text-center" onclick="event.stopPropagation()">
       <div class="w-10 h-10 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center mx-auto text-xl">
@@ -406,6 +407,10 @@
       return parts.length >= 2 && parseInt(parts[0], 10) === year && parseInt(parts[1], 10) === month;
     }
 
+    function diagLog(msg, isError = false) {
+      if (isError) console.error(msg); else console.log(msg);
+    }
+
     const localWishlist = localStorage.getItem('budget_wishlist');
     const localIncomes = localStorage.getItem('budget_incomes');
 
@@ -425,7 +430,7 @@
       } catch (err) {}
     }
 
-    // 🌟 持久刪除黑名單（防止手機網路延遲被 Firebase Snapshot 再次拉回）
+    // 🌟 持久刪除黑名單（字串型態安全比對，避免被 Firebase Snapshot 再次拉回）
     function recordOfflineDeletion(type, id) {
       const key = type === 'income' ? 'budget_deleted_income' : 'budget_deleted_wish';
       try {
@@ -522,7 +527,7 @@
       }
     }
 
-    // 🌟 不固定項目「預設一律自動順延」：只要未購買，隨真實時間永遠順延至當月
+    // 🌟 不固定項目預設全面自動順延（隨真實時間自然流轉）
     async function rolloverUnpurchasedItems() {
       const realNow = new Date();
       const realYear = realNow.getFullYear();
@@ -708,15 +713,16 @@
               </div>
             </div>
 
-            <div class="flex items-center gap-1 flex-shrink-0 ml-1">
-              <span class="text-[11px] font-bold font-sans ${isReceived ? 'text-emerald-700' : 'text-gray-400 line-through'}">
+            <!-- 獨立操作區：44px 觸控熱區 -->
+            <div class="flex items-center gap-0.5 flex-shrink-0 ml-1">
+              <span class="text-[11px] font-bold font-sans ${isReceived ? 'text-emerald-700' : 'text-gray-400 line-through'} mr-1">
                 +${formatCurrency(item.price)}
               </span>
-              <button type="button" onclick="editIncomeItem('${item.id}')" title="編輯" class="w-6 h-7 flex items-center justify-center rounded text-gray-400 hover:text-gray-700 active:scale-90 transition p-0">
-                <i class="ph ph-pencil-simple text-[11px]"></i>
+              <button type="button" onclick="editIncomeItem('${item.id}')" title="編輯" class="w-[44px] h-[44px] -my-2 -mx-1 flex items-center justify-center text-gray-400 hover:text-gray-700 active:scale-90 transition p-0">
+                <i class="ph ph-pencil-simple text-sm"></i>
               </button>
-              <button type="button" onclick="deleteIncomeItem('${item.id}')" title="刪除" class="w-6 h-7 flex items-center justify-center rounded text-gray-400 hover:text-rose-600 active:scale-90 transition p-0">
-                <i class="ph ph-trash text-[11px]"></i>
+              <button type="button" onclick="deleteIncomeItem('${item.id}')" title="刪除" class="w-[44px] h-[44px] -my-2 -mx-1 flex items-center justify-center text-gray-400 hover:text-rose-600 active:scale-90 transition p-0">
+                <i class="ph ph-trash text-sm"></i>
               </button>
             </div>
           </div>
@@ -781,8 +787,8 @@
       titleEl.innerText = `確定要移除收入「${item.title}」嗎？`;
       descEl.innerText = `此筆收入將從本月記錄中移除`;
       actionsEl.innerHTML = `
-        <button type="button" onclick="closeCustomDeleteModal()" class="flex-1 py-2 bg-gray-100 text-gray-600 font-semibold rounded-xl text-xs active:scale-95">取消</button>
-        <button type="button" onclick="executeIncomeDelete('${item.id}')" class="flex-1 py-2 bg-rose-600 text-white font-semibold rounded-xl text-xs active:scale-95">確定刪除</button>
+        <button type="button" onclick="closeCustomDeleteModal()" class="flex-1 py-2.5 bg-gray-100 text-gray-600 font-semibold rounded-xl text-xs active:scale-95">取消</button>
+        <button type="button" onclick="executeIncomeDelete('${item.id}')" class="flex-1 py-2.5 bg-rose-600 text-white font-semibold rounded-xl text-xs active:scale-95">確定刪除</button>
       `;
       modal.classList.remove('hidden');
     }
@@ -818,13 +824,14 @@
       closeIncomeModal();
 
       if (id) {
-        const idx = state.incomes.findIndex(i => String(i.id) === String(id));
+        const strId = String(id);
+        const idx = state.incomes.findIndex(i => String(i.id) === strId);
         if (idx !== -1) state.incomes[idx] = { ...state.incomes[idx], ...itemData };
         saveToLocalStorage();
         render();
         if (isCloudReady && fbSetDoc && fbDoc) {
           try {
-            await fbSetDoc(fbDoc(db, 'shared_incomes', String(id)), itemData, { merge: true });
+            await fbSetDoc(fbDoc(db, 'shared_incomes', strId), itemData, { merge: true });
           } catch (err) {}
         }
         showToast('收入已更新');
@@ -886,7 +893,7 @@
           return String(b.id || '').localeCompare(String(a.id || ''));
         });
 
-      // 🌟 核心結構解耦：左側打勾，右側獨立操作，手機點擊零衝突
+      // 🌟 核心結構解耦：左側打勾，右側提供 44px 獨立觸控熱區，操作無阻
       const renderItemsList = (items) => {
         if (items.length === 0) {
           return `<div class="text-[9px] text-subText text-center py-2 bg-white rounded-lg border border-dashed border-gray-200">無項目</div>`;
@@ -897,23 +904,25 @@
           const cardBg = isPurchased ? 'bg-[#F5F2ED] opacity-80' : 'bg-white hover:bg-gray-50';
 
           return `
-            <div class="flex items-center justify-between pl-1.5 pr-0.5 py-1.5 rounded-lg border border-[#ECE6DB] ${cardBg} transition group">
-              <div onclick="toggleWishlistPurchased('${item.id}')" class="flex items-center gap-1 flex-1 min-w-0 pr-1 cursor-pointer active:opacity-70">
+            <div class="flex items-center justify-between pl-1.5 pr-0 py-1 rounded-lg border border-[#ECE6DB] ${cardBg} transition group relative overflow-hidden">
+              <!-- 左側點擊區：打勾與名稱 -->
+              <div onclick="toggleWishlistPurchased('${item.id}')" class="flex items-center gap-1 flex-1 min-w-0 pr-0.5 cursor-pointer active:opacity-70">
                 <input type="checkbox" ${isPurchased ? 'checked' : ''} class="compact-checkbox w-3.5 h-3.5 rounded text-emerald-700 cursor-pointer flex-shrink-0 pointer-events-none">
                 <div class="min-w-0 flex-1">
                   <span class="text-[11px] ${textStyle} truncate block leading-tight select-none">${escapeHtml(item.title)}</span>
                 </div>
               </div>
 
+              <!-- 右側獨立操作區：44px 觸控熱區按鈕 -->
               <div class="flex items-center gap-0 flex-shrink-0">
                 <span class="text-[10px] sm:text-[11px] font-bold font-sans ${isPurchased ? 'line-through text-gray-400' : 'text-gray-800'} pr-0.5">
                   ${formatCurrency(item.price)}
                 </span>
-                <button type="button" onclick="editWishlistItem('${item.id}')" title="編輯" class="w-6 h-7 flex items-center justify-center text-gray-400 hover:text-gray-700 active:scale-90 transition p-0">
-                  <i class="ph ph-pencil-simple text-[11px]"></i>
+                <button type="button" onclick="editWishlistItem('${item.id}')" title="編輯" class="w-[44px] h-[44px] -my-2.5 -mx-1.5 flex items-center justify-center text-gray-400 hover:text-gray-700 active:scale-90 transition p-0">
+                  <i class="ph ph-pencil-simple text-xs"></i>
                 </button>
-                <button type="button" onclick="deleteWishlistItem('${item.id}')" title="刪除" class="w-6 h-7 flex items-center justify-center text-gray-400 hover:text-rose-600 active:scale-90 transition p-0">
-                  <i class="ph ph-trash text-[11px]"></i>
+                <button type="button" onclick="deleteWishlistItem('${item.id}')" title="刪除" class="w-[44px] h-[44px] -my-2.5 -mx-1.5 flex items-center justify-center text-gray-400 hover:text-rose-600 active:scale-90 transition p-0">
+                  <i class="ph ph-trash text-xs"></i>
                 </button>
               </div>
             </div>
@@ -973,9 +982,10 @@
       openWishlistModal(id);
     }
 
-    // 🌟 自訂刪除彈窗：全面相容字串與數字型態 ID，手機版 100% 穩定彈出
+    // 🌟 自訂刪除彈窗：String(id) 確保型態一致，行動端 100% 穩定呼出
     function deleteWishlistItem(id) {
-      const item = state.wishlist.find(w => String(w.id) === String(id));
+      const strId = String(id);
+      const item = state.wishlist.find(w => String(w.id) === strId);
       if (!item) return;
 
       const modal = document.getElementById('custom-delete-modal');
@@ -989,16 +999,16 @@
         titleEl.innerText = `刪除固定項目「${item.title}」`;
         descEl.innerText = `請問要徹底刪除所有月份，還是僅刪除本月？`;
         actionsEl.innerHTML = `
-          <button type="button" onclick="closeCustomDeleteModal()" class="flex-1 py-2 bg-gray-100 text-gray-600 font-semibold rounded-xl text-xs active:scale-95">取消</button>
-          <button type="button" onclick="executeWishlistDelete('${item.id}', false)" class="flex-1 py-2 bg-amber-600 text-white font-semibold rounded-xl text-xs active:scale-95">僅刪本月</button>
-          <button type="button" onclick="executeWishlistDelete('${item.id}', true)" class="flex-1 py-2 bg-rose-600 text-white font-semibold rounded-xl text-xs active:scale-95">刪除全部</button>
+          <button type="button" onclick="closeCustomDeleteModal()" class="flex-1 py-2.5 bg-gray-100 text-gray-600 font-semibold rounded-xl text-xs active:scale-95">取消</button>
+          <button type="button" onclick="executeWishlistDelete('${item.id}', false)" class="flex-1 py-2.5 bg-amber-600 text-white font-semibold rounded-xl text-xs active:scale-95">僅刪本月</button>
+          <button type="button" onclick="executeWishlistDelete('${item.id}', true)" class="flex-1 py-2.5 bg-rose-600 text-white font-semibold rounded-xl text-xs active:scale-95">刪除全部</button>
         `;
       } else {
         titleEl.innerText = `確定要移除「${item.title}」嗎？`;
         descEl.innerText = `此項目將從清單中移除`;
         actionsEl.innerHTML = `
-          <button type="button" onclick="closeCustomDeleteModal()" class="flex-1 py-2 bg-gray-100 text-gray-600 font-semibold rounded-xl text-xs active:scale-95">取消</button>
-          <button type="button" onclick="executeWishlistDelete('${item.id}', false)" class="flex-1 py-2 bg-rose-600 text-white font-semibold rounded-xl text-xs active:scale-95">確定刪除</button>
+          <button type="button" onclick="closeCustomDeleteModal()" class="flex-1 py-2.5 bg-gray-100 text-gray-600 font-semibold rounded-xl text-xs active:scale-95">取消</button>
+          <button type="button" onclick="executeWishlistDelete('${item.id}', false)" class="flex-1 py-2.5 bg-rose-600 text-white font-semibold rounded-xl text-xs active:scale-95">確定刪除</button>
         `;
       }
 
@@ -1037,7 +1047,7 @@
           localStorage.setItem(ignoredKey, JSON.stringify(ignoredList));
         }
 
-        recordOfflineDeletion('wish', strId); // 記錄黑名單，防止 Snapshot 覆寫還原
+        recordOfflineDeletion('wish', strId); // 寫入墓碑清單
         state.wishlist = state.wishlist.filter(w => String(w.id) !== strId);
         saveToLocalStorage();
         render();
@@ -1059,7 +1069,7 @@
       const category = document.getElementById('wishlist-item-category').value || '不固定';
       const note = document.getElementById('wishlist-item-note').value.trim();
       const isFixed = (category === '固定');
-      const autoRollover = !isFixed; // 🌟 不固定項目預設全面自動順延
+      const autoRollover = !isFixed; // 🌟 不固定項目預設自動順延
 
       if (isNaN(price) || price <= 0) {
         showToast('請輸入有效金額');
@@ -1304,7 +1314,7 @@
         svg += `<g>`;
 
         if (isCurrent) {
-          svg += `<line x1="${p.x}" y1="${plotTop}" x2="${p.x}" y2="${plotBottom}" stroke="#0284C7" stroke-width="1" stroke-dasharray="2 2" opacity="0.35"/>`;
+          svg += `<line x1="${p.x}" y1="${plotTop}" x2="${plotBottom}" stroke="#0284C7" stroke-width="1" stroke-dasharray="2 2" opacity="0.35"/>`;
         }
 
         svg += `
@@ -1327,7 +1337,6 @@
         return Number(val).toLocaleString();
       };
 
-      // 數值文字置於最頂層圖層，自帶描邊光暈防遮擋
       svg += `<g id="chart-val-labels-topmost">`;
       points.forEach(p => {
         if (p.income > 0) {
@@ -1379,7 +1388,7 @@
 
           snapshot.forEach(docSnap => {
             const docId = String(docSnap.id);
-            // 🌟 核心防拉回：只要本地曾刪除，即便 Firebase 還沒處理完，也絕對不載入
+            // 🌟 核心防拉回：只要本地曾刪除，絕不載入
             if (!deletedWishList.includes(docId)) {
               remoteWishMap.set(docId, { ...docSnap.data(), id: docId });
             } else {
