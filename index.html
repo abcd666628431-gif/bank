@@ -355,7 +355,7 @@
       </div>
     </div>
 
-<!-- 自訂刪除確認彈窗 (取代 iOS 系統醜陋的 confirm) -->
+    <!-- 自訂刪除確認彈窗 (取代 iOS 系統確認框，防攔截) -->
     <div id="custom-delete-modal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div class="bg-white w-full max-w-xs rounded-2xl p-4 shadow-2xl space-y-3 border border-[#ECE8E1] text-center">
         <div class="w-10 h-10 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center mx-auto text-xl">
@@ -366,7 +366,7 @@
           <p id="delete-modal-desc" class="text-[11px] text-gray-500 mt-1">此操作無法復原</p>
         </div>
         <div id="delete-modal-actions" class="flex gap-2 pt-1">
-          <!-- 按鈕將由 JS 動態生成 -->
+          <!-- 按鈕由 JS 動態填入 -->
         </div>
       </div>
     </div>
@@ -478,7 +478,7 @@
 
     window.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
-        ['wishlist-modal', 'income-modal'].forEach(id => {
+        ['wishlist-modal', 'income-modal', 'custom-delete-modal'].forEach(id => {
           const el = document.getElementById(id);
           if (el) el.classList.add('hidden');
         });
@@ -778,18 +778,33 @@
       openIncomeModal(id);
     }
 
-    async function deleteIncomeItem(id) {
-      if (!confirm('確定要移除此收入項目嗎？')) return;
+    function deleteIncomeItem(id) {
+      const item = state.incomes.find(i => i.id === id);
+      if (!item) return;
+
+      const modal = document.getElementById('custom-delete-modal');
+      const titleEl = document.getElementById('delete-modal-title');
+      const descEl = document.getElementById('delete-modal-desc');
+      const actionsEl = document.getElementById('delete-modal-actions');
+
+      titleEl.innerText = `確定要移除收入「${item.title}」嗎？`;
+      descEl.innerText = `此筆收入將從本月記錄中移除`;
+      actionsEl.innerHTML = `
+        <button type="button" onclick="closeCustomDeleteModal()" class="flex-1 py-2 bg-gray-100 text-gray-600 font-semibold rounded-xl text-xs">取消</button>
+        <button type="button" onclick="executeIncomeDelete('${item.id}')" class="flex-1 py-2 bg-rose-600 text-white font-semibold rounded-xl text-xs">確定刪除</button>
+      `;
+      modal.classList.remove('hidden');
+    }
+
+    async function executeIncomeDelete(id) {
+      closeCustomDeleteModal();
+      recordOfflineDeletion('income', id);
       state.incomes = state.incomes.filter(i => i.id !== id);
       saveToLocalStorage();
       render();
 
       if (isCloudReady && fbDeleteDoc && fbDoc) {
-        try {
-          await fbDeleteDoc(fbDoc(db, 'shared_incomes', id));
-        } catch (err) {}
-      } else {
-        recordOfflineDeletion('income', id);
+        try { await fbDeleteDoc(fbDoc(db, 'shared_incomes', id)); } catch (err) {}
       }
       showToast('收入已移除');
     }
@@ -971,7 +986,80 @@
       openWishlistModal(id);
     }
 
+    // 呼叫自訂彈窗執行刪除，徹底杜絕 iOS confirm 鎖死問題
     function deleteWishlistItem(id) {
+      const item = state.wishlist.find(w => w.id === id);
+      if (!item) return;
+
+      const modal = document.getElementById('custom-delete-modal');
+      const titleEl = document.getElementById('delete-modal-title');
+      const descEl = document.getElementById('delete-modal-desc');
+      const actionsEl = document.getElementById('delete-modal-actions');
+
+      const isFixed = (item.category === '固定' || item.isFixed);
+
+      if (isFixed) {
+        titleEl.innerText = `刪除固定項目「${item.title}」`;
+        descEl.innerText = `請問是要刪除所有月份，還是僅刪除本月？`;
+        actionsEl.innerHTML = `
+          <button type="button" onclick="closeCustomDeleteModal()" class="flex-1 py-2 bg-gray-100 text-gray-600 font-semibold rounded-xl text-xs">取消</button>
+          <button type="button" onclick="executeWishlistDelete('${item.id}', false)" class="flex-1 py-2 bg-amber-600 text-white font-semibold rounded-xl text-xs">僅刪本月</button>
+          <button type="button" onclick="executeWishlistDelete('${item.id}', true)" class="flex-1 py-2 bg-rose-600 text-white font-semibold rounded-xl text-xs">刪除全部</button>
+        `;
+      } else {
+        titleEl.innerText = `確定要移除「${item.title}」嗎？`;
+        descEl.innerText = `此項目將從清單中移除`;
+        actionsEl.innerHTML = `
+          <button type="button" onclick="closeCustomDeleteModal()" class="flex-1 py-2 bg-gray-100 text-gray-600 font-semibold rounded-xl text-xs">取消</button>
+          <button type="button" onclick="executeWishlistDelete('${item.id}', false)" class="flex-1 py-2 bg-rose-600 text-white font-semibold rounded-xl text-xs">確定刪除</button>
+        `;
+      }
+
+      modal.classList.remove('hidden');
+    }
+
+    function closeCustomDeleteModal() {
+      const modal = document.getElementById('custom-delete-modal');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    async function executeWishlistDelete(id, deleteAll) {
+      closeCustomDeleteModal();
+      const item = state.wishlist.find(w => w.id === id);
+      if (!item) return;
+
+      if (deleteAll) {
+        const toDelete = state.wishlist.filter(w => (w.category === '固定' || w.isFixed) && w.title === item.title);
+        toDelete.forEach(d => recordOfflineDeletion('wish', d.id));
+        state.wishlist = state.wishlist.filter(w => !((w.category === '固定' || w.isFixed) && w.title === item.title));
+        saveToLocalStorage();
+        render();
+
+        if (isCloudReady && fbDeleteDoc && fbDoc) {
+          toDelete.forEach(async d => {
+            try { await fbDeleteDoc(fbDoc(db, 'shared_wishlist', d.id)); } catch (err) {}
+          });
+        }
+        showToast(`已徹底刪除所有月份的「${item.title}」`);
+      } else {
+        const ignoredKey = `budget_ignored_fixed_${item.month}`;
+        const ignoredList = safeJSONParse(localStorage.getItem(ignoredKey), []);
+        if (!ignoredList.includes(item.title)) {
+          ignoredList.push(item.title);
+          localStorage.setItem(ignoredKey, JSON.stringify(ignoredList));
+        }
+
+        recordOfflineDeletion('wish', id);
+        state.wishlist = state.wishlist.filter(w => w.id !== id);
+        saveToLocalStorage();
+        render();
+
+        if (isCloudReady && fbDeleteDoc && fbDoc) {
+          try { await fbDeleteDoc(fbDoc(db, 'shared_wishlist', id)); } catch (err) {}
+        }
+        showToast('項目已移除');
+      }
+    }
 
     async function handleWishlistSubmit(e) {
       e.preventDefault();
@@ -1123,7 +1211,6 @@
     }
 
     function renderWaveTrendChart(container, data) {
-      // 外框加高加寬，滿版舒展
       const svgWidth = 380;
       const svgHeight = 160;
       
@@ -1149,7 +1236,6 @@
       const bottomVal = minVal < 0 ? Math.floor(minVal / step) * step : 0;
       const range = topVal - bottomVal || 1;
 
-      // 嚴格依照 12 等分置中對齊
       const colStep = plotWidth / 11;
       const valToY = (v) => plotBottom - ((v - bottomVal) / range) * plotHeight;
 
@@ -1167,7 +1253,6 @@
         };
       });
 
-      // 自然平滑路徑
       const getSmoothPath = (pts, key) => {
         if (!pts || pts.length === 0) return '';
         let path = `M ${pts[0].x} ${pts[0][key]}`;
@@ -1205,7 +1290,6 @@
         </defs>
       `;
 
-      // 1. 繪製橫向參考線
       ticks.forEach(t => {
         const yPos = valToY(t);
         const isZero = (t === 0);
@@ -1218,7 +1302,6 @@
         }
       });
 
-      // 2. 繪製折線與陰影（處於文字與圓點下方）
       svg += `
         <path d="${areaNet}" fill="url(#netAreaGrad)" />
         <path d="${pathIncome}" fill="none" stroke="#10B981" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
@@ -1226,7 +1309,6 @@
         <path d="${pathNet}" fill="none" stroke="#0284C7" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
       `;
 
-      // 3. 繪製圓點、對齊線與月份文字
       points.forEach(p => {
         const isCurrent = p.month === state.currentMonth;
 
@@ -1236,14 +1318,12 @@
           svg += `<line x1="${p.x}" y1="${plotTop}" x2="${plotBottom}" stroke="#0284C7" stroke-width="1" stroke-dasharray="2 2" opacity="0.35"/>`;
         }
 
-        // 3 條線的節點圓點
         svg += `
           <circle cx="${p.x}" cy="${p.yInc}" r="${p.income > 0 ? 2.5 : 1.5}" fill="#10B981" stroke="#FFFFFF" stroke-width="0.8"/>
           <circle cx="${p.x}" cy="${p.yExp}" r="${p.expense > 0 ? 2.5 : 1.5}" fill="#F43F5E" stroke="#FFFFFF" stroke-width="0.8"/>
           <circle cx="${p.x}" cy="${p.yNet}" r="${p.net !== 0 ? 3.2 : 2}" fill="#0284C7" stroke="#FFFFFF" stroke-width="1"/>
         `;
 
-        // 月份文字
         if (isCurrent) {
           svg += `<rect x="${p.x - 9}" y="130" width="18" height="12" rx="3.5" fill="#E0F2FE" />`;
         }
@@ -1252,35 +1332,28 @@
         svg += `</g>`;
       });
 
-      // 數值簡寫輔助函式
       const fmtVal = (val) => {
         if (!val) return '';
         if (Math.abs(val) >= 10000) return (val / 1000).toFixed(1) + 'k';
         return Number(val).toLocaleString();
       };
 
-      // 4. 🌟 數值文字獨立圖層（置於 SVG 最頂層，帶白色描邊光暈，100% 絕不被擋住！）
+      // 數值文字置於最頂層圖層，自帶描邊光暈
       svg += `<g id="chart-val-labels-topmost">`;
       points.forEach(p => {
-        // 收入數值 (綠色)：預設置於綠點上方
         if (p.income > 0) {
           svg += `<text class="chart-num-label" x="${p.x}" y="${p.yInc - 6}" text-anchor="middle" font-size="7.5" font-family="Inter, sans-serif" font-weight="700" fill="#047857">${fmtVal(p.income)}</text>`;
         }
 
-        // 支出數值 (紅色)：預設置於紅點下方
         if (p.expense > 0) {
           svg += `<text class="chart-num-label" x="${p.x}" y="${p.yExp + 11}" text-anchor="middle" font-size="7.5" font-family="Inter, sans-serif" font-weight="700" fill="#E11D48">${fmtVal(p.expense)}</text>`;
         }
 
-        // 結餘數值 (藍色)：智慧排斥定位，防止與收入或支出文字撞在一起
         if (p.net !== 0) {
           let netY = p.yNet - 6;
-          // 若與收入點距離小於 14px，強制往上移避開
           if (p.income > 0 && Math.abs(p.yNet - p.yInc) < 14) {
             netY = p.yInc - 16;
-          }
-          // 若與支出點距離小於 14px 且在下方，往下方避開
-          else if (p.expense > 0 && Math.abs(p.yNet - p.yExp) < 14) {
+          } else if (p.expense > 0 && Math.abs(p.yNet - p.yExp) < 14) {
             netY = p.yExp + 21;
           }
           svg += `<text class="chart-num-label" x="${p.x}" y="${netY}" text-anchor="middle" font-size="8" font-family="Inter, sans-serif" font-weight="800" fill="#0284C7">${p.net > 0 ? '+' : ''}${fmtVal(p.net)}</text>`;
@@ -1305,7 +1378,7 @@
         fbUpdateDoc = fsModule.updateDoc;
         fbDeleteDoc = fsModule.deleteDoc;
         fbOnSnapshot = fsModule.onSnapshot;
-        fbCollection = fbCollection = fsModule.collection;
+        fbCollection = fsModule.collection;
         fbWriteBatch = fsModule.writeBatch;
 
         fbOnSnapshot(fbCollection(db, 'shared_wishlist'), async (snapshot) => {
@@ -1372,6 +1445,7 @@
       deleteWishlistItem,
       closeCustomDeleteModal,
       executeWishlistDelete,
+      executeIncomeDelete,
       handleWishlistSubmit,
       openIncomeModal,
       closeIncomeModal,
