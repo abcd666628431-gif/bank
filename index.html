@@ -885,11 +885,11 @@
                 <span class="text-[10px] sm:text-[11px] font-bold font-sans ${isPurchased ? 'line-through text-gray-400' : 'text-gray-800'} pr-0.5">
                   ${formatCurrency(item.price)}
                 </span>
-                <button onclick="editWishlistItem('${item.id}')" title="編輯" class="w-3.5 h-5 flex items-center justify-center text-gray-400 hover:text-gray-700 transition p-0">
-                  <i class="ph ph-pencil-simple text-[10px]"></i>
+                <button type="button" onclick="event.stopPropagation(); editWishlistItem('${item.id}')" title="編輯" class="w-6 h-7 -my-1 flex items-center justify-center text-gray-400 hover:text-gray-700 active:scale-90 transition p-0 cursor-pointer">
+                  <i class="ph ph-pencil-simple text-[11px] pointer-events-none"></i>
                 </button>
-                <button onclick="deleteWishlistItem('${item.id}')" title="刪除" class="w-3.5 h-5 flex items-center justify-center text-gray-400 hover:text-rose-600 transition p-0">
-                  <i class="ph ph-trash text-[10px]"></i>
+                <button type="button" onclick="event.stopPropagation(); deleteWishlistItem('${item.id}')" title="刪除" class="w-6 h-7 -my-1 flex items-center justify-center text-gray-400 hover:text-rose-600 active:scale-90 transition p-0 cursor-pointer">
+                  <i class="ph ph-trash text-[11px] pointer-events-none"></i>
                 </button>
               </div>
             </div>
