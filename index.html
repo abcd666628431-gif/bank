@@ -930,15 +930,19 @@
                 </div>
               </div>
 
-              <!-- 右側操作區：緊湊貼右、零多餘間距 -->
-              <div class="flex items-center flex-shrink-0 ml-auto -mr-0.5">
-                <span class="text-[10px] sm:text-[11px] font-bold font-sans ${isPurchased ? 'line-through text-gray-400' : 'text-gray-800'} mr-0.5">
+              <!-- 右側操作區：視覺極致收窄，但擁有巨大的隱形觸控熱區 -->
+              <div class="flex items-center flex-shrink-0 ml-auto -mr-0.5 relative z-10">
+                <span class="text-[10px] sm:text-[11px] font-bold font-sans ${isPurchased ? 'line-through text-gray-400' : 'text-gray-800'} mr-1">
                   ${formatCurrency(item.price)}
                 </span>
-                <button type="button" onclick="event.stopPropagation(); editWishlistItem('${item.id}')" title="編輯" class="w-4 h-6 flex items-center justify-center text-gray-400 hover:text-gray-700 active:scale-90 transition p-0">
+                
+                <!-- 編輯按鈕：移除 scale-90 避免逃逸，加入 before:-inset-3 擴大隱形熱區 -->
+                <button type="button" onclick="editWishlistItem('${item.id}')" title="編輯" class="relative w-4 h-6 flex items-center justify-center text-gray-400 hover:text-gray-700 active:opacity-50 transition p-0 before:absolute before:-inset-3 before:content-['']">
                   <i class="ph ph-pencil-simple text-[11px] pointer-events-none"></i>
                 </button>
-                <button type="button" onclick="event.stopPropagation(); deleteWishlistItem('${item.id}')" title="刪除" class="w-4 h-6 flex items-center justify-center text-gray-400 hover:text-rose-600 active:scale-90 transition p-0">
+                
+                <!-- 刪除按鈕：移除 scale-90 避免逃逸，加入 before:-inset-3 擴大隱形熱區 -->
+                <button type="button" onclick="deleteWishlistItem('${item.id}')" title="刪除" class="relative w-4 h-6 flex items-center justify-center text-gray-400 hover:text-rose-600 active:opacity-50 transition p-0 before:absolute before:-inset-3 before:content-['']">
                   <i class="ph ph-trash text-[11px] pointer-events-none"></i>
                 </button>
               </div>
