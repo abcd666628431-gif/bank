@@ -920,18 +920,18 @@
           const cardBg = isPurchased ? 'bg-[#F5F2ED] opacity-80' : 'bg-white hover:bg-gray-50';
 
           return `
-            <div class="flex items-center justify-between pl-1.5 pr-1 py-1.5 rounded-lg border border-[#ECE6DB] ${cardBg} transition group">
-              <!-- 左側點擊區：打勾與名稱 -->
-              <div onclick="toggleWishlistPurchased('${item.id}')" class="flex items-center gap-1.5 flex-1 min-w-0 cursor-pointer active:opacity-70">
+            <div class="flex items-center justify-between pl-1 pr-1 py-1 rounded-lg border border-[#ECE6DB] ${cardBg} transition group">
+              <!-- 左側點擊區：pl-1 + gap-1 緊湊無縫 -->
+              <div onclick="toggleWishlistPurchased('${item.id}')" class="flex items-center gap-1 flex-1 min-w-0 cursor-pointer active:opacity-70">
                 <input type="checkbox" ${isPurchased ? 'checked' : ''} class="compact-checkbox w-3.5 h-3.5 rounded text-emerald-700 cursor-pointer flex-shrink-0 pointer-events-none">
                 <div class="min-w-0 flex-1">
-                  <span class="text-[11px] ${textStyle} truncate block select-none">${escapeHtml(item.title)}</span>
+                  <span class="text-[10px] ${textStyle} truncate block select-none">${escapeHtml(item.title)}</span>
                 </div>
               </div>
 
-              <!-- 右側操作區：間距 gap-0.5，按鈕 w-4，往右緊縮貼合 -->
+              <!-- 右側操作區：文字縮小 1px -->
               <div class="flex items-center gap-0.5 flex-shrink-0 ml-1">
-                <span class="text-[11px] font-bold font-sans ${isPurchased ? 'line-through text-gray-400' : 'text-gray-800'} mr-0.5">
+                <span class="text-[10px] font-bold font-sans ${isPurchased ? 'line-through text-gray-400' : 'text-gray-800'} mr-0.5">
                   ${formatCurrency(item.price)}
                 </span>
                 <button type="button" onclick="event.stopPropagation(); editWishlistItem('${item.id}')" title="編輯" class="w-4 h-5 flex items-center justify-center rounded text-gray-400 hover:text-gray-700 active:scale-95 transition p-0">
@@ -1205,21 +1205,51 @@
       const chartWidth = 360;
       const colWidth = chartWidth / 12;
 
+      // 數值簡化格式（如 15.2k 或 3,500）
+      const fmtVal = (val) => {
+        if (!val || val <= 0) return '';
+        if (val >= 10000) return (val / 1000).toFixed(1) + 'k';
+        return Number(val).toLocaleString();
+      };
+
       let svg = `<svg viewBox="0 0 ${chartWidth} 140" class="w-full h-full overflow-visible">`;
       svg += `<line x1="0" y1="${chartHeight}" x2="${chartWidth}" y2="${chartHeight}" stroke="#E5E0D5" stroke-width="1" />`;
 
       data.forEach((d, idx) => {
         const x = idx * colWidth;
-        const incHeight = d.income > 0 ? (d.income / maxVal) * (chartHeight - 12) : 0;
-        const expHeight = d.expense > 0 ? (d.expense / maxVal) * (chartHeight - 12) : 0;
+        // 保留頂部 16px 空間供標籤顯示，避免文字被頂部邊界切掉
+        const incHeight = d.income > 0 ? (d.income / maxVal) * (chartHeight - 18) : 0;
+        const expHeight = d.expense > 0 ? (d.expense / maxVal) * (chartHeight - 18) : 0;
         const isCurrent = d.month === state.currentMonth;
+
+        const incBarWidth = (colWidth - 6) / 2;
+        const expBarWidth = (colWidth - 6) / 2;
+        const incX = x + 2;
+        const expX = x + 2 + incBarWidth + 1;
 
         svg += `
           <g class="cursor-pointer group" onclick="jumpToMonth(${d.month})">
+            <!-- 觸控透明底板 -->
             <rect x="${x}" y="0" width="${colWidth}" height="${chartHeight + 24}" fill="black" opacity="0" pointer-events="all" />
-            ${isCurrent ? `<rect x="${x + 2}" y="0" width="${colWidth - 4}" height="${chartHeight + 22}" fill="#E8EEF5" rx="4" opacity="0.6"/>` : ''}
-            ${incHeight > 0 ? `<rect x="${x + 2}" y="${chartHeight - incHeight}" width="${(colWidth - 6) / 2}" height="${incHeight}" fill="#10B981" rx="1.5" class="transition group-hover:opacity-80"/>` : ''}
-            ${expHeight > 0 ? `<rect x="${x + 2 + (colWidth - 6) / 2 + 1}" y="${chartHeight - expHeight}" width="${(colWidth - 6) / 2}" height="${expHeight}" fill="#F43F5E" rx="1.5" class="transition group-hover:opacity-80"/>` : ''}
+            
+            <!-- 當月高亮背景 -->
+            ${isCurrent ? `<rect x="${x + 1}" y="0" width="${colWidth - 2}" height="${chartHeight + 22}" fill="#E8EEF5" rx="4" opacity="0.6"/>` : ''}
+            
+            <!-- 綠色收入柱 -->
+            ${incHeight > 0 ? `<rect x="${incX}" y="${chartHeight - incHeight}" width="${incBarWidth}" height="${incHeight}" fill="#10B981" rx="1.5" class="transition group-hover:opacity-80"/>` : ''}
+            
+            <!-- 紅色支出柱 -->
+            ${expHeight > 0 ? `<rect x="${expX}" y="${chartHeight - expHeight}" width="${expBarWidth}" height="${expHeight}" fill="#F43F5E" rx="1.5" class="transition group-hover:opacity-80"/>` : ''}
+            
+            <!-- 柱頂數值標籤（帶白色描邊防遮擋） -->
+            ${d.income > 0 ? `
+              <text class="chart-num-label" x="${incX + incBarWidth / 2}" y="${chartHeight - incHeight - 3}" text-anchor="middle" font-size="6.5" font-family="Inter, sans-serif" font-weight="700" fill="#047857">${fmtVal(d.income)}</text>
+            ` : ''}
+            ${d.expense > 0 ? `
+              <text class="chart-num-label" x="${expX + expBarWidth / 2}" y="${chartHeight - expHeight - 3}" text-anchor="middle" font-size="6.5" font-family="Inter, sans-serif" font-weight="700" fill="#E11D48">${fmtVal(d.expense)}</text>
+            ` : ''}
+
+            <!-- 月份標籤 -->
             <text x="${x + colWidth / 2}" y="${chartHeight + 16}" text-anchor="middle" font-size="8" font-weight="${isCurrent ? 'bold' : 'normal'}" fill="${isCurrent ? '#0284C7' : '#8E8B85'}">${d.month}月</text>
           </g>
         `;
