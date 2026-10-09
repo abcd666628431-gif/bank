@@ -156,9 +156,9 @@
         </div>
       </section>
 
-      <!-- 待付費區（內邊距收窄為 px-2.5 拓寬內部內容空間） -->
-      <section class="bg-cardBg rounded-2xl px-2.5 py-3 shadow-sm border border-[#EBE7E0] space-y-2.5">
-        <div class="flex items-center justify-between">
+      <!-- 待付費區（已極致收窄左右邊界 px-1.5，徹底消除兩側空白） -->
+      <section class="bg-cardBg rounded-2xl px-1.5 py-3 shadow-sm border border-[#EBE7E0] space-y-2.5">
+        <div class="flex items-center justify-between px-1">
           <div class="flex items-center gap-1.5">
             <span class="w-2 h-2 rounded-full bg-amber-500"></span>
             <div>
@@ -195,8 +195,8 @@
           </div>
         </div>
 
-        <!-- 左右雙欄容器（中間雙欄間距加寬至 gap-2.5） -->
-        <div class="grid grid-cols-2 gap-2.5 pt-0.5">
+        <!-- 左右雙欄容器（gap-1.5 配合 px-1.5 讓兩側完全撐滿） -->
+        <div class="grid grid-cols-2 gap-1.5 pt-0.5">
           <!-- 左欄：固定區 -->
           <div class="space-y-1.5">
             <div class="flex items-center justify-between px-1.5 bg-purple-50 border border-purple-200/60 rounded-lg py-1">
@@ -910,7 +910,6 @@
           return String(b.id || '').localeCompare(String(a.id || ''));
         });
 
-      // 🌟 核心結構解耦：左側打勾，右側緊湊貼右（ml-auto -mr-0.5），移除多餘空白
       const renderItemsList = (items) => {
         if (items.length === 0) {
           return `<div class="text-[9px] text-subText text-center py-2 bg-white rounded-lg border border-dashed border-gray-200">無項目</div>`;
@@ -921,29 +920,25 @@
           const cardBg = isPurchased ? 'bg-[#F5F2ED] opacity-80' : 'bg-white hover:bg-gray-50';
 
           return `
-            <div class="flex items-center justify-between pl-1.5 pr-0 py-1 rounded-lg border border-[#ECE6DB] ${cardBg} transition group relative overflow-hidden">
+            <div class="flex items-center justify-between pl-1.5 pr-1 py-1.5 rounded-lg border border-[#ECE6DB] ${cardBg} transition group">
               <!-- 左側點擊區：打勾與名稱 -->
-              <div onclick="toggleWishlistPurchased('${item.id}')" class="flex items-center gap-1 flex-1 min-w-0 pr-0.5 cursor-pointer active:opacity-70">
+              <div onclick="toggleWishlistPurchased('${item.id}')" class="flex items-center gap-1.5 flex-1 min-w-0 cursor-pointer active:opacity-70">
                 <input type="checkbox" ${isPurchased ? 'checked' : ''} class="compact-checkbox w-3.5 h-3.5 rounded text-emerald-700 cursor-pointer flex-shrink-0 pointer-events-none">
                 <div class="min-w-0 flex-1">
-                  <span class="text-[11px] ${textStyle} truncate block leading-tight select-none">${escapeHtml(item.title)}</span>
+                  <span class="text-[11px] ${textStyle} truncate block select-none">${escapeHtml(item.title)}</span>
                 </div>
               </div>
 
-              <!-- 右側操作區：視覺極致收窄，但擁有巨大的隱形觸控熱區 -->
-              <div class="flex items-center flex-shrink-0 ml-auto -mr-0.5 relative z-10">
-                <span class="text-[10px] sm:text-[11px] font-bold font-sans ${isPurchased ? 'line-through text-gray-400' : 'text-gray-800'} mr-1">
+              <!-- 右側操作區：間距 gap-0.5，按鈕 w-4，往右緊縮貼合 -->
+              <div class="flex items-center gap-0.5 flex-shrink-0 ml-1">
+                <span class="text-[11px] font-bold font-sans ${isPurchased ? 'line-through text-gray-400' : 'text-gray-800'} mr-0.5">
                   ${formatCurrency(item.price)}
                 </span>
-                
-                <!-- 編輯按鈕：移除 scale-90 避免逃逸，加入 before:-inset-3 擴大隱形熱區 -->
-                <button type="button" onclick="editWishlistItem('${item.id}')" title="編輯" class="relative w-4 h-6 flex items-center justify-center text-gray-400 hover:text-gray-700 active:opacity-50 transition p-0 before:absolute before:-inset-3 before:content-['']">
-                  <i class="ph ph-pencil-simple text-[11px] pointer-events-none"></i>
+                <button type="button" onclick="event.stopPropagation(); editWishlistItem('${item.id}')" title="編輯" class="w-4 h-5 flex items-center justify-center rounded text-gray-400 hover:text-gray-700 active:scale-95 transition p-0">
+                  <i class="ph ph-pencil-simple text-[10px] pointer-events-none"></i>
                 </button>
-                
-                <!-- 刪除按鈕：移除 scale-90 避免逃逸，加入 before:-inset-3 擴大隱形熱區 -->
-                <button type="button" onclick="deleteWishlistItem('${item.id}')" title="刪除" class="relative w-4 h-6 flex items-center justify-center text-gray-400 hover:text-rose-600 active:opacity-50 transition p-0 before:absolute before:-inset-3 before:content-['']">
-                  <i class="ph ph-trash text-[11px] pointer-events-none"></i>
+                <button type="button" onclick="event.stopPropagation(); deleteWishlistItem('${item.id}')" title="刪除" class="w-4 h-5 flex items-center justify-center rounded text-gray-400 hover:text-rose-600 active:scale-95 transition p-0">
+                  <i class="ph ph-trash text-[10px] pointer-events-none"></i>
                 </button>
               </div>
             </div>
