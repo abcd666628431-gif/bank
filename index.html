@@ -791,24 +791,38 @@
       openIncomeModal(id);
     }
 
-    function deleteIncomeItem(id) {
-      const item = state.incomes.find(i => String(i.id) === String(id));
-      if (!item) return;
+   function deleteIncomeItem(id) {
+  const item = state.incomes.find(i => String(i.id) === String(id));
+  if (!item) return;
 
-      const modal = document.getElementById('custom-delete-modal');
-      const titleEl = document.getElementById('delete-modal-title');
-      const descEl = document.getElementById('delete-modal-desc');
-      const actionsEl = document.getElementById('delete-modal-actions');
+  const modal = document.getElementById('custom-delete-modal');
+  const titleEl = document.getElementById('delete-modal-title');
+  const descEl = document.getElementById('delete-modal-desc');
+  const actionsEl = document.getElementById('delete-modal-actions');
 
-      titleEl.innerText = `確定要移除收入「${item.title}」嗎？`;
-      descEl.innerText = `此筆收入將從本月記錄中移除`;
-      actionsEl.innerHTML = `
-        <button type="button" onclick="closeCustomDeleteModal()" class="flex-1 py-2.5 bg-gray-100 text-gray-600 font-semibold rounded-xl text-xs active:scale-95">取消</button>
-        <button type="button" onclick="executeIncomeDelete('${item.id}')" class="flex-1 py-2.5 bg-rose-600 text-white font-semibold rounded-xl text-xs active:scale-95">確定刪除</button>
-      `;
-      modal.classList.remove('hidden');
-      document.body.style.overflow = 'hidden';
-    }
+  titleEl.innerText = `確定要移除收入「${item.title}」嗎？`;
+  descEl.innerText = `此筆收入將從本月記錄中移除`;
+  actionsEl.innerHTML = `
+    <button type="button" data-action="delete" class="w-full py-3.5 bg-rose-600 text-white font-semibold rounded-xl text-sm active:scale-95 touch-manipulation">確定刪除</button>
+    <button type="button" data-action="cancel" class="w-full py-3 bg-gray-100 text-gray-600 font-semibold rounded-xl text-sm active:scale-95 touch-manipulation">取消</button>
+  `;
+
+  actionsEl.querySelectorAll('button').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      const action = this.getAttribute('data-action');
+      if (action === 'cancel') {
+        closeCustomDeleteModal();
+      } else if (action === 'delete') {
+        executeIncomeDelete(String(id));
+      }
+    }, { once: true });
+  });
+
+  modal.classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+}
 
     async function executeIncomeDelete(id) {
       closeCustomDeleteModal();
@@ -1002,37 +1016,53 @@
 
     // 🌟 自訂刪除彈窗：String(id) 相容，阻止點擊穿透，行動端 100% 穩定呈現
     function deleteWishlistItem(id) {
-      const strId = String(id);
-      const item = state.wishlist.find(w => String(w.id) === strId);
-      if (!item) return;
+  const strId = String(id);
+  const item = state.wishlist.find(w => String(w.id) === strId);
+  if (!item) return;
 
-      const modal = document.getElementById('custom-delete-modal');
-      const titleEl = document.getElementById('delete-modal-title');
-      const descEl = document.getElementById('delete-modal-desc');
-      const actionsEl = document.getElementById('delete-modal-actions');
+  const modal = document.getElementById('custom-delete-modal');
+  const titleEl = document.getElementById('delete-modal-title');
+  const descEl = document.getElementById('delete-modal-desc');
+  const actionsEl = document.getElementById('delete-modal-actions');
 
-      const isFixed = (item.category === '固定' || item.isFixed);
+  const isFixed = (item.category === '固定' || item.isFixed);
 
-      if (isFixed) {
-        titleEl.innerText = `刪除固定項目「${item.title}」`;
-        descEl.innerText = `請問要徹底刪除所有月份，還是僅刪除本月？`;
-        actionsEl.innerHTML = `
-          <button type="button" onclick="closeCustomDeleteModal()" class="flex-1 py-2.5 bg-gray-100 text-gray-600 font-semibold rounded-xl text-xs active:scale-95">取消</button>
-          <button type="button" onclick="executeWishlistDelete('${item.id}', false)" class="flex-1 py-2.5 bg-amber-600 text-white font-semibold rounded-xl text-xs active:scale-95">僅刪本月</button>
-          <button type="button" onclick="executeWishlistDelete('${item.id}', true)" class="flex-1 py-2.5 bg-rose-600 text-white font-semibold rounded-xl text-xs active:scale-95">刪除全部</button>
-        `;
-      } else {
-        titleEl.innerText = `確定要移除「${item.title}」嗎？`;
-        descEl.innerText = `此項目將從清單中移除`;
-        actionsEl.innerHTML = `
-          <button type="button" onclick="closeCustomDeleteModal()" class="flex-1 py-2.5 bg-gray-100 text-gray-600 font-semibold rounded-xl text-xs active:scale-95">取消</button>
-          <button type="button" onclick="executeWishlistDelete('${item.id}', false)" class="flex-1 py-2.5 bg-rose-600 text-white font-semibold rounded-xl text-xs active:scale-95">確定刪除</button>
-        `;
+  if (isFixed) {
+    titleEl.innerText = `刪除固定項目「${item.title}」`;
+    descEl.innerText = `請問要徹底刪除所有月份，還是僅刪除本月？`;
+    actionsEl.innerHTML = `
+      <button type="button" data-action="month" class="w-full py-3.5 bg-amber-600 text-white font-semibold rounded-xl text-sm active:scale-95 touch-manipulation">僅刪本月</button>
+      <button type="button" data-action="all" class="w-full py-3.5 bg-rose-600 text-white font-semibold rounded-xl text-sm active:scale-95 touch-manipulation">刪除全部月份</button>
+      <button type="button" data-action="cancel" class="w-full py-3 bg-gray-100 text-gray-600 font-semibold rounded-xl text-sm active:scale-95 touch-manipulation">取消</button>
+    `;
+  } else {
+    titleEl.innerText = `確定要移除「${item.title}」嗎？`;
+    descEl.innerText = `此項目將從清單中移除`;
+    actionsEl.innerHTML = `
+      <button type="button" data-action="delete" class="w-full py-3.5 bg-rose-600 text-white font-semibold rounded-xl text-sm active:scale-95 touch-manipulation">確定刪除</button>
+      <button type="button" data-action="cancel" class="w-full py-3 bg-gray-100 text-gray-600 font-semibold rounded-xl text-sm active:scale-95 touch-manipulation">取消</button>
+    `;
+  }
+
+  // 用事件監聽，比 inline onclick 在手機上可靠很多
+  actionsEl.querySelectorAll('button').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      const action = this.getAttribute('data-action');
+      if (action === 'cancel') {
+        closeCustomDeleteModal();
+      } else if (action === 'month' || action === 'delete') {
+        executeWishlistDelete(strId, false);
+      } else if (action === 'all') {
+        executeWishlistDelete(strId, true);
       }
+    }, { once: true });
+  });
 
-      modal.classList.remove('hidden');
-      document.body.style.overflow = 'hidden'; // 鎖定底層滑動，杜絕穿透
-    }
+  modal.classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+}
 
     function closeCustomDeleteModal() {
       const modal = document.getElementById('custom-delete-modal');
