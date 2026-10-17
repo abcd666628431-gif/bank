@@ -359,8 +359,10 @@
 
   <!-- 🌟 自訂刪除確認彈窗：具備 touch-none 與阻斷穿透防線，保證行動端穩定置頂 -->
   <div id="custom-delete-modal" 
-       class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-[99999] flex items-center justify-center p-4 touch-none select-none"
-       ontouchstart="event.stopPropagation()"
+     class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-[99999] flex items-center justify-center p-4"
+     onclick="handleBackdropClick(event, 'custom-delete-modal')">
+  <div class="bg-white w-full max-w-xs rounded-2xl p-4 shadow-2xl space-y-3 border border-[#ECE8E1] text-center" 
+       onclick="event.stopPropagation()">
        onclick="handleBackdropClick(event, 'custom-delete-modal')">
     <div class="bg-white w-full max-w-xs rounded-2xl p-4 shadow-2xl space-y-3 border border-[#ECE8E1] text-center" 
          ontouchstart="event.stopPropagation()" 
@@ -372,7 +374,7 @@
         <h4 id="delete-modal-title" class="font-bold text-sm text-gray-800">確定要移除此項目嗎？</h4>
         <p id="delete-modal-desc" class="text-[11px] text-gray-500 mt-1">此操作無法復原</p>
       </div>
-      <div id="delete-modal-actions" class="flex gap-2 pt-1"></div>
+      <div id="delete-modal-actions" class="flex flex-col gap-2 pt-1"></div>
     </div>
   </div>
 
@@ -419,10 +421,18 @@
     }
 
     const localWishlist = localStorage.getItem('budget_wishlist');
-    const localIncomes = localStorage.getItem('budget_incomes');
+const localIncomes = localStorage.getItem('budget_incomes');
 
-    const now = new Date();
-    let state = {
+// ★ 新增：必須宣告，否則快照與刪除會崩潰
+const pendingDeletedWish = new Set(
+  (safeJSONParse(localStorage.getItem('budget_deleted_wish'), []) || []).map(String)
+);
+const pendingDeletedIncome = new Set(
+  (safeJSONParse(localStorage.getItem('budget_deleted_income'), []) || []).map(String)
+);
+
+const now = new Date();
+let state = {
       currentYear: now.getFullYear(),
       currentMonth: now.getMonth() + 1,
       annualView: 'flow',
@@ -455,7 +465,7 @@
     }
   } catch (e) {}
 }
-
+  
     function formatCurrency(num) {
       const n = Number(num || 0);
       const sign = n < 0 ? '-' : '';
@@ -1047,9 +1057,19 @@
     titleEl.innerText = `確定要移除「${item.title}」嗎？`;
     descEl.innerText = `此項目將從清單中移除`;
     actionsEl.innerHTML = `
-      <button type="button" data-action="delete" class="w-full py-3.5 bg-rose-600 text-white font-semibold rounded-xl text-sm active:scale-95 touch-manipulation">確定刪除</button>
-      <button type="button" data-action="cancel" class="w-full py-3 bg-gray-100 text-gray-600 font-semibold rounded-xl text-sm active:scale-95 touch-manipulation">取消</button>
-    `;
+  <button type="button" data-action="delete" class="w-full py-3.5 bg-rose-600 text-white font-semibold rounded-xl text-sm">確定刪除</button>
+  <button type="button" data-action="cancel" class="w-full py-3 bg-gray-100 text-gray-600 font-semibold rounded-xl text-sm">取消</button>
+`;
+
+actionsEl.querySelectorAll('button').forEach(btn => {
+  btn.addEventListener('click', function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    const action = this.getAttribute('data-action');
+    if (action === 'cancel') closeCustomDeleteModal();
+    else if (action === 'delete') executeWishlistDelete(strId, false);
+  }, { once: true });
+});
   }
 
   // 重點：用 addEventListener，手機比較穩
@@ -1475,15 +1495,23 @@
           const remoteWishMap = new Map();
           const deletedWishList = safeJSONParse(localStorage.getItem('budget_deleted_wish'), []).map(String);
 
-snapshot.forEach(docSnap => {
-  const docId = String(docSnap.id);
-  // 只要本地曾刪過（記憶體或 localStorage），就絕對不載入
-  if (pendingDeletedWish.has(docId) || deletedWishList.includes(docId)) {
-    try { fbDeleteDoc(fbDoc(db, 'shared_wishlist', docId)); } catch (e) {}
-  } else {
-    remoteWishMap.set(docId, { ...docSnap.data(), id: docId });
-  }
-});
+try {
+  snapshot.forEach(docSnap => {
+    const docId = String(docSnap.id);
+    // 記憶體墓碑 + localStorage 墓碑都要擋
+    if (pendingDeletedWish.has(docId) || deletedWishList.includes(docId)) {
+      try { fbDeleteDoc(fbDoc(db, 'shared_wishlist', docId)); } catch (e) {}
+    } else {
+      remoteWishMap.set(docId, { ...docSnap.data(), id: docId });
+    }
+  });
+  state.wishlist = Array.from(remoteWishMap.values());
+  saveToLocalStorage();
+  await rolloverUnpurchasedItems();
+  render();
+} catch (err) {
+  console.error(err);
+}
 
           state.wishlist = Array.from(remoteWishMap.values());
           saveToLocalStorage();
@@ -1501,10 +1529,10 @@ snapshot.forEach(docSnap => {
 snapshot.forEach(docSnap => {
   const docId = String(docSnap.id);
   if (pendingDeletedIncome.has(docId) || deletedIncList.includes(docId)) {
-    try { fbDeleteDoc(fbDoc(db, 'shared_incomes', docId)); } catch (e) {}
-  } else {
-    remoteIncMap.set(docId, { ...docSnap.data(), id: docId });
-  }
+  try { fbDeleteDoc(fbDoc(db, 'shared_incomes', docId)); } catch (e) {}
+} else {
+  remoteIncMap.set(docId, { ...docSnap.data(), id: docId });
+}
 });
 
           state.incomes = Array.from(remoteIncMap.values());
