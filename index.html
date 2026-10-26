@@ -359,10 +359,7 @@
 
   <!-- 🌟 自訂刪除確認彈窗：具備 touch-none 與阻斷穿透防線，保證行動端穩定置頂 -->
   <div id="custom-delete-modal" 
-     class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-[99999] flex items-center justify-center p-4"
-     onclick="handleBackdropClick(event, 'custom-delete-modal')">
-  <div class="bg-white w-full max-w-xs rounded-2xl p-4 shadow-2xl space-y-3 border border-[#ECE8E1] text-center" 
-       onclick="event.stopPropagation()">
+       class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-[99999] flex items-center justify-center p-4"
        onclick="handleBackdropClick(event, 'custom-delete-modal')">
     <div class="bg-white w-full max-w-xs rounded-2xl p-4 shadow-2xl space-y-3 border border-[#ECE8E1] text-center" 
          ontouchstart="event.stopPropagation()" 
@@ -467,7 +464,8 @@ let state = {
 }
   
     function formatCurrency(num) {
-      const n = Number(num || 0);
+      const raw = Number(num || 0);
+      const n = Math.abs(raw) < 0.005 ? 0 : raw;
       const sign = n < 0 ? '-' : '';
       return sign + '$' + Math.abs(n).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 });
     }
@@ -547,7 +545,7 @@ let state = {
           state.wishlist.unshift(newItem);
           addedCount++;
           if (isCloudReady && fbSetDoc && fbDoc) {
-            try { await fbSetDoc(fbDoc(db, 'shared_wishlist', newId), newItem); } catch (e) {}
+            fbSetDoc(fbDoc(db, 'shared_wishlist', newId), newItem).catch(() => {});
           }
         }
       }
@@ -568,7 +566,8 @@ let state = {
 
       for (let item of state.wishlist) {
         const isVariable = (item.category !== '固定' && !item.isFixed);
-        if (isVariable && !item.purchased) {
+        // 僅在 autoRollover 不為 false，且使用者目前正處於真實當月時才執行順延
+        if (isVariable && !item.purchased && item.autoRollover !== false && state.currentYear === realYear && state.currentMonth === realMonth) {
           if (item.month && item.month < realMonthStr) {
             item.month = realMonthStr;
             movedCount++;
@@ -650,6 +649,20 @@ let state = {
       document.getElementById('total-wealth-amount').innerText = formatCurrency(totalWealth);
       document.getElementById('remaining-amount').innerText = formatCurrency(remaining);
       document.getElementById('chart-total-expense').innerText = formatCurrency(currentPurchasedExpense);
+
+      const statusTag = document.getElementById('expense-status-tag');
+      if (statusTag) {
+        if (remaining < 0) {
+          statusTag.innerText = '本月超支';
+          statusTag.className = 'text-xs font-bold text-rose-600 block mt-1';
+        } else if (currentSettledIncome > 0 && remaining < currentSettledIncome * 0.2) {
+          statusTag.innerText = '餘額偏低';
+          statusTag.className = 'text-xs font-bold text-amber-600 block mt-1';
+        } else {
+          statusTag.innerText = '狀態良好';
+          statusTag.className = 'text-xs font-bold text-emerald-600 block mt-1';
+        }
+      }
       document.getElementById('donut-inner-total').innerText = formatNumber(currentPurchasedExpense);
 
       if (document.getElementById('fixed-col-sum')) document.getElementById('fixed-col-sum').innerText = formatCurrency(fixedSum);
@@ -666,12 +679,19 @@ let state = {
         catMap[cat] = (catMap[cat] || 0) + Number(t.price || 0);
       });
 
-      const sortedCats = Object.keys(catMap).map(cat => ({
-        name: cat,
-        amount: catMap[cat],
-        pct: totalExpense > 0 ? Math.round((catMap[cat] / totalExpense) * 100) : 0,
-        color: cat === '固定' ? '#8B5CF6' : '#0284C7'
-      })).filter(c => c.amount > 0).sort((a, b) => b.amount - a.amount);
+      const activeCats = Object.keys(catMap).filter(cat => catMap[cat] > 0);
+      const sortedCats = activeCats.map((cat, idx) => {
+        let pct = totalExpense > 0 ? Math.round((catMap[cat] / totalExpense) * 100) : 0;
+        if (activeCats.length === 2 && idx === 1) {
+          pct = 100 - Math.round((catMap[activeCats[0]] / totalExpense) * 100);
+        }
+        return {
+          name: cat,
+          amount: catMap[cat],
+          pct: Math.max(0, Math.min(100, pct)),
+          color: cat === '固定' ? '#8B5CF6' : '#0284C7'
+        };
+      }).sort((a, b) => b.amount - a.amount);
 
       const donutContainer = document.getElementById('donut-segments');
       donutContainer.innerHTML = '';
@@ -722,7 +742,9 @@ let state = {
 
     function renderIncome() {
       const container = document.getElementById('income-items-container');
-      const currentIncomes = state.incomes.filter(item => isSameMonthYear(item.month, state.currentYear, state.currentMonth));
+      const currentIncomes = state.incomes
+        .filter(item => isSameMonthYear(item.month, state.currentYear, state.currentMonth))
+        .sort((a, b) => String(b.id || '').localeCompare(String(a.id || '')));
 
       if (currentIncomes.length === 0) {
         container.innerHTML = `<div class="text-[9px] text-subText text-center py-2 bg-white rounded-lg border border-dashed border-gray-200">本月尚無收入記錄</div>`;
@@ -862,7 +884,7 @@ let state = {
       const id = document.getElementById('income-edit-id').value;
       const title = document.getElementById('income-item-title').value.trim();
       const month = document.getElementById('income-item-month').value || currentMonthStr;
-      const price = Number(document.getElementById('income-item-price').value);
+      const price = Math.round(Number(document.getElementById('income-item-price').value) * 100) / 100;
 
       if (isNaN(price) || price <= 0) {
         showToast('請輸入有效金額');
@@ -911,7 +933,8 @@ let state = {
 
       const totalSum = currentMonthWishlist.reduce((sum, item) => sum + Number(item.price || 0), 0);
       const purchasedSum = currentMonthWishlist.filter(item => item.purchased).reduce((sum, item) => sum + Number(item.price || 0), 0);
-      const progressPercent = totalSum > 0 ? Math.round((purchasedSum / totalSum) * 100) : 0;
+      const rawPct = totalSum > 0 ? (purchasedSum / totalSum) * 100 : 0;
+      const progressPercent = (rawPct > 0 && rawPct < 1) ? 1 : (rawPct > 99 && purchasedSum < totalSum) ? 99 : Math.round(rawPct);
 
       document.getElementById('wishlist-total-sum').innerText = formatCurrency(totalSum);
       document.getElementById('wishlist-purchased-sum').innerText = formatCurrency(purchasedSum);
@@ -954,10 +977,11 @@ let state = {
           return `
             <div class="flex items-center justify-between pl-1 pr-1 py-1 rounded-lg border border-[#ECE6DB] ${cardBg} transition group">
               <!-- 左側點擊區：pl-1 + gap-1 緊湊無縫 -->
-              <div onclick="toggleWishlistPurchased('${item.id}')" class="flex items-center gap-1 flex-1 min-w-0 cursor-pointer active:opacity-70">
+             <div onclick="toggleWishlistPurchased('${item.id}')" class="flex items-center gap-1 flex-1 min-w-0 cursor-pointer active:opacity-70">
                 <input type="checkbox" ${isPurchased ? 'checked' : ''} class="compact-checkbox w-3.5 h-3.5 rounded text-emerald-700 cursor-pointer flex-shrink-0 pointer-events-none">
                 <div class="min-w-0 flex-1">
                   <span class="text-[10px] ${textStyle} truncate block select-none">${escapeHtml(item.title)}</span>
+                  ${item.note ? `<span class="text-[8px] text-subText truncate block select-none">${escapeHtml(item.note)}</span>` : ''}
                 </div>
               </div>
 
@@ -1057,19 +1081,9 @@ let state = {
     titleEl.innerText = `確定要移除「${item.title}」嗎？`;
     descEl.innerText = `此項目將從清單中移除`;
     actionsEl.innerHTML = `
-  <button type="button" data-action="delete" class="w-full py-3.5 bg-rose-600 text-white font-semibold rounded-xl text-sm">確定刪除</button>
-  <button type="button" data-action="cancel" class="w-full py-3 bg-gray-100 text-gray-600 font-semibold rounded-xl text-sm">取消</button>
-`;
-
-actionsEl.querySelectorAll('button').forEach(btn => {
-  btn.addEventListener('click', function (e) {
-    e.preventDefault();
-    e.stopPropagation();
-    const action = this.getAttribute('data-action');
-    if (action === 'cancel') closeCustomDeleteModal();
-    else if (action === 'delete') executeWishlistDelete(strId, false);
-  }, { once: true });
-});
+      <button type="button" data-action="delete" class="w-full py-3.5 bg-rose-600 text-white font-semibold rounded-xl text-sm active:scale-95 touch-manipulation">確定刪除</button>
+      <button type="button" data-action="cancel" class="w-full py-3 bg-gray-100 text-gray-600 font-semibold rounded-xl text-sm active:scale-95 touch-manipulation">取消</button>
+    `;
   }
 
   // 重點：用 addEventListener，手機比較穩
@@ -1119,14 +1133,16 @@ actionsEl.querySelectorAll('button').forEach(btn => {
         }
         showToast(`已徹底刪除所有月份的「${item.title}」`);
       } else {
-        const ignoredKey = `budget_ignored_fixed_${item.month}`;
-        const ignoredList = safeJSONParse(localStorage.getItem(ignoredKey), []);
-        if (!ignoredList.includes(item.title)) {
-          ignoredList.push(item.title);
-          localStorage.setItem(ignoredKey, JSON.stringify(ignoredList));
+        if (item.category === '固定' || item.isFixed) {
+          const ignoredKey = `budget_ignored_fixed_${item.month}`;
+          const ignoredList = safeJSONParse(localStorage.getItem(ignoredKey), []);
+          if (!ignoredList.includes(item.title)) {
+            ignoredList.push(item.title);
+            localStorage.setItem(ignoredKey, JSON.stringify(ignoredList));
+          }
         }
 
-        recordOfflineDeletion('wish', strId); // 寫入墓碑清單，防止快照覆寫還原
+        recordOfflineDeletion('wish', strId);
         state.wishlist = state.wishlist.filter(w => String(w.id) !== strId);
         saveToLocalStorage();
         render();
@@ -1144,11 +1160,13 @@ actionsEl.querySelectorAll('button').forEach(btn => {
       const id = document.getElementById('wishlist-edit-id').value;
       const title = document.getElementById('wishlist-item-title').value.trim();
       const month = document.getElementById('wishlist-item-month').value || currentMonthStr;
-      const price = Number(document.getElementById('wishlist-item-price').value);
+      const price = Math.round(Number(document.getElementById('wishlist-item-price').value) * 100) / 100;
       const category = document.getElementById('wishlist-item-category').value || '不固定';
       const note = document.getElementById('wishlist-item-note').value.trim();
       const isFixed = (category === '固定');
-      const autoRollover = !isFixed; // 🌟 不固定項目預設全面自動順延
+      const realNow = new Date();
+      const realMonthStr = `${realNow.getFullYear()}-${String(realNow.getMonth() + 1).padStart(2, '0')}`;
+      const autoRollover = !isFixed && (month >= realMonthStr);
 
       if (isNaN(price) || price <= 0) {
         showToast('請輸入有效金額');
@@ -1161,7 +1179,23 @@ actionsEl.querySelectorAll('button').forEach(btn => {
       if (id) {
         const strId = String(id);
         const idx = state.wishlist.findIndex(w => String(w.id) === strId);
+        const oldTitle = idx !== -1 ? state.wishlist[idx].title : null;
         if (idx !== -1) state.wishlist[idx] = { ...state.wishlist[idx], ...itemData };
+
+        // 若為固定項目，同步更新其他未付費月份的同名項目，避免舊名稱復活
+        if (isFixed && oldTitle) {
+          state.wishlist.forEach(w => {
+            if (String(w.id) !== strId && (w.category === '固定' || w.isFixed) && w.title === oldTitle && !w.purchased) {
+              w.title = title;
+              w.price = price;
+              w.note = note;
+              if (isCloudReady && fbSetDoc && fbDoc) {
+                fbSetDoc(fbDoc(db, 'shared_wishlist', String(w.id)), { title, price, note }, { merge: true }).catch(() => {});
+              }
+            }
+          });
+        }
+
         saveToLocalStorage();
         render();
         if (isCloudReady && fbSetDoc && fbDoc) {
@@ -1185,9 +1219,9 @@ actionsEl.querySelectorAll('button').forEach(btn => {
               localStorage.setItem(ignoredKey, JSON.stringify(ignoredList.filter(t => t !== title)));
             }
 
-            const exists = state.wishlist.some(w => w.month === mStr && w.title === title);
+            const exists = state.wishlist.some(w => w.month === mStr && (w.category === '固定' || w.isFixed) && w.title === title);
             if (!exists) {
-              const cloneId = `w_${Date.now()}_${Math.floor(Math.random()*1000)}`;
+              const cloneId = `w_${Date.now()}_${m}_${Math.floor(Math.random()*1000)}`;
               const cloneItem = { id: cloneId, title, month: mStr, price, category: '固定', note, purchased: false, isFixed: true, autoRollover: false };
               state.wishlist.push(cloneItem);
               if (isCloudReady && fbSetDoc && fbDoc) {
@@ -1259,7 +1293,7 @@ actionsEl.querySelectorAll('button').forEach(btn => {
     }
 
     function renderBarFlowChart(container, data) {
-      const maxVal = Math.max(...data.map(d => Math.max(d.income, d.expense)), 10000);
+      const maxVal = Math.max(...data.map(d => Math.max(d.income, d.expense)), 100);
       const chartHeight = 110;
       const chartWidth = 360;
       const colWidth = chartWidth / 12;
@@ -1300,12 +1334,12 @@ actionsEl.querySelectorAll('button').forEach(btn => {
             <!-- 紅色支出柱 -->
             ${expHeight > 0 ? `<rect x="${expX}" y="${chartHeight - expHeight}" width="${expBarWidth}" height="${expHeight}" fill="#F43F5E" rx="1.5" class="transition group-hover:opacity-80"/>` : ''}
             
-            <!-- 柱頂數值標籤（帶白色描邊防遮擋） -->
+            <!-- 柱頂數值標籤（帶白色描邊防遮擋與自動高低錯位） -->
             ${d.income > 0 ? `
               <text class="chart-num-label" x="${incX + incBarWidth / 2}" y="${chartHeight - incHeight - 3}" text-anchor="middle" font-size="6.5" font-family="Inter, sans-serif" font-weight="700" fill="#047857">${fmtVal(d.income)}</text>
             ` : ''}
             ${d.expense > 0 ? `
-              <text class="chart-num-label" x="${expX + expBarWidth / 2}" y="${chartHeight - expHeight - 3}" text-anchor="middle" font-size="6.5" font-family="Inter, sans-serif" font-weight="700" fill="#E11D48">${fmtVal(d.expense)}</text>
+              <text class="chart-num-label" x="${expX + expBarWidth / 2}" y="${(d.income > 0 && Math.abs(incHeight - expHeight) < 8) ? Math.max(8, chartHeight - expHeight - 10) : (chartHeight - expHeight - 3)}" text-anchor="middle" font-size="6.5" font-family="Inter, sans-serif" font-weight="700" fill="#E11D48">${fmtVal(d.expense)}</text>
             ` : ''}
 
             <!-- 月份標籤 -->
@@ -1420,10 +1454,11 @@ actionsEl.querySelectorAll('button').forEach(btn => {
       points.forEach(p => {
         const isCurrent = p.month === state.currentMonth;
 
-        svg += `<g>`;
+        svg += `<g class="cursor-pointer" onclick="jumpToMonth(${p.month})">
+          <rect x="${p.x - colStep / 2}" y="${plotTop}" width="${colStep}" height="${svgHeight - plotTop}" fill="transparent" pointer-events="all" />`;
 
         if (isCurrent) {
-          svg += `<line x1="${p.x}" y1="${plotTop}" x2="${plotBottom}" stroke="#0284C7" stroke-width="1" stroke-dasharray="2 2" opacity="0.35"/>`;
+          svg += `<line x1="${p.x}" y1="${plotTop}" x2="${p.x}" y2="${plotBottom}" stroke="#0284C7" stroke-width="1" stroke-dasharray="2 2" opacity="0.35"/>`;
         }
 
         svg += `
@@ -1453,7 +1488,11 @@ actionsEl.querySelectorAll('button').forEach(btn => {
         }
 
         if (p.expense > 0) {
-          svg += `<text class="chart-num-label" x="${p.x}" y="${p.yExp + 11}" text-anchor="middle" font-size="7.5" font-family="Inter, sans-serif" font-weight="700" fill="#E11D48">${fmtVal(p.expense)}</text>`;
+          let expLabelY = (p.yExp + 11 > 125) ? (p.yExp - 6) : (p.yExp + 11);
+          if (p.income > 0 && Math.abs(expLabelY - (p.yInc - 6)) < 9) {
+            expLabelY = Math.max(10, (p.yInc - 6) - 9);
+          }
+          svg += `<text class="chart-num-label" x="${p.x}" y="${expLabelY}" text-anchor="middle" font-size="7.5" font-family="Inter, sans-serif" font-weight="700" fill="#E11D48">${fmtVal(p.expense)}</text>`;
         }
 
         if (p.net !== 0) {
@@ -1505,6 +1544,14 @@ try {
       remoteWishMap.set(docId, { ...docSnap.data(), id: docId });
     }
   });
+  // 保留本地有、但雲端尚未同步到的未刪除項目並補上傳
+  state.wishlist.forEach(localItem => {
+    const lid = String(localItem.id);
+    if (!remoteWishMap.has(lid) && !pendingDeletedWish.has(lid) && !deletedWishList.includes(lid)) {
+      remoteWishMap.set(lid, localItem);
+      try { fbSetDoc(fbDoc(db, 'shared_wishlist', lid), localItem); } catch (e) {}
+    }
+  });
   state.wishlist = Array.from(remoteWishMap.values());
   saveToLocalStorage();
   await rolloverUnpurchasedItems();
@@ -1512,11 +1559,6 @@ try {
 } catch (err) {
   console.error(err);
 }
-
-          state.wishlist = Array.from(remoteWishMap.values());
-          saveToLocalStorage();
-          await rolloverUnpurchasedItems();
-          render();
         }, (err) => {
           isCloudReady = false;
           updateSyncBadge('offline', '本地離線運作');
@@ -1535,6 +1577,13 @@ snapshot.forEach(docSnap => {
 }
 });
 
+          state.incomes.forEach(localInc => {
+            const lid = String(localInc.id);
+            if (!remoteIncMap.has(lid) && !pendingDeletedIncome.has(lid) && !deletedIncList.includes(lid)) {
+              remoteIncMap.set(lid, localInc);
+              try { fbSetDoc(fbDoc(db, 'shared_incomes', lid), localInc); } catch (e) {}
+            }
+          });
           state.incomes = Array.from(remoteIncMap.values());
           saveToLocalStorage();
           render();
@@ -1568,10 +1617,12 @@ snapshot.forEach(docSnap => {
       handleBackdropClick
     });
 
-    rolloverUnpurchasedItems().then(() => {
+    (async () => {
+      await syncFixedItemsToMonth(state.currentYear, state.currentMonth);
+      await rolloverUnpurchasedItems();
       render();
-    });
-    initCloudSync();
+      initCloudSync();
+    })();
   </script>
 </body>
 </html>
