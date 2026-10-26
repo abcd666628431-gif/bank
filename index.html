@@ -93,18 +93,6 @@
       <section class="space-y-2">
         <div class="bg-cardBg rounded-2xl p-3 shadow-sm border border-[#EBE7E0] space-y-2">
           <div class="flex items-center justify-between">
-            <span class="text-[9px] font-semibold text-subText tracking-wide">本月總覽</span>
-            <div class="flex items-center gap-0.5 bg-[#F3EFEA] border border-[#E6E0D7] rounded-lg px-0.5 py-0.5 flex-shrink-0" aria-label="切換月份">
-              <button type="button" onclick="changeMonth(-1)" title="上個月" aria-label="上個月" class="w-6 h-6 flex items-center justify-center rounded-md text-gray-600 hover:bg-white active:scale-95 transition">
-                <i class="ph ph-caret-left text-[10px] font-bold pointer-events-none"></i>
-              </button>
-              <span data-month-nav-label class="text-[9px] font-bold text-[#1C1A18] font-sans px-0.5 min-w-[38px] text-center whitespace-nowrap">2026/10</span>
-              <button type="button" onclick="changeMonth(1)" title="下個月" aria-label="下個月" class="w-6 h-6 flex items-center justify-center rounded-md text-gray-600 hover:bg-white active:scale-95 transition">
-                <i class="ph ph-caret-right text-[10px] font-bold pointer-events-none"></i>
-              </button>
-            </div>
-          </div>
-          <div class="flex items-center justify-between">
             <div>
               <div class="flex items-baseline gap-1.5 mb-1 flex-wrap">
                 <span class="text-[10px] text-subText font-medium">總資產</span>
@@ -249,11 +237,17 @@
         <div class="grid grid-cols-2 gap-1.5 pt-0.5">
           <!-- 左欄：固定區 -->
           <div class="space-y-1.5">
-            <div class="flex items-center justify-between px-1.5 bg-purple-50 border border-purple-200/60 rounded-lg py-1">
-              <span class="text-[10px] font-bold text-purple-900">固定</span>
-              <div class="flex items-center gap-1">
-                <span id="fixed-col-sum" class="text-[10px] font-bold text-purple-900 font-sans">$0</span>
-                <button onclick="openWishlistModal(null, '固定')" title="新增固定項目" class="w-4 h-4 rounded bg-purple-200 text-purple-800 flex items-center justify-center font-bold text-[10px] hover:bg-purple-300 transition active:scale-95">+</button>
+            <div class="px-1.5 bg-purple-50 border border-purple-200/60 rounded-lg py-1 space-y-0.5">
+              <div class="flex items-center justify-between">
+                <span class="text-[10px] font-bold text-purple-900">固定</span>
+                <div class="flex items-center gap-1">
+                  <span id="fixed-col-sum" class="text-[10px] font-bold text-purple-900 font-sans">$0</span>
+                  <button onclick="openWishlistModal(null, '固定')" title="新增固定項目" class="w-4 h-4 rounded bg-purple-200 text-purple-800 flex items-center justify-center font-bold text-[10px] hover:bg-purple-300 transition active:scale-95">+</button>
+                </div>
+              </div>
+              <div class="flex items-center justify-between border-t border-purple-200/60 pt-0.5">
+                <span class="text-[9px] font-medium text-purple-700/80">已付</span>
+                <span id="fixed-paid-sum" class="text-[9px] font-bold text-purple-900 font-sans">$0</span>
               </div>
             </div>
             <div id="wishlist-fixed-container" class="space-y-1.5"></div>
@@ -261,11 +255,17 @@
 
           <!-- 右欄：不固定支付區 -->
           <div class="space-y-1.5">
-            <div class="flex items-center justify-between px-1.5 bg-sky-50 border border-sky-200/60 rounded-lg py-1">
-              <span class="text-[10px] font-bold text-sky-900">不固定</span>
-              <div class="flex items-center gap-1">
-                <span id="variable-col-sum" class="text-[10px] font-bold text-sky-900 font-sans">$0</span>
-                <button onclick="openWishlistModal(null, '不固定')" title="新增不固定項目" class="w-4 h-4 rounded bg-sky-200 text-sky-800 flex items-center justify-center font-bold text-[10px] hover:bg-sky-300 transition active:scale-95">+</button>
+            <div class="px-1.5 bg-sky-50 border border-sky-200/60 rounded-lg py-1 space-y-0.5">
+              <div class="flex items-center justify-between">
+                <span class="text-[10px] font-bold text-sky-900">不固定</span>
+                <div class="flex items-center gap-1">
+                  <span id="variable-col-sum" class="text-[10px] font-bold text-sky-900 font-sans">$0</span>
+                  <button onclick="openWishlistModal(null, '不固定')" title="新增不固定項目" class="w-4 h-4 rounded bg-sky-200 text-sky-800 flex items-center justify-center font-bold text-[10px] hover:bg-sky-300 transition active:scale-95">+</button>
+                </div>
+              </div>
+              <div class="flex items-center justify-between border-t border-sky-200/60 pt-0.5">
+                <span class="text-[9px] font-medium text-sky-700/80">已付</span>
+                <span id="variable-paid-sum" class="text-[9px] font-bold text-sky-900 font-sans">$0</span>
               </div>
             </div>
             <div id="wishlist-variable-container" class="space-y-1.5"></div>
@@ -1339,6 +1339,12 @@
 
       const totalSum = currentMonthWishlist.reduce((sum, item) => sum + Number(item.price || 0), 0);
       const purchasedSum = currentMonthWishlist.filter(item => item.purchased).reduce((sum, item) => sum + Number(item.price || 0), 0);
+      const fixedPaidSum = currentMonthWishlist
+        .filter(item => isFixedItem(item) && item.purchased)
+        .reduce((sum, item) => sum + Number(item.price || 0), 0);
+      const variablePaidSum = currentMonthWishlist
+        .filter(item => !isFixedItem(item) && item.purchased)
+        .reduce((sum, item) => sum + Number(item.price || 0), 0);
       const rawPct = totalSum > 0 ? (purchasedSum / totalSum) * 100 : 0;
       let progressPercent = Math.round(rawPct);
       if (purchasedSum > 0 && progressPercent === 0) progressPercent = 1;
@@ -1347,6 +1353,8 @@
 
       document.getElementById('wishlist-total-sum').innerText = formatCurrency(totalSum);
       document.getElementById('wishlist-purchased-sum').innerText = formatCurrency(purchasedSum);
+      document.getElementById('fixed-paid-sum').innerText = formatCurrency(fixedPaidSum);
+      document.getElementById('variable-paid-sum').innerText = formatCurrency(variablePaidSum);
       document.getElementById('wishlist-progress-percent').innerText = `${progressPercent}%`;
       document.getElementById('wishlist-progress-bar').style.width = `${progressPercent}%`;
 
