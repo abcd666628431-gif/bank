@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Serif+TC:wght@500;600;700&display=swap" rel="stylesheet">
-  
+
   <script>
     tailwind.config = {
       theme: {
@@ -33,7 +33,7 @@
   <style>
     body {
       background-color: #E6E1D8;
-      font-family: 'Inter', sans-serif;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
       -webkit-tap-highlight-color: transparent;
       touch-action: manipulation;
     }
@@ -55,12 +55,22 @@
       stroke-linecap: round;
       stroke-linejoin: round;
     }
+    .line-clamp-2 {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    /* 離線基礎防護樣式：確保 CDN 失效時隱藏層與背景色仍正常運作 */
+    .hidden { display: none !important; }
+    .bg-appBg { background-color: #F3EFEA; }
+    .bg-cardBg { background-color: #FFFFFF; }
   </style>
 </head>
 <body class="flex justify-center min-h-screen py-0 sm:py-4 text-[#24211E]">
 
   <main class="w-full max-w-md bg-appBg min-h-screen sm:min-h-[860px] sm:rounded-[32px] shadow-2xl flex flex-col overflow-hidden relative border border-[#DDD7CD]">
-    
+
     <!-- Header Bar with Title, Sync Status Badge and Month Navigator -->
     <header class="pt-4 px-4 pb-1">
       <div class="flex items-center justify-between">
@@ -76,11 +86,11 @@
         </div>
 
         <div class="flex items-center bg-[#E8E2D8] p-1 rounded-xl shadow-inner gap-1">
-          <button onclick="changeMonth(-1)" class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-white text-gray-700 transition active:scale-95">
+          <button type="button" onclick="changeMonth(-1)" title="上個月" aria-label="上個月" class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-white text-gray-700 transition active:scale-95">
             <i class="ph ph-caret-left text-sm font-bold"></i>
           </button>
-          <span id="current-month-display" class="font-bold text-xs text-[#1C1A18] px-1 tracking-wide">2026年10月</span>
-          <button onclick="changeMonth(1)" class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-white text-gray-700 transition active:scale-95">
+          <span id="current-month-display" class="font-bold text-xs text-[#1C1A18] px-1 tracking-wide">--年--月</span>
+          <button type="button" onclick="changeMonth(1)" title="下個月" aria-label="下個月" class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-white text-gray-700 transition active:scale-95">
             <i class="ph ph-caret-right text-sm font-bold"></i>
           </button>
         </div>
@@ -104,7 +114,7 @@
             </div>
             <div class="text-right">
               <span class="text-[10px] text-subText font-medium block">財務狀態</span>
-              <span id="expense-status-tag" class="text-xs font-bold text-emerald-600 block mt-1">狀態良好</span>
+              <span id="expense-status-tag" class="text-xs font-bold text-gray-500 block mt-1">尚無收支</span>
             </div>
           </div>
         </div>
@@ -118,7 +128,7 @@
             <button type="button" onclick="changeMonth(-1)" title="上個月" aria-label="上個月" class="w-6 h-6 flex items-center justify-center rounded-md text-gray-600 hover:bg-white active:scale-95 transition">
               <i class="ph ph-caret-left text-[10px] font-bold pointer-events-none"></i>
             </button>
-            <span data-month-nav-label class="text-[9px] font-bold text-[#1C1A18] font-sans px-0.5 min-w-[38px] text-center whitespace-nowrap">2026/10</span>
+            <span data-month-nav-label class="text-[9px] font-bold text-[#1C1A18] font-sans px-0.5 min-w-[38px] text-center whitespace-nowrap">----/--</span>
             <button type="button" onclick="changeMonth(1)" title="下個月" aria-label="下個月" class="w-6 h-6 flex items-center justify-center rounded-md text-gray-600 hover:bg-white active:scale-95 transition">
               <i class="ph ph-caret-right text-[10px] font-bold pointer-events-none"></i>
             </button>
@@ -135,7 +145,7 @@
               <p class="text-[9px] text-subText">勾選項目代表已實際入帳，即時增加資產與餘額</p>
             </div>
           </div>
-          <button onclick="openIncomeModal()" class="flex items-center gap-1 px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 rounded-lg text-[11px] font-semibold transition active:scale-95 border border-emerald-200">
+          <button type="button" onclick="openIncomeModal()" class="flex items-center gap-1 px-2.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 rounded-lg text-[11px] font-semibold transition active:scale-95 border border-emerald-200">
             <i class="ph ph-plus font-bold"></i>
             <span>新增收入</span>
           </button>
@@ -152,7 +162,7 @@
             <button type="button" onclick="changeMonth(-1)" title="上個月" aria-label="上個月" class="w-6 h-6 flex items-center justify-center rounded-md text-gray-600 hover:bg-white active:scale-95 transition">
               <i class="ph ph-caret-left text-[10px] font-bold pointer-events-none"></i>
             </button>
-            <span data-month-nav-label class="text-[9px] font-bold text-[#1C1A18] font-sans px-0.5 min-w-[38px] text-center whitespace-nowrap">2026/10</span>
+            <span data-month-nav-label class="text-[9px] font-bold text-[#1C1A18] font-sans px-0.5 min-w-[38px] text-center whitespace-nowrap">----/--</span>
             <button type="button" onclick="changeMonth(1)" title="下個月" aria-label="下個月" class="w-6 h-6 flex items-center justify-center rounded-md text-gray-600 hover:bg-white active:scale-95 transition">
               <i class="ph ph-caret-right text-[10px] font-bold pointer-events-none"></i>
             </button>
@@ -182,7 +192,7 @@
         </div>
       </section>
 
-      <!-- 待付費區（已極致收窄左右邊界 px-1.5，徹底消除兩側空白） -->
+      <!-- 待付費區 -->
       <section class="bg-cardBg rounded-2xl px-1.5 py-3 shadow-sm border border-[#EBE7E0] space-y-2.5">
         <div class="flex items-center justify-between px-1">
           <span class="text-[9px] font-semibold text-subText tracking-wide">待付月份</span>
@@ -190,7 +200,7 @@
             <button type="button" onclick="changeMonth(-1)" title="上個月" aria-label="上個月" class="w-6 h-6 flex items-center justify-center rounded-md text-gray-600 hover:bg-white active:scale-95 transition">
               <i class="ph ph-caret-left text-[10px] font-bold pointer-events-none"></i>
             </button>
-            <span data-month-nav-label class="text-[9px] font-bold text-[#1C1A18] font-sans px-0.5 min-w-[38px] text-center whitespace-nowrap">2026/10</span>
+            <span data-month-nav-label class="text-[9px] font-bold text-[#1C1A18] font-sans px-0.5 min-w-[38px] text-center whitespace-nowrap">----/--</span>
             <button type="button" onclick="changeMonth(1)" title="下個月" aria-label="下個月" class="w-6 h-6 flex items-center justify-center rounded-md text-gray-600 hover:bg-white active:scale-95 transition">
               <i class="ph ph-caret-right text-[10px] font-bold pointer-events-none"></i>
             </button>
@@ -233,16 +243,16 @@
           </div>
         </div>
 
-        <!-- 左右雙欄容器（gap-1.5 配合 px-1.5 讓兩側完全撐滿） -->
+        <!-- 左右雙欄容器 -->
         <div class="grid grid-cols-2 gap-1.5 pt-0.5">
           <!-- 左欄：固定區 -->
           <div class="space-y-1.5">
-            <div class="px-1.5 bg-purple-50 border border-purple-200/60 rounded-lg py-1 space-y-0.5">
+            <div class="px-2 bg-purple-50 border border-purple-200/60 rounded-lg py-1.5 space-y-1">
               <div class="flex items-center justify-between">
                 <span class="text-[10px] font-bold text-purple-900">固定</span>
-                <div class="flex items-center gap-1">
+                <div class="flex items-center gap-1.5">
                   <span id="fixed-col-sum" class="text-[10px] font-bold text-purple-900 font-sans">$0</span>
-                  <button onclick="openWishlistModal(null, '固定')" title="新增固定項目" class="w-4 h-4 rounded bg-purple-200 text-purple-800 flex items-center justify-center font-bold text-[10px] hover:bg-purple-300 transition active:scale-95">+</button>
+                  <button type="button" onclick="openWishlistModal(null, '固定')" title="新增固定項目" aria-label="新增固定項目" class="w-6 h-6 rounded-md bg-purple-200 text-purple-800 flex items-center justify-center font-bold text-xs hover:bg-purple-300 transition active:scale-95">+</button>
                 </div>
               </div>
               <div class="flex items-center justify-between border-t border-purple-200/60 pt-0.5">
@@ -255,12 +265,12 @@
 
           <!-- 右欄：不固定支付區 -->
           <div class="space-y-1.5">
-            <div class="px-1.5 bg-sky-50 border border-sky-200/60 rounded-lg py-1 space-y-0.5">
+            <div class="px-2 bg-sky-50 border border-sky-200/60 rounded-lg py-1.5 space-y-1">
               <div class="flex items-center justify-between">
                 <span class="text-[10px] font-bold text-sky-900">不固定</span>
-                <div class="flex items-center gap-1">
+                <div class="flex items-center gap-1.5">
                   <span id="variable-col-sum" class="text-[10px] font-bold text-sky-900 font-sans">$0</span>
-                  <button onclick="openWishlistModal(null, '不固定')" title="新增不固定項目" class="w-4 h-4 rounded bg-sky-200 text-sky-800 flex items-center justify-center font-bold text-[10px] hover:bg-sky-300 transition active:scale-95">+</button>
+                  <button type="button" onclick="openWishlistModal(null, '不固定')" title="新增不固定項目" aria-label="新增不固定項目" class="w-6 h-6 rounded-md bg-sky-200 text-sky-800 flex items-center justify-center font-bold text-xs hover:bg-sky-300 transition active:scale-95">+</button>
                 </div>
               </div>
               <div class="flex items-center justify-between border-t border-sky-200/60 pt-0.5">
@@ -281,7 +291,7 @@
             <button type="button" onclick="changeMonth(-1)" title="上個月" aria-label="上個月" class="w-6 h-6 flex items-center justify-center rounded-md text-gray-600 hover:bg-white active:scale-95 transition">
               <i class="ph ph-caret-left text-[10px] font-bold pointer-events-none"></i>
             </button>
-            <span data-month-nav-label class="text-[9px] font-bold text-[#1C1A18] font-sans px-0.5 min-w-[38px] text-center whitespace-nowrap">2026/10</span>
+            <span data-month-nav-label class="text-[9px] font-bold text-[#1C1A18] font-sans px-0.5 min-w-[38px] text-center whitespace-nowrap">----/--</span>
             <button type="button" onclick="changeMonth(1)" title="下個月" aria-label="下個月" class="w-6 h-6 flex items-center justify-center rounded-md text-gray-600 hover:bg-white active:scale-95 transition">
               <i class="ph ph-caret-right text-[10px] font-bold pointer-events-none"></i>
             </button>
@@ -293,12 +303,12 @@
             <div>
               <div class="flex items-center gap-1">
                 <h2 class="text-xs font-bold text-[#1C1A18]">全年金錢走勢</h2>
-                <span id="annual-year-badge" class="text-[9px] font-semibold text-sky-700 bg-sky-50 border border-sky-200 px-1 py-0.5 rounded">2026年</span>
+                <span id="annual-year-badge" class="text-[9px] font-semibold text-sky-700 bg-sky-50 border border-sky-200 px-1 py-0.5 rounded">----年</span>
               </div>
               <p class="text-[9px] text-subText">月度實際已扣收支對比與結餘趨勢</p>
             </div>
           </div>
-          
+
           <div class="flex bg-[#EAE5DC] p-0.5 rounded-lg text-[10px] font-medium text-gray-600">
             <button type="button" onclick="setAnnualChartView('flow')" id="btn-chart-flow" class="px-2 py-0.5 rounded-md bg-white text-[#1C1A18] shadow-sm font-bold transition">收支對比</button>
             <button type="button" onclick="setAnnualChartView('trend')" id="btn-chart-trend" class="px-2 py-0.5 rounded-md hover:text-gray-900 transition">結餘走勢</button>
@@ -320,7 +330,6 @@
           </div>
         </div>
 
-        <!-- 圖表外框加高至 h-44 -->
         <div class="relative bg-[#FCFBF9] p-2.5 rounded-xl border border-[#F0ECE4]">
           <div id="annual-chart-container" class="w-full h-44 flex items-center justify-center"></div>
           <div class="flex items-center justify-between text-[8px] text-subText pt-1.5 px-0.5 border-t border-gray-100/80 mt-1">
@@ -339,21 +348,28 @@
 
   </main>
 
-  <!-- ==================== 移至 main 捲動層外部的彈窗層 (徹底杜絕 iOS 裁剪與點擊穿透) ==================== -->
+  <!-- ==================== 移至 main 捲動層外部的彈窗層 ==================== -->
 
   <!-- Modal: 新增/編輯待付項目 -->
   <div id="wishlist-modal" onclick="handleBackdropClick(event, 'wishlist-modal')" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-[9999] flex items-center justify-center p-4">
     <div class="bg-white w-full max-w-md rounded-2xl p-4 shadow-2xl space-y-3 border border-[#ECE8E1]" onclick="event.stopPropagation()">
       <div class="flex items-center justify-between border-b pb-2 border-gray-100">
         <h3 id="wishlist-modal-title" class="font-bold text-sm text-gray-800">新增待付項目</h3>
-        <button onclick="closeWishlistModal()" class="p-1 rounded-full text-gray-400 hover:text-gray-700">
+        <button type="button" onclick="closeWishlistModal()" aria-label="關閉視窗" class="p-1 rounded-full text-gray-400 hover:text-gray-700">
           <i class="ph ph-x text-base"></i>
         </button>
       </div>
 
       <form id="wishlist-form" onsubmit="handleWishlistSubmit(event)" class="space-y-3 text-xs">
         <input type="hidden" id="wishlist-edit-id">
-        <input type="hidden" id="wishlist-item-category">
+
+        <div>
+          <label class="block text-[11px] font-medium text-gray-500 mb-1">項目類別</label>
+          <select id="wishlist-item-category" class="w-full px-3 py-2 bg-[#FAF8F5] border border-gray-200 rounded-xl focus:outline-none focus:border-brandDark font-semibold text-gray-800">
+            <option value="固定">固定開支（每月自動帶入）</option>
+            <option value="不固定">不固定開支（單次或未付自動順延）</option>
+          </select>
+        </div>
 
         <div>
           <label class="block text-[11px] font-medium text-gray-500 mb-1">項目名稱</label>
@@ -362,7 +378,7 @@
 
         <div>
           <label class="block text-[11px] font-medium text-gray-500 mb-1">金額 ($)</label>
-          <input type="number" step="any" id="wishlist-item-price" min="0.01" required class="w-full px-3 py-2 bg-[#FAF8F5] border border-gray-200 rounded-xl focus:outline-none focus:border-brandDark font-sans">
+          <input type="number" step="any" id="wishlist-item-price" min="0" required class="w-full px-3 py-2 bg-[#FAF8F5] border border-gray-200 rounded-xl focus:outline-none focus:border-brandDark font-sans">
         </div>
 
         <div>
@@ -377,7 +393,7 @@
 
         <div class="pt-2 flex gap-2">
           <button type="button" onclick="closeWishlistModal()" class="flex-1 py-2 bg-[#EAE6DE] text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition">取消</button>
-          <button type="submit" class="flex-1 py-2 bg-emerald-800 text-white font-semibold rounded-xl hover:opacity-95 transition">儲存項目</button>
+          <button type="submit" id="wishlist-submit-btn" class="flex-1 py-2 bg-emerald-800 text-white font-semibold rounded-xl hover:opacity-95 transition">儲存項目</button>
         </div>
       </form>
     </div>
@@ -388,7 +404,7 @@
     <div class="bg-white w-full max-w-md rounded-2xl p-4 shadow-2xl space-y-3 border border-[#ECE8E1]" onclick="event.stopPropagation()">
       <div class="flex items-center justify-between border-b pb-2 border-gray-100">
         <h3 id="income-modal-title" class="font-bold text-sm text-gray-800">新增收入</h3>
-        <button onclick="closeIncomeModal()" class="p-1 rounded-full text-gray-400 hover:text-gray-700">
+        <button type="button" onclick="closeIncomeModal()" aria-label="關閉視窗" class="p-1 rounded-full text-gray-400 hover:text-gray-700">
           <i class="ph ph-x text-base"></i>
         </button>
       </div>
@@ -403,7 +419,7 @@
 
         <div>
           <label class="block text-[11px] font-medium text-gray-500 mb-1">金額 ($)</label>
-          <input type="number" step="any" id="income-item-price" min="0.01" required class="w-full px-3 py-2 bg-[#FAF8F5] border border-gray-200 rounded-xl focus:outline-none focus:border-brandDark font-sans">
+          <input type="number" step="any" id="income-item-price" min="0" required class="w-full px-3 py-2 bg-[#FAF8F5] border border-gray-200 rounded-xl focus:outline-none focus:border-brandDark font-sans">
         </div>
 
         <div>
@@ -411,20 +427,25 @@
           <input type="month" id="income-item-month" required class="w-full px-3 py-2 bg-[#FAF8F5] border border-gray-200 rounded-xl focus:outline-none focus:border-brandDark font-sans">
         </div>
 
+        <label class="flex items-center gap-2 px-3 py-2 bg-[#FAF8F5] border border-gray-200 rounded-xl cursor-pointer select-none">
+          <input type="checkbox" id="income-item-received" checked class="compact-checkbox w-4 h-4 rounded text-emerald-700">
+          <span class="text-[11px] font-medium text-gray-700">目前已實際入帳（勾選即計入可用餘額與資產）</span>
+        </label>
+
         <div class="pt-2 flex gap-2">
           <button type="button" onclick="closeIncomeModal()" class="flex-1 py-2 bg-[#EAE6DE] text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition">取消</button>
-          <button type="submit" class="flex-1 py-2 bg-emerald-800 text-white font-semibold rounded-xl hover:opacity-95 transition">儲存收入</button>
+          <button type="submit" id="income-submit-btn" class="flex-1 py-2 bg-emerald-800 text-white font-semibold rounded-xl hover:opacity-95 transition">儲存收入</button>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- 🌟 自訂刪除確認彈窗：具備 touch-none 與阻斷穿透防線，保證行動端穩定置頂 -->
-  <div id="custom-delete-modal" 
+  <!-- 自訂刪除確認彈窗 -->
+  <div id="custom-delete-modal"
        class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-[99999] flex items-center justify-center p-4"
        onclick="handleBackdropClick(event, 'custom-delete-modal')">
-    <div class="bg-white w-full max-w-xs rounded-2xl p-4 shadow-2xl space-y-3 border border-[#ECE8E1] text-center" 
-         ontouchstart="event.stopPropagation()" 
+    <div class="bg-white w-full max-w-xs rounded-2xl p-4 shadow-2xl space-y-3 border border-[#ECE8E1] text-center"
+         ontouchstart="event.stopPropagation()"
          onclick="event.stopPropagation()">
       <div class="w-10 h-10 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center mx-auto text-xl">
         <i class="ph ph-trash"></i>
@@ -453,11 +474,18 @@
     let isIncomesCloudReady = false;
     let toastTimer = null;
     let idCounter = 0;
+    let updateSeqCounter = 0;
+    let isSubmittingWishlist = false;
+    let isSubmittingIncome = false;
+    let isExecutingDelete = false;
 
-    // 個人預算的金額上限；同時避免極大值造成圖表刻度迴圈或加總溢位
     const MAX_AMOUNT = 1e12;
 
     let fbDoc, fbSetDoc, fbUpdateDoc, fbDeleteDoc, fbOnSnapshot, fbCollection, fbWriteBatch;
+
+    function diagLog(msg, isError = false) {
+      if (isError) console.error(msg); else console.log(msg);
+    }
 
     function escapeHtml(str) {
       if (!str) return '';
@@ -479,13 +507,34 @@
       }
     }
 
+    function getMonthStr(year, month) {
+      return `${year}-${String(month).padStart(2, '0')}`;
+    }
+
+    function monthStrToIndex(value) {
+      if (!value) return NaN;
+      const parts = String(value).trim().replace(/\//g, '-').split('-');
+      if (parts.length < 2 || !/^\d{4}$/.test(parts[0]) || !/^\d{1,2}$/.test(parts[1])) return NaN;
+      const y = Number(parts[0]);
+      const m = Number(parts[1]);
+      if (!Number.isInteger(y) || y < 1970 || y > 2100 || !Number.isInteger(m) || m < 1 || m > 12) return NaN;
+      return y * 12 + (m - 1);
+    }
+
+    function normalizeMonthStr(value) {
+      const idx = monthStrToIndex(value);
+      if (!Number.isFinite(idx)) return '';
+      const y = Math.floor(idx / 12);
+      const m = (idx % 12) + 1;
+      return getMonthStr(y, m);
+    }
+
     function isSameMonthYear(dateStr, year, month) {
       const targetIdx = monthStrToIndex(getMonthStr(year, month));
       const itemIdx = monthStrToIndex(dateStr);
       return Number.isFinite(targetIdx) && Number.isFinite(itemIdx) && itemIdx === targetIdx;
     }
 
-    // localStorage 在無痕模式、停用儲存或資料損毀時明確記錄錯誤並回饋狀態
     function safeGetItem(key) {
       try {
         return localStorage.getItem(key);
@@ -523,29 +572,6 @@
       return out;
     }
 
-    function getMonthStr(year, month) {
-      return `${year}-${String(month).padStart(2, '0')}`;
-    }
-
-    function monthStrToIndex(value) {
-      if (!value) return NaN;
-      const parts = String(value).trim().replace(/\//g, '-').split('-');
-      if (parts.length < 2 || !/^\d{4}$/.test(parts[0]) || !/^\d{1,2}$/.test(parts[1])) return NaN;
-      const y = Number(parts[0]);
-      const m = Number(parts[1]);
-      if (!Number.isInteger(y) || y < 1970 || y > 2100 || !Number.isInteger(m) || m < 1 || m > 12) return NaN;
-      return y * 12 + (m - 1);
-    }
-
-    // 將 2026-9、2026/09、2026-09-15 等格式統一成 2026-09，避免忽略清單與月序比較失效
-    function normalizeMonthStr(value) {
-      const idx = monthStrToIndex(value);
-      if (!Number.isFinite(idx)) return '';
-      const y = Math.floor(idx / 12);
-      const m = (idx % 12) + 1;
-      return getMonthStr(y, m);
-    }
-
     function normalizeBool(value, fallback = false) {
       if (typeof value === 'boolean') return value;
       if (typeof value === 'number') return value !== 0;
@@ -573,13 +599,35 @@
       return category === '固定' || normalizeBool(item.isFixed, false);
     }
 
-    // 以時間戳 + 隨機碼 + 計數器產生 ID，避免同一毫秒內新增多筆時碰撞
+    function slugifySeriesKey(str) {
+      const raw = String(str || '').trim().toLowerCase();
+      if (!raw) return 'default';
+      let hash = 5381;
+      for (let i = 0; i < raw.length; i++) {
+        hash = ((hash << 5) + hash) + raw.charCodeAt(i);
+        hash = hash & 0x7fffffff;
+      }
+      return `s_${hash.toString(36)}`;
+    }
+
+    function getSeriesId(item) {
+      if (item && item.seriesId && String(item.seriesId).trim()) {
+        return String(item.seriesId).trim();
+      }
+      return slugifySeriesKey(item && item.title ? item.title : '');
+    }
+
+    function makeDeterministicFixedId(seriesId, monthStr) {
+      const cleanSeries = String(seriesId || 'default').replace(/[^a-zA-Z0-9_-]/g, '');
+      const cleanMonth = normalizeMonthStr(monthStr).replace(/[^0-9-]/g, '');
+      return `fixed_${cleanSeries}_${cleanMonth}`;
+    }
+
     function makeId(prefix) {
       idCounter = (idCounter + 1) % 100000;
       return `${prefix}_${Date.now()}_${Math.floor(Math.random() * 100000)}_${idCounter}`;
     }
 
-    // 將 id 安全放進 inline onclick 的單引號字串，避免特殊字元破壞 HTML 或注入腳本
     function jsArg(value) {
       return String(value === null || value === undefined ? '' : value)
         .replace(/&/g, '&amp;')
@@ -592,12 +640,14 @@
         .replace(/\u2029/g, '\\u2029');
     }
 
-    // 舊資料 / 雲端資料正規化：補 id、防重複 id、修正欄位型別
     function normalizeWishlistItems(items) {
       if (!Array.isArray(items)) return [];
       const seen = new Set();
       const out = [];
-      const fallbackMonth = getMonthStr(new Date().getFullYear(), new Date().getMonth() + 1);
+      const realNow = new Date();
+      const fallbackMonth = getMonthStr(realNow.getFullYear(), realNow.getMonth() + 1);
+      const realCurrentIdx = monthStrToIndex(fallbackMonth);
+
       items.forEach(item => {
         if (!item || typeof item !== 'object' || Array.isArray(item)) return;
         const rawId = item.id === null || item.id === undefined ? '' : String(item.id);
@@ -609,17 +659,23 @@
         const title = item.title === null || item.title === undefined ? '' : String(item.title).trim();
         const note = item.note === null || item.note === undefined ? '' : String(item.note);
         const safePrice = Number.isFinite(price) && price >= 0 ? Math.round(Math.min(price, MAX_AMOUNT) * 100) / 100 : 0;
+        const normalizedMonth = normalizeMonthStr(item.month) || fallbackMonth;
+        const itemMonthIdx = monthStrToIndex(normalizedMonth);
+        const defaultRollover = Number.isFinite(itemMonthIdx) && itemMonthIdx >= realCurrentIdx;
+        const cleanTitle = title || '未命名項目';
+
         out.push({
           ...item,
           id,
-          title: title || '未命名項目',
+          ...(fixed ? { seriesId: getSeriesId({ ...item, title: cleanTitle }) } : {}),
+          title: cleanTitle,
           price: safePrice,
-          month: normalizeMonthStr(item.month) || fallbackMonth,
+          month: normalizedMonth,
           note,
           category: fixed ? '固定' : '不固定',
           isFixed: fixed,
           purchased: normalizeBool(item.purchased, false),
-          autoRollover: fixed ? false : normalizeBool(item.autoRollover, true),
+          autoRollover: fixed ? false : normalizeBool(item.autoRollover, defaultRollover),
           ...(fixed ? { recurring: item.recurring === undefined ? true : normalizeBool(item.recurring, true) } : {})
         });
       });
@@ -652,11 +708,6 @@
       return out;
     }
 
-    function diagLog(msg, isError = false) {
-      if (isError) console.error(msg); else console.log(msg);
-    }
-
-    // 舊版可能用 2026-9 當忽略清單鍵；統一遷移到 2026-09，避免刪除後又被帶入
     function migrateIgnoredFixedMonthKeys() {
       try {
         const keys = [];
@@ -682,7 +733,6 @@
       }
     }
 
-    // 固定項目改名時，把各月份的「本月刪除」忽略清單一起改名，避免舊名稱復活
     function migrateIgnoredFixedTitle(oldTitle, newTitle) {
       if (!oldTitle || oldTitle === newTitle) return;
       try {
@@ -706,15 +756,32 @@
     const localWishlist = safeGetItem('budget_wishlist');
     const localIncomes = safeGetItem('budget_incomes');
 
-    // ★ 必須宣告，否則快照與刪除會崩潰；同時確保 localStorage 損毀時不會讓整個 App 掛掉
     const pendingDeletedWish = new Set(
       safeArrayParse(safeGetItem('budget_deleted_wish'), []).map(String)
     );
     const pendingDeletedIncome = new Set(
       safeArrayParse(safeGetItem('budget_deleted_income'), []).map(String)
     );
+    const stoppedFixedSeries = new Set(
+      safeArrayParse(safeGetItem('budget_stopped_fixed_series'), []).map(String)
+    );
 
-    // 離線／寫入失敗時的本機修改暫存：恢復連線後優先套用並補傳，避免被雲端舊資料覆蓋
+    function recordStoppedFixedSeries(seriesKey) {
+      if (!seriesKey) return;
+      const strKey = String(seriesKey);
+      stoppedFixedSeries.add(strKey);
+      safeSetItem('budget_stopped_fixed_series', JSON.stringify(Array.from(stoppedFixedSeries)));
+    }
+
+    function clearStoppedFixedSeries(seriesKey) {
+      if (!seriesKey) return;
+      const strKey = String(seriesKey);
+      if (stoppedFixedSeries.has(strKey)) {
+        stoppedFixedSeries.delete(strKey);
+        safeSetItem('budget_stopped_fixed_series', JSON.stringify(Array.from(stoppedFixedSeries)));
+      }
+    }
+
     const pendingWishUpdates = safePendingMap(safeGetItem('budget_pending_wish_updates'));
     const pendingIncomeUpdates = safePendingMap(safeGetItem('budget_pending_income_updates'));
 
@@ -724,30 +791,46 @@
     }
 
     function queueWishUpdate(id, fields) {
-      if (!fields || typeof fields !== 'object') return;
+      if (!fields || typeof fields !== 'object') return 0;
       const key = String(id);
-      pendingWishUpdates[key] = { ...(pendingWishUpdates[key] || {}), ...fields };
+      const seq = ++updateSeqCounter;
+      const prev = pendingWishUpdates[key] || {};
+      pendingWishUpdates[key] = { ...prev, ...fields, _seq: seq };
       persistPendingUpdates();
+      return seq;
     }
 
     function queueIncomeUpdate(id, fields) {
-      if (!fields || typeof fields !== 'object') return;
+      if (!fields || typeof fields !== 'object') return 0;
       const key = String(id);
-      pendingIncomeUpdates[key] = { ...(pendingIncomeUpdates[key] || {}), ...fields };
+      const seq = ++updateSeqCounter;
+      const prev = pendingIncomeUpdates[key] || {};
+      pendingIncomeUpdates[key] = { ...prev, ...fields, _seq: seq };
       persistPendingUpdates();
+      return seq;
     }
 
-    function clearWishUpdate(id) {
+    function stripInternalFields(fields) {
+      const out = {};
+      Object.keys(fields || {}).forEach(k => {
+        if (k !== '_seq') out[k] = fields[k];
+      });
+      return out;
+    }
+
+    function clearWishUpdate(id, expectedSeq = null) {
       const key = String(id);
       if (pendingWishUpdates[key]) {
+        if (expectedSeq !== null && pendingWishUpdates[key]._seq !== expectedSeq) return;
         delete pendingWishUpdates[key];
         persistPendingUpdates();
       }
     }
 
-    function clearIncomeUpdate(id) {
+    function clearIncomeUpdate(id, expectedSeq = null) {
       const key = String(id);
       if (pendingIncomeUpdates[key]) {
+        if (expectedSeq !== null && pendingIncomeUpdates[key]._seq !== expectedSeq) return;
         delete pendingIncomeUpdates[key];
         persistPendingUpdates();
       }
@@ -756,6 +839,7 @@
     function pendingFieldsSatisfied(remoteItem, fields) {
       if (!remoteItem || !fields) return false;
       return Object.keys(fields).every(key => {
+        if (key === '_seq') return true;
         if (key === 'month') return normalizeMonthStr(remoteItem[key]) === normalizeMonthStr(fields[key]);
         if (key === 'price') return Math.abs(Number(remoteItem[key] || 0) - Number(fields[key] || 0)) < 0.005;
         return remoteItem[key] === fields[key];
@@ -789,11 +873,21 @@
       }
     }
 
-    // 把正規化後補齊的 id / 型別立即寫回，避免每次重載都重新產生 id
     saveToLocalStorage();
     migrateIgnoredFixedMonthKeys();
 
-    // 🌟 持久刪除墓碑機制（嚴格字串比對，徹底阻斷 Firestore 快照重新拉回）
+    // 跨分頁即時同步
+    window.addEventListener('storage', (e) => {
+      if (!e.key) return;
+      if (e.key === 'budget_wishlist') {
+        state.wishlist = normalizeWishlistItems(safeArrayParse(e.newValue, []));
+        render();
+      } else if (e.key === 'budget_incomes') {
+        state.incomes = normalizeIncomeItems(safeArrayParse(e.newValue, []));
+        render();
+      }
+    });
+
     function recordOfflineDeletion(type, id) {
       const strId = String(id);
       if (type === 'income') {
@@ -809,7 +903,19 @@
         safeSetItem(key, JSON.stringify(list));
       }
     }
-  
+
+    function clearOfflineDeletion(type, id) {
+      const strId = String(id);
+      const key = type === 'income' ? 'budget_deleted_income' : 'budget_deleted_wish';
+      if (type === 'income') {
+        pendingDeletedIncome.delete(strId);
+      } else {
+        pendingDeletedWish.delete(strId);
+      }
+      const list = safeArrayParse(safeGetItem(key), []).map(String).filter(item => item !== strId);
+      safeSetItem(key, JSON.stringify(list));
+    }
+
     function formatCurrency(num) {
       const raw = Number(num);
       const safeNum = Number.isFinite(raw) ? raw : 0;
@@ -824,6 +930,17 @@
       return safeNum.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 });
     }
 
+    function fmtChartVal(val) {
+      const n = Number(val);
+      if (!Number.isFinite(n) || n === 0) return '';
+      const abs = Math.abs(n);
+      const sign = n < 0 ? '-' : '';
+      if (abs >= 1e8) return sign + (abs / 1e8).toFixed(1).replace(/\.0$/, '') + '億';
+      if (abs >= 1e6) return sign + (abs / 1e6).toFixed(1).replace(/\.0$/, '') + 'M';
+      if (abs >= 1e3) return sign + (abs / 1e3).toFixed(1).replace(/\.0$/, '') + 'k';
+      return sign + Math.round(abs).toLocaleString();
+    }
+
     function syncBodyScrollLock() {
       const anyOpen = ['custom-delete-modal', 'wishlist-modal', 'income-modal'].some(id => {
         const el = document.getElementById(id);
@@ -832,18 +949,27 @@
       document.body.style.overflow = anyOpen ? 'hidden' : '';
     }
 
-    // 彈窗背景點擊關閉
+    let backdropMouseDownTarget = null;
+    window.addEventListener('mousedown', (e) => {
+      backdropMouseDownTarget = e.target;
+    }, true);
+
+    function closeModalById(modalId) {
+      if (modalId === 'custom-delete-modal') {
+        closeCustomDeleteModal();
+      } else if (modalId === 'wishlist-modal') {
+        closeWishlistModal();
+      } else if (modalId === 'income-modal') {
+        closeIncomeModal();
+      }
+    }
+
     function handleBackdropClick(event, modalId) {
+      if (backdropMouseDownTarget && backdropMouseDownTarget !== event.target) return;
       const selection = window.getSelection();
       if (selection && selection.toString().length > 0) return;
       if (event.target.id === modalId) {
-        if (modalId === 'custom-delete-modal') {
-          closeCustomDeleteModal();
-        } else {
-          const modalEl = document.getElementById(modalId);
-          if (modalEl) modalEl.classList.add('hidden');
-          syncBodyScrollLock();
-        }
+        closeModalById(modalId);
       }
     }
 
@@ -853,11 +979,10 @@
         for (const id of priorityOrder) {
           const el = document.getElementById(id);
           if (el && !el.classList.contains('hidden')) {
-            el.classList.add('hidden');
+            closeModalById(id);
             break;
           }
         }
-        syncBodyScrollLock();
       }
     });
 
@@ -870,6 +995,10 @@
         dot.className = "w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse";
         badgeText.innerText = text || "已連線雲端";
         badge.className = "inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[9px] font-semibold border border-emerald-200 transition";
+      } else if (status === 'partial') {
+        dot.className = "w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse";
+        badgeText.innerText = text || "部分雲端同步中";
+        badge.className = "inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 text-[9px] font-semibold border border-amber-200 transition";
       } else {
         dot.className = "w-1.5 h-1.5 rounded-full bg-rose-500";
         badgeText.innerText = text || "本地離線運作";
@@ -877,18 +1006,79 @@
       }
     }
 
-    // 任一集合連線成功即視為雲端可用；避免單一集合失敗把另一個也判定離線
     function refreshSyncBadge() {
-      if (isWishlistCloudReady || isIncomesCloudReady) {
+      const browserOnline = typeof navigator === 'undefined' ? true : navigator.onLine !== false;
+      if (!browserOnline) {
+        updateSyncBadge('offline', '網路已中斷 (離線運作)');
+      } else if (isWishlistCloudReady && isIncomesCloudReady) {
         updateSyncBadge('online', '已連線雲端');
+      } else if (isWishlistCloudReady || isIncomesCloudReady) {
+        updateSyncBadge('partial', '部分雲端同步中');
       } else {
         updateSyncBadge('offline', '本地離線運作');
       }
     }
 
+    window.addEventListener('online', () => refreshSyncBadge());
+    window.addEventListener('offline', () => refreshSyncBadge());
+
+    // 自動去除同月份、同系列的重複固定項目
+    async function deduplicateFixedItems(items) {
+      const groups = new Map();
+      const result = [];
+      const toRemoveIds = [];
+
+      for (const item of items) {
+        if (!isFixedItem(item) || item.recurring === false) {
+          result.push(item);
+          continue;
+        }
+        const seriesKey = getSeriesId(item);
+        const monthKey = normalizeMonthStr(item.month);
+        const groupKey = `${seriesKey}__${monthKey}`;
+
+        if (!groups.has(groupKey)) {
+          groups.set(groupKey, item);
+          result.push(item);
+        } else {
+          const existing = groups.get(groupKey);
+          const deterministicId = makeDeterministicFixedId(seriesKey, monthKey);
+          const preferNew =
+            (!existing.purchased && item.purchased) ||
+            (!!existing.purchased === !!item.purchased && String(item.id) === deterministicId && String(existing.id) !== deterministicId) ||
+            (!!existing.purchased === !!item.purchased && getItemTimestamp(item) > getItemTimestamp(existing));
+
+          if (preferNew) {
+            toRemoveIds.push(String(existing.id));
+            const idx = result.indexOf(existing);
+            if (idx !== -1) result[idx] = item;
+            groups.set(groupKey, item);
+          } else {
+            toRemoveIds.push(String(item.id));
+          }
+        }
+      }
+
+      if (toRemoveIds.length > 0) {
+        for (const dupId of toRemoveIds) {
+          recordOfflineDeletion('wish', dupId);
+          clearWishUpdate(dupId);
+          if (isWishlistCloudReady && fbDeleteDoc && fbDoc) {
+            try {
+              await fbDeleteDoc(fbDoc(db, 'shared_wishlist', dupId));
+              clearOfflineDeletion('wish', dupId);
+            } catch (e) {
+              diagLog(`清理重複固定項目失敗 (${dupId})：${e.message || e}`, true);
+            }
+          }
+        }
+      }
+      return result;
+    }
+
     const fixedSyncLocks = new Map();
 
-    async function syncFixedItemsToMonth(targetYear, targetMonth) {
+    async function syncFixedItemsToMonth(targetYear, targetMonth, silent = false) {
       const lockKey = `${targetYear}-${targetMonth}`;
       if (fixedSyncLocks.has(lockKey)) {
         await fixedSyncLocks.get(lockKey);
@@ -910,44 +1100,47 @@
         fixedItems.forEach(item => {
           const title = String(item.title || '').trim();
           if (!title) return;
+          const seriesKey = getSeriesId(item);
+          if (stoppedFixedSeries.has(seriesKey)) return;
 
           const idx = monthStrToIndex(item.month);
-          if (Number.isFinite(idx) && (!earliestMap.has(title) || idx < earliestMap.get(title))) {
-            earliestMap.set(title, idx);
+          if (Number.isFinite(idx) && (!earliestMap.has(seriesKey) || idx < earliestMap.get(seriesKey))) {
+            earliestMap.set(seriesKey, idx);
           }
 
-          const current = fixedMap.get(title);
+          const current = fixedMap.get(seriesKey);
           if (!current) {
-            fixedMap.set(title, item);
+            fixedMap.set(seriesKey, item);
             return;
           }
-          // 優先採用「未付款」的最新版本，避免拿到舊價格或已停止的資料
           if (current.purchased && !item.purchased) {
-            fixedMap.set(title, item);
+            fixedMap.set(seriesKey, item);
           } else if (!!current.purchased === !!item.purchased && getItemTimestamp(item) > getItemTimestamp(current)) {
-            fixedMap.set(title, item);
+            fixedMap.set(seriesKey, item);
           }
         });
         if (fixedMap.size === 0) return;
 
-        // 只把「仍在運作」的固定副本視為已存在；已停止的已付款歷史不應阻擋同名新系列
-        const currentMonthTitles = new Set(
-          state.wishlist
-            .filter(i => isSameMonthYear(i.month, targetYear, targetMonth) && isFixedItem(i) && i.recurring !== false)
-            .map(i => String(i.title || '').trim())
+        const currentMonthFixed = state.wishlist.filter(
+          i => isSameMonthYear(i.month, targetYear, targetMonth) && isFixedItem(i) && i.recurring !== false
         );
+        const currentMonthSeries = new Set(currentMonthFixed.map(i => getSeriesId(i)));
+        const currentMonthTitles = new Set(currentMonthFixed.map(i => String(i.title || '').trim()));
 
         let addedCount = 0;
-        for (const [title, orig] of fixedMap.entries()) {
-          if (currentMonthTitles.has(title) || ignoredList.includes(title)) continue;
+        for (const [seriesKey, orig] of fixedMap.entries()) {
+          const title = String(orig.title || '').trim();
+          if (currentMonthSeries.has(seriesKey) || currentMonthTitles.has(title) || ignoredList.includes(title) || ignoredList.includes(seriesKey) || stoppedFixedSeries.has(seriesKey)) continue;
 
-          // 不要憑空補出固定項目建立之前的月份
-          const earliest = earliestMap.get(title);
+          const earliest = earliestMap.get(seriesKey);
           if (Number.isFinite(earliest) && Number.isFinite(targetIndex) && targetIndex < earliest) continue;
 
-          const newId = makeId('fixed');
+          const newId = makeDeterministicFixedId(seriesKey, targetMonthStr);
+          if (state.wishlist.some(w => String(w.id) === newId)) continue;
+
           const newItem = {
             id: newId,
+            seriesId: seriesKey,
             title: orig.title,
             price: orig.price,
             category: '固定',
@@ -959,23 +1152,25 @@
             recurring: true
           };
           state.wishlist.unshift(newItem);
+          currentMonthSeries.add(seriesKey);
           currentMonthTitles.add(title);
           addedCount++;
 
+          const seq = queueWishUpdate(newId, newItem);
           if (isWishlistCloudReady && fbSetDoc && fbDoc) {
             try {
               await fbSetDoc(fbDoc(db, 'shared_wishlist', newId), newItem);
+              clearWishUpdate(newId, seq);
             } catch (e) {
               diagLog(`自動帶入固定項目上傳失敗 (${newId})：${e.message || e}`, true);
-              queueWishUpdate(newId, newItem);
             }
-          } else {
-            queueWishUpdate(newId, newItem);
           }
         }
         if (addedCount > 0) {
           saveToLocalStorage();
-          showToast(`已自動帶入 ${addedCount} 筆每月固定項目`);
+          if (!silent) {
+            showToast(`已自動帶入 ${addedCount} 筆每月固定項目`);
+          }
         }
       } finally {
         fixedSyncLocks.delete(lockKey);
@@ -983,7 +1178,12 @@
       }
     }
 
-    // 🌟 不固定項目預設全面自動順延（隨真實時間自然流轉）
+    async function ensureYearFixedItems(targetYear) {
+      for (let m = 1; m <= 12; m++) {
+        await syncFixedItemsToMonth(targetYear, m, m !== state.currentMonth);
+      }
+    }
+
     let rolloverInProgress = false;
     async function rolloverUnpurchasedItems() {
       if (rolloverInProgress) return;
@@ -995,7 +1195,6 @@
         const realMonthStr = getMonthStr(realYear, realMonth);
         const realIndex = monthStrToIndex(realMonthStr);
 
-        // 僅在使用者目前正處於真實當月時才執行順延
         if (state.currentYear !== realYear || state.currentMonth !== realMonth) return;
 
         let movedCount = 0;
@@ -1006,11 +1205,11 @@
 
           item.month = realMonthStr;
           movedCount++;
-          queueWishUpdate(item.id, { month: realMonthStr });
+          const seq = queueWishUpdate(item.id, { month: realMonthStr });
           if (isWishlistCloudReady && fbSetDoc && fbDoc) {
             try {
               await fbSetDoc(fbDoc(db, 'shared_wishlist', String(item.id)), { month: realMonthStr }, { merge: true });
-              clearWishUpdate(item.id);
+              clearWishUpdate(item.id, seq);
             } catch (e) {
               diagLog(`順延項目雲端同步失敗 (${item.id})：${e.message || e}`, true);
             }
@@ -1026,32 +1225,39 @@
       }
     }
 
-    async function changeMonth(delta) {
+    let monthNavChain = Promise.resolve();
+
+    function changeMonth(delta) {
       const step = Math.trunc(Number(delta));
-      if (!Number.isFinite(step) || step === 0) return;
-      // 以「絕對月序」換算並限制在 1970/01 ~ 2100/12 之間
-      const currentIndex = monthStrToIndex(getMonthStr(state.currentYear, state.currentMonth));
-      if (!Number.isFinite(currentIndex)) return;
-      const minIndex = 1970 * 12;
-      const maxIndex = 2100 * 12 + 11;
-      const nextIndex = Math.max(minIndex, Math.min(maxIndex, currentIndex + step));
-      state.currentYear = Math.floor(nextIndex / 12);
-      state.currentMonth = (nextIndex % 12) + 1;
-      updateMonthUI();
-      await syncFixedItemsToMonth(state.currentYear, state.currentMonth);
-      await rolloverUnpurchasedItems();
-      render();
+      if (!Number.isFinite(step) || step === 0) return monthNavChain;
+      monthNavChain = monthNavChain.then(async () => {
+        const currentIndex = monthStrToIndex(getMonthStr(state.currentYear, state.currentMonth));
+        if (!Number.isFinite(currentIndex)) return;
+        const minIndex = 1970 * 12;
+        const maxIndex = 2100 * 12 + 11;
+        const nextIndex = Math.max(minIndex, Math.min(maxIndex, currentIndex + step));
+        state.currentYear = Math.floor(nextIndex / 12);
+        state.currentMonth = (nextIndex % 12) + 1;
+        updateMonthUI();
+        await ensureYearFixedItems(state.currentYear);
+        await rolloverUnpurchasedItems();
+        render();
+      }).catch(err => diagLog(`切換月份異常：${err.message || err}`, true));
+      return monthNavChain;
     }
 
-    async function jumpToMonth(targetMonth) {
+    function jumpToMonth(targetMonth) {
       const nextMonth = parseInt(targetMonth, 10);
-      if (!Number.isFinite(nextMonth) || nextMonth < 1 || nextMonth > 12) return;
-      state.currentMonth = nextMonth;
-      updateMonthUI();
-      await syncFixedItemsToMonth(state.currentYear, state.currentMonth);
-      await rolloverUnpurchasedItems();
-      render();
-      showToast(`已切換至 ${state.currentYear}年${targetMonth}月`);
+      if (!Number.isFinite(nextMonth) || nextMonth < 1 || nextMonth > 12) return monthNavChain;
+      monthNavChain = monthNavChain.then(async () => {
+        state.currentMonth = nextMonth;
+        updateMonthUI();
+        await ensureYearFixedItems(state.currentYear);
+        await rolloverUnpurchasedItems();
+        render();
+        showToast(`已切換至 ${state.currentYear}年${nextMonth}月`);
+      }).catch(err => diagLog(`跳轉月份異常：${err.message || err}`, true));
+      return monthNavChain;
     }
 
     function setAnnualChartView(viewType) {
@@ -1090,7 +1296,7 @@
 
       const currentMonthItems = state.wishlist.filter(item => isSameMonthYear(item.month, state.currentYear, state.currentMonth));
       const currentMonthIncomes = state.incomes.filter(item => isSameMonthYear(item.month, state.currentYear, state.currentMonth));
-      
+
       const fixedItems = currentMonthItems.filter(i => isFixedItem(i));
       const variableItems = currentMonthItems.filter(i => !isFixedItem(i));
 
@@ -1098,14 +1304,18 @@
       const fixedSum = roundCents(fixedItems.reduce((s, i) => s + Number(i.price || 0), 0));
       const variableSum = roundCents(variableItems.reduce((s, i) => s + Number(i.price || 0), 0));
 
+      const realNow = new Date();
+      const cutoffIdx = monthStrToIndex(getMonthStr(realNow.getFullYear(), realNow.getMonth() + 1));
+
       const currentPurchasedExpense = roundCents(currentMonthItems.filter(i => i.purchased).reduce((s, i) => s + Number(i.price || 0), 0));
-      const allPurchasedExpense = roundCents(state.wishlist.filter(i => i.purchased).reduce((s, i) => s + Number(i.price || 0), 0));
+      const allPurchasedExpense = roundCents(state.wishlist.filter(i => i.purchased && monthStrToIndex(i.month) <= cutoffIdx).reduce((s, i) => s + Number(i.price || 0), 0));
 
       const currentSettledIncome = roundCents(currentMonthIncomes.filter(i => i.received).reduce((s, i) => s + Number(i.price || 0), 0));
-      const allSettledIncome = roundCents(state.incomes.filter(i => i.received).reduce((s, i) => s + Number(i.price || 0), 0));
-      
+      const allSettledIncome = roundCents(state.incomes.filter(i => i.received && monthStrToIndex(i.month) <= cutoffIdx).reduce((s, i) => s + Number(i.price || 0), 0));
+
       const totalWealth = roundCents(allSettledIncome - allPurchasedExpense);
       const remaining = roundCents(currentSettledIncome - currentPurchasedExpense);
+      const unpaidFixedSum = roundCents(fixedItems.filter(i => !i.purchased).reduce((s, i) => s + Number(i.price || 0), 0));
 
       document.getElementById('total-wealth-amount').innerText = formatCurrency(totalWealth);
       document.getElementById('remaining-amount').innerText = formatCurrency(remaining);
@@ -1116,6 +1326,12 @@
         if (remaining < 0) {
           statusTag.innerText = '本月超支';
           statusTag.className = 'text-xs font-bold text-rose-600 block mt-1';
+        } else if (remaining - unpaidFixedSum < 0) {
+          statusTag.innerText = '待付超支預警';
+          statusTag.className = 'text-xs font-bold text-amber-600 block mt-1';
+        } else if (currentSettledIncome === 0 && currentPurchasedExpense === 0) {
+          statusTag.innerText = '尚無收支';
+          statusTag.className = 'text-xs font-bold text-gray-500 block mt-1';
         } else if (currentSettledIncome > 0 && remaining < currentSettledIncome * 0.2) {
           statusTag.innerText = '餘額偏低';
           statusTag.className = 'text-xs font-bold text-amber-600 block mt-1';
@@ -1225,21 +1441,20 @@
         return `
           <div class="flex items-center justify-between p-1.5 rounded-lg border ${cardBg} transition group">
             <div onclick="toggleIncomeReceived('${jsArg(item.id)}')" class="flex items-center gap-1.5 flex-1 min-w-0 cursor-pointer active:opacity-70">
-              <input type="checkbox" ${isReceived ? 'checked' : ''} class="compact-checkbox w-4 h-4 rounded text-emerald-700 cursor-pointer flex-shrink-0 pointer-events-none">
+              <input type="checkbox" ${isReceived ? 'checked' : ''} onclick="event.stopPropagation()" onchange="toggleIncomeReceived('${jsArg(item.id)}')" aria-label="切換 ${escapeHtml(item.title)} 入帳狀態" class="compact-checkbox w-4 h-4 rounded text-emerald-700 cursor-pointer flex-shrink-0">
               <div class="min-w-0 flex-1">
-                <span class="text-[11px] ${textStyle} truncate block select-none">${escapeHtml(item.title)}</span>
+                <span class="text-[11px] ${textStyle} break-words line-clamp-2 block select-none" title="${escapeHtml(item.title)}">${escapeHtml(item.title)}</span>
               </div>
             </div>
 
-            <!-- 獨立操作區：緊湊貼右 -->
             <div class="flex items-center gap-0.5 flex-shrink-0 ml-1">
               <span class="text-[11px] font-bold font-sans ${isReceived ? 'text-emerald-700' : 'text-gray-400 line-through'} mr-1">
                 +${formatCurrency(item.price)}
               </span>
-              <button type="button" onclick="event.stopPropagation(); editIncomeItem('${jsArg(item.id)}')" title="編輯" class="w-6 h-7 flex items-center justify-center rounded text-gray-400 hover:text-gray-700 active:scale-90 transition p-0">
+              <button type="button" onclick="event.stopPropagation(); editIncomeItem('${jsArg(item.id)}')" title="編輯" aria-label="編輯 ${escapeHtml(item.title)}" class="w-6 h-7 flex items-center justify-center rounded text-gray-400 hover:text-gray-700 hover:bg-gray-100 active:scale-90 transition p-0">
                 <i class="ph ph-pencil-simple text-[11px] pointer-events-none"></i>
               </button>
-              <button type="button" onclick="event.stopPropagation(); deleteIncomeItem('${jsArg(item.id)}')" title="刪除" class="w-6 h-7 flex items-center justify-center rounded text-gray-400 hover:text-rose-600 active:scale-90 transition p-0">
+              <button type="button" onclick="event.stopPropagation(); deleteIncomeItem('${jsArg(item.id)}')" title="刪除" aria-label="刪除 ${escapeHtml(item.title)}" class="w-6 h-7 flex items-center justify-center rounded text-gray-400 hover:text-rose-600 hover:bg-rose-50 active:scale-90 transition p-0">
                 <i class="ph ph-trash text-[11px] pointer-events-none"></i>
               </button>
             </div>
@@ -1252,14 +1467,14 @@
       const item = state.incomes.find(i => String(i.id) === String(id));
       if (!item) return;
       item.received = !item.received;
-      queueIncomeUpdate(id, { received: item.received });
+      const seq = queueIncomeUpdate(id, { received: item.received });
       saveToLocalStorage();
       render();
 
       if (isIncomesCloudReady && fbSetDoc && fbDoc) {
         try {
           await fbSetDoc(fbDoc(db, 'shared_incomes', String(id)), { received: item.received }, { merge: true });
-          clearIncomeUpdate(id);
+          clearIncomeUpdate(id, seq);
         } catch (err) {
           diagLog(`切換收入入帳狀態雲端同步失敗 (${id})：${err.message || err}`, true);
         }
@@ -1271,6 +1486,7 @@
       const form = document.getElementById('income-form');
       form.reset();
       const currentMonthStr = getMonthStr(state.currentYear, state.currentMonth);
+      const receivedCheckbox = document.getElementById('income-item-received');
 
       if (editId) {
         const item = state.incomes.find(i => String(i.id) === String(editId));
@@ -1283,16 +1499,22 @@
         document.getElementById('income-item-title').value = item.title;
         document.getElementById('income-item-month').value = item.month || currentMonthStr;
         document.getElementById('income-item-price').value = item.price;
+        if (receivedCheckbox) receivedCheckbox.checked = !!item.received;
       } else {
         document.getElementById('income-modal-title').innerText = '新增收入';
         document.getElementById('income-edit-id').value = '';
         document.getElementById('income-item-month').value = currentMonthStr;
+        if (receivedCheckbox) receivedCheckbox.checked = true;
       }
       document.getElementById('income-modal').classList.remove('hidden');
       syncBodyScrollLock();
     }
 
     function closeIncomeModal() {
+      const form = document.getElementById('income-form');
+      if (form) form.reset();
+      const editIdEl = document.getElementById('income-edit-id');
+      if (editIdEl) editIdEl.value = '';
       document.getElementById('income-modal').classList.add('hidden');
       syncBodyScrollLock();
     }
@@ -1337,86 +1559,100 @@
     }
 
     async function executeIncomeDelete(id) {
-      closeCustomDeleteModal();
-      const strId = String(id);
-      recordOfflineDeletion('income', strId);
-      clearIncomeUpdate(strId);
-      state.incomes = state.incomes.filter(i => String(i.id) !== strId);
-      saveToLocalStorage();
-      render();
+      if (isExecutingDelete) return;
+      isExecutingDelete = true;
+      try {
+        closeCustomDeleteModal();
+        const strId = String(id);
+        recordOfflineDeletion('income', strId);
+        clearIncomeUpdate(strId);
+        state.incomes = state.incomes.filter(i => String(i.id) !== strId);
+        saveToLocalStorage();
+        render();
 
-      if (isIncomesCloudReady && fbDeleteDoc && fbDoc) {
-        try {
-          await fbDeleteDoc(fbDoc(db, 'shared_incomes', strId));
-        } catch (err) {
-          diagLog(`雲端刪除收入失敗 (${strId})：${err.message || err}`, true);
+        if (isIncomesCloudReady && fbDeleteDoc && fbDoc) {
+          try {
+            await fbDeleteDoc(fbDoc(db, 'shared_incomes', strId));
+            clearOfflineDeletion('income', strId);
+          } catch (err) {
+            diagLog(`雲端刪除收入失敗 (${strId})：${err.message || err}`, true);
+          }
         }
+        showToast('收入已移除');
+      } finally {
+        isExecutingDelete = false;
       }
-      showToast('收入已移除');
     }
 
     async function handleIncomeSubmit(e) {
       e.preventDefault();
-      const currentMonthStr = getMonthStr(state.currentYear, state.currentMonth);
-      const id = document.getElementById('income-edit-id').value;
-      const title = document.getElementById('income-item-title').value.trim();
-      const rawMonth = document.getElementById('income-item-month').value || currentMonthStr;
-      const month = normalizeMonthStr(rawMonth);
-      const price = Math.round(Number(document.getElementById('income-item-price').value) * 100) / 100;
+      if (isSubmittingIncome) return;
+      isSubmittingIncome = true;
+      try {
+        const currentMonthStr = getMonthStr(state.currentYear, state.currentMonth);
+        const id = document.getElementById('income-edit-id').value;
+        const title = document.getElementById('income-item-title').value.trim();
+        const rawMonth = document.getElementById('income-item-month').value || currentMonthStr;
+        const month = normalizeMonthStr(rawMonth);
+        const price = Math.round(Number(document.getElementById('income-item-price').value) * 100) / 100;
+        const receivedEl = document.getElementById('income-item-received');
+        const received = receivedEl ? !!receivedEl.checked : true;
 
-      if (!title) {
-        showToast('請輸入收入名稱');
-        return;
-      }
-      if (!month) {
-        showToast('請選擇有效月份');
-        return;
-      }
-      if (!Number.isFinite(price) || price <= 0 || price > MAX_AMOUNT) {
-        showToast('請輸入有效金額');
-        return;
-      }
-
-      const itemData = { title, month, price };
-      closeIncomeModal();
-
-      if (id) {
-        const strId = String(id);
-        const idx = state.incomes.findIndex(i => String(i.id) === strId);
-        if (idx === -1) {
-          showToast('找不到收入項目，請重新整理後再試');
+        if (!title) {
+          showToast('請輸入收入名稱');
           return;
         }
-        state.incomes[idx] = { ...state.incomes[idx], ...itemData };
-        queueIncomeUpdate(strId, itemData);
-        saveToLocalStorage();
-        render();
-        if (isIncomesCloudReady && fbSetDoc && fbDoc) {
-          try {
-            await fbSetDoc(fbDoc(db, 'shared_incomes', strId), itemData, { merge: true });
-            clearIncomeUpdate(strId);
-          } catch (err) {
-            diagLog(`更新收入雲端同步失敗 (${strId})：${err.message || err}`, true);
-          }
+        if (!month) {
+          showToast('請選擇有效月份');
+          return;
         }
-        showToast('收入已更新');
-      } else {
-        const newId = makeId('inc');
-        const fullItem = { id: newId, ...itemData, received: true };
-        state.incomes.push(fullItem);
-        saveToLocalStorage();
-        render();
-        if (isIncomesCloudReady && fbSetDoc && fbDoc) {
-          try {
-            await fbSetDoc(fbDoc(db, 'shared_incomes', newId), fullItem);
-          } catch (err) {
-            diagLog(`新增收入雲端同步失敗 (${newId})：${err.message || err}`, true);
-            queueIncomeUpdate(newId, fullItem);
+        if (!Number.isFinite(price) || price < 0 || price > MAX_AMOUNT) {
+          showToast('請輸入有效金額');
+          return;
+        }
+
+        const itemData = { title, month, price, received };
+        closeIncomeModal();
+
+        if (id) {
+          const strId = String(id);
+          const idx = state.incomes.findIndex(i => String(i.id) === strId);
+          if (idx === -1) {
+            showToast('找不到收入項目，請重新整理後再試');
+            return;
           }
+          state.incomes[idx] = { ...state.incomes[idx], ...itemData };
+          const seq = queueIncomeUpdate(strId, itemData);
+          saveToLocalStorage();
+          render();
+          if (isIncomesCloudReady && fbSetDoc && fbDoc) {
+            try {
+              await fbSetDoc(fbDoc(db, 'shared_incomes', strId), itemData, { merge: true });
+              clearIncomeUpdate(strId, seq);
+            } catch (err) {
+              diagLog(`更新收入雲端同步失敗 (${strId})：${err.message || err}`, true);
+            }
+          }
+          showToast('收入已更新');
         } else {
-          queueIncomeUpdate(newId, fullItem);
+          const newId = makeId('inc');
+          const fullItem = { id: newId, ...itemData };
+          state.incomes.push(fullItem);
+          const seq = queueIncomeUpdate(newId, fullItem);
+          saveToLocalStorage();
+          render();
+          if (isIncomesCloudReady && fbSetDoc && fbDoc) {
+            try {
+              await fbSetDoc(fbDoc(db, 'shared_incomes', newId), fullItem);
+              clearIncomeUpdate(newId, seq);
+            } catch (err) {
+              diagLog(`新增收入雲端同步失敗 (${newId})：${err.message || err}`, true);
+            }
+          }
+          showToast('收入已新增');
         }
-        showToast('收入已新增');
+      } finally {
+        isSubmittingIncome = false;
       }
     }
 
@@ -1480,26 +1716,24 @@
           const cardBg = isPurchased ? 'bg-[#F5F2ED] opacity-80' : 'bg-white hover:bg-gray-50';
 
           return `
-            <div class="flex items-center justify-between pl-1 pr-1 py-1 rounded-lg border border-[#ECE6DB] ${cardBg} transition group">
-              <!-- 左側點擊區：pl-1 + gap-1 緊湊無縫 -->
-              <div onclick="toggleWishlistPurchased('${jsArg(item.id)}')" class="flex items-center gap-1 flex-1 min-w-0 cursor-pointer active:opacity-70">
-                <input type="checkbox" ${isPurchased ? 'checked' : ''} class="compact-checkbox w-3.5 h-3.5 rounded text-emerald-700 cursor-pointer flex-shrink-0 pointer-events-none">
+            <div class="flex items-center justify-between pl-1.5 pr-1 py-1.5 rounded-lg border border-[#ECE6DB] ${cardBg} transition group">
+              <div onclick="toggleWishlistPurchased('${jsArg(item.id)}')" class="flex items-start gap-1.5 flex-1 min-w-0 cursor-pointer active:opacity-70">
+                <input type="checkbox" ${isPurchased ? 'checked' : ''} onclick="event.stopPropagation()" onchange="toggleWishlistPurchased('${jsArg(item.id)}')" aria-label="切換 ${escapeHtml(item.title)} 付款狀態" class="compact-checkbox w-4 h-4 mt-0.5 rounded text-emerald-700 cursor-pointer flex-shrink-0">
                 <div class="min-w-0 flex-1">
-                  <span class="text-[10px] ${textStyle} truncate block select-none">${escapeHtml(item.title)}</span>
-                  ${item.note ? `<span class="text-[8px] text-subText truncate block select-none">${escapeHtml(item.note)}</span>` : ''}
+                  <span class="text-[10px] leading-tight ${textStyle} break-words line-clamp-2 block select-none" title="${escapeHtml(item.title)}">${escapeHtml(item.title)}</span>
+                  ${item.note ? `<span class="text-[8px] leading-tight text-subText break-words line-clamp-2 block select-none mt-0.5" title="${escapeHtml(item.note)}">${escapeHtml(item.note)}</span>` : ''}
                 </div>
               </div>
 
-              <!-- 右側操作區：文字縮小 1px -->
               <div class="flex items-center gap-0.5 flex-shrink-0 ml-1">
                 <span class="text-[10px] font-bold font-sans ${isPurchased ? 'line-through text-gray-400' : 'text-gray-800'} mr-0.5">
                   ${formatCurrency(item.price)}
                 </span>
-                <button type="button" onclick="event.stopPropagation(); editWishlistItem('${jsArg(item.id)}')" title="編輯" class="w-4 h-5 flex items-center justify-center rounded text-gray-400 hover:text-gray-700 active:scale-95 transition p-0">
-                  <i class="ph ph-pencil-simple text-[10px] pointer-events-none"></i>
+                <button type="button" onclick="event.stopPropagation(); editWishlistItem('${jsArg(item.id)}')" title="編輯" aria-label="編輯 ${escapeHtml(item.title)}" class="w-6 h-6 flex items-center justify-center rounded text-gray-400 hover:text-gray-700 hover:bg-gray-100 active:scale-95 transition p-0">
+                  <i class="ph ph-pencil-simple text-[11px] pointer-events-none"></i>
                 </button>
-                <button type="button" onclick="event.stopPropagation(); deleteWishlistItem('${jsArg(item.id)}')" title="刪除" class="w-4 h-5 flex items-center justify-center rounded text-gray-400 hover:text-rose-600 active:scale-95 transition p-0">
-                  <i class="ph ph-trash text-[10px] pointer-events-none"></i>
+                <button type="button" onclick="event.stopPropagation(); deleteWishlistItem('${jsArg(item.id)}')" title="刪除" aria-label="刪除 ${escapeHtml(item.title)}" class="w-6 h-6 flex items-center justify-center rounded text-gray-400 hover:text-rose-600 hover:bg-rose-50 active:scale-95 transition p-0">
+                  <i class="ph ph-trash text-[11px] pointer-events-none"></i>
                 </button>
               </div>
             </div>
@@ -1515,14 +1749,14 @@
       const item = state.wishlist.find(w => String(w.id) === String(id));
       if (!item) return;
       item.purchased = !item.purchased;
-      queueWishUpdate(id, { purchased: item.purchased });
+      const seq = queueWishUpdate(id, { purchased: item.purchased });
       saveToLocalStorage();
       render();
 
       if (isWishlistCloudReady && fbSetDoc && fbDoc) {
         try {
           await fbSetDoc(fbDoc(db, 'shared_wishlist', String(id)), { purchased: item.purchased }, { merge: true });
-          clearWishUpdate(id);
+          clearWishUpdate(id, seq);
         } catch (err) {
           diagLog(`切換待付項目狀態雲端同步失敗 (${id})：${err.message || err}`, true);
         }
@@ -1546,7 +1780,6 @@
         document.getElementById('wishlist-item-title').value = item.title;
         document.getElementById('wishlist-item-month').value = item.month || currentMonthStr;
         document.getElementById('wishlist-item-price').value = item.price;
-        // 舊資料可能只有 isFixed 而沒有 category，不能誤判成「不固定」
         document.getElementById('wishlist-item-category').value = isFixedItem(item) ? '固定' : '不固定';
         document.getElementById('wishlist-item-note').value = item.note || '';
       } else {
@@ -1560,6 +1793,10 @@
     }
 
     function closeWishlistModal() {
+      const form = document.getElementById('wishlist-form');
+      if (form) form.reset();
+      const editIdEl = document.getElementById('wishlist-edit-id');
+      if (editIdEl) editIdEl.value = '';
       document.getElementById('wishlist-modal').classList.add('hidden');
       syncBodyScrollLock();
     }
@@ -1568,7 +1805,6 @@
       openWishlistModal(id);
     }
 
-    // 🌟 自訂刪除彈窗：String(id) 相容，阻止點擊穿透，行動端 100% 穩定呈現
     function deleteWishlistItem(id) {
       const strId = String(id);
       const item = state.wishlist.find(w => String(w.id) === strId);
@@ -1640,327 +1876,356 @@
     }
 
     async function executeWishlistDelete(id, deleteAll) {
-      closeCustomDeleteModal();
-      const strId = String(id);
-      const item = state.wishlist.find(w => String(w.id) === strId);
-      if (!item) return;
+      if (isExecutingDelete) return;
+      isExecutingDelete = true;
+      try {
+        closeCustomDeleteModal();
+        const strId = String(id);
+        const item = state.wishlist.find(w => String(w.id) === strId);
+        if (!item) return;
 
-      // 非固定項目沒有「停止整個系列」的概念，若被誤傳 deleteAll 仍應只刪這一筆
-      if (deleteAll && !isFixedItem(item)) deleteAll = false;
+        if (deleteAll && !isFixedItem(item)) deleteAll = false;
 
-      // 已付款的固定月份是歷史帳，不可用「僅刪本月」直接抹除；需先取消付款或改用「停止固定」
-      if (!deleteAll && isFixedItem(item) && item.purchased) {
-        showToast('已付款月份為歷史紀錄，請先取消付款再刪除');
-        return;
-      }
+        if (!deleteAll && isFixedItem(item) && item.purchased) {
+          showToast('已付款月份為歷史紀錄，請先取消付款再刪除');
+          return;
+        }
 
-      if (deleteAll) {
-        const titleKey = String(item.title || '').trim();
-        // 同名的新舊系列可能並存：已停止的歷史（recurring=false）不可連動刪除仍在運作的新系列
-        const targetIsActive = item.recurring !== false;
-        const sameTitle = state.wishlist.filter(w =>
-          isFixedItem(w) &&
-          (w.recurring !== false) === targetIsActive &&
-          String(w.title || '').trim() === titleKey
-        );
-        // 只刪未付款月份；已付款是歷史帳，不能被刪掉，只標記為停止固定
-        const toDelete = sameTitle.filter(w => !w.purchased);
-        const toKeep = sameTitle.filter(w => w.purchased);
+        if (deleteAll) {
+          const titleKey = String(item.title || '').trim();
+          const seriesKey = getSeriesId(item);
+          const targetIsActive = item.recurring !== false;
+          const sameSeries = state.wishlist.filter(w =>
+            isFixedItem(w) &&
+            (w.recurring !== false) === targetIsActive &&
+            (getSeriesId(w) === seriesKey || String(w.title || '').trim() === titleKey)
+          );
+          const toDelete = sameSeries.filter(w => !w.purchased);
+          const toKeep = sameSeries.filter(w => w.purchased);
 
-        toDelete.forEach(d => {
-          recordOfflineDeletion('wish', String(d.id));
-          clearWishUpdate(d.id);
-        });
-        const deleteIds = new Set(toDelete.map(d => String(d.id)));
-        state.wishlist = state.wishlist.filter(w => !deleteIds.has(String(w.id)));
-        toKeep.forEach(w => {
-          w.recurring = false;
-          queueWishUpdate(w.id, { recurring: false });
-        });
+          toDelete.forEach(d => {
+            recordOfflineDeletion('wish', String(d.id));
+            clearWishUpdate(d.id);
+          });
+          const deleteIds = new Set(toDelete.map(d => String(d.id)));
+          state.wishlist = state.wishlist.filter(w => !deleteIds.has(String(w.id)));
+          const keepSeqMap = new Map();
+          toKeep.forEach(w => {
+            w.recurring = false;
+            keepSeqMap.set(String(w.id), queueWishUpdate(w.id, { recurring: false }));
+          });
 
-        try {
-          for (let i = 0; i < localStorage.length; i++) {
-            const k = localStorage.key(i);
-            if (k && k.indexOf('budget_ignored_fixed_') === 0) {
-              const list = safeArrayParse(safeGetItem(k), []).map(String);
-              if (list.includes(titleKey)) {
-                safeSetItem(k, JSON.stringify(list.filter(t => t !== titleKey)));
+          if (targetIsActive) {
+            recordStoppedFixedSeries(seriesKey);
+          }
+
+          try {
+            for (let i = 0; i < localStorage.length; i++) {
+              const k = localStorage.key(i);
+              if (k && k.indexOf('budget_ignored_fixed_') === 0) {
+                const list = safeArrayParse(safeGetItem(k), []).map(String);
+                if (list.includes(titleKey) || list.includes(seriesKey)) {
+                  safeSetItem(k, JSON.stringify(list.filter(t => t !== titleKey && t !== seriesKey)));
+                }
+              }
+            }
+          } catch (err) {
+            diagLog(`清理固定項目忽略清單失敗：${err.message || err}`, true);
+          }
+
+          saveToLocalStorage();
+          render();
+
+          if (isWishlistCloudReady && fbDeleteDoc && fbDoc) {
+            for (const d of toDelete) {
+              try {
+                await fbDeleteDoc(fbDoc(db, 'shared_wishlist', String(d.id)));
+                clearOfflineDeletion('wish', String(d.id));
+              } catch (err) {
+                diagLog(`雲端刪除固定副本失敗 (${d.id})：${err.message || err}`, true);
               }
             }
           }
-        } catch (err) {
-          diagLog(`清理固定項目忽略清單失敗：${err.message || err}`, true);
-        }
-
-        saveToLocalStorage();
-        render();
-
-        if (isWishlistCloudReady && fbDeleteDoc && fbDoc) {
-          for (const d of toDelete) {
-            try {
-              await fbDeleteDoc(fbDoc(db, 'shared_wishlist', String(d.id)));
-            } catch (err) {
-              diagLog(`雲端刪除固定副本失敗 (${d.id})：${err.message || err}`, true);
+          if (isWishlistCloudReady && fbSetDoc && fbDoc) {
+            for (const w of toKeep) {
+              try {
+                await fbSetDoc(fbDoc(db, 'shared_wishlist', String(w.id)), { recurring: false }, { merge: true });
+                clearWishUpdate(w.id, keepSeqMap.get(String(w.id)));
+              } catch (err) {
+                diagLog(`雲端標記停止固定失敗 (${w.id})：${err.message || err}`, true);
+              }
             }
           }
-        }
-        if (isWishlistCloudReady && fbSetDoc && fbDoc) {
-          for (const w of toKeep) {
-            try {
-              await fbSetDoc(fbDoc(db, 'shared_wishlist', String(w.id)), { recurring: false }, { merge: true });
-              clearWishUpdate(w.id);
-            } catch (err) {
-              diagLog(`雲端標記停止固定失敗 (${w.id})：${err.message || err}`, true);
-            }
-          }
-        }
-        // 同名新舊系列可能並存，統計整體仍保留的已付款紀錄，避免誤稱「已徹底刪除」
-        const remainingPaidSameTitle = state.wishlist.filter(w =>
-          isFixedItem(w) && String(w.title || '').trim() === titleKey && w.purchased
-        ).length;
-        showToast(remainingPaidSameTitle > 0
-          ? `已停止固定項目，保留 ${remainingPaidSameTitle} 筆已付款紀錄`
-          : `已徹底刪除所有月份的「${item.title}」`);
-      } else {
-        // 只有仍在運作的固定系列需要記錄「本月已刪除」，避免自動補回；
-        // 已停止的歷史紀錄不會再產生未來副本，也不需要寫入忽略清單
-        if (isFixedItem(item) && item.recurring !== false) {
-          const monthKey = normalizeMonthStr(item.month);
-          if (monthKey) {
-            const ignoredKey = `budget_ignored_fixed_${monthKey}`;
-            const ignoredList = safeArrayParse(safeGetItem(ignoredKey), []).map(String);
-            const titleKey = String(item.title || '').trim();
-            if (!ignoredList.includes(titleKey)) {
-              ignoredList.push(titleKey);
+          const remainingPaidSameTitle = state.wishlist.filter(w =>
+            isFixedItem(w) && String(w.title || '').trim() === titleKey && w.purchased
+          ).length;
+          showToast(remainingPaidSameTitle > 0
+            ? `已停止固定項目，保留 ${remainingPaidSameTitle} 筆已付款紀錄`
+            : `已徹底刪除所有月份的「${item.title}」`);
+        } else {
+          if (isFixedItem(item) && item.recurring !== false) {
+            const monthKey = normalizeMonthStr(item.month);
+            if (monthKey) {
+              const ignoredKey = `budget_ignored_fixed_${monthKey}`;
+              const ignoredList = safeArrayParse(safeGetItem(ignoredKey), []).map(String);
+              const titleKey = String(item.title || '').trim();
+              const seriesKey = getSeriesId(item);
+              if (!ignoredList.includes(titleKey)) ignoredList.push(titleKey);
+              if (!ignoredList.includes(seriesKey)) ignoredList.push(seriesKey);
               safeSetItem(ignoredKey, JSON.stringify(ignoredList));
             }
           }
-        }
 
-        recordOfflineDeletion('wish', strId);
-        clearWishUpdate(strId);
-        state.wishlist = state.wishlist.filter(w => String(w.id) !== strId);
-        saveToLocalStorage();
-        render();
+          recordOfflineDeletion('wish', strId);
+          clearWishUpdate(strId);
+          state.wishlist = state.wishlist.filter(w => String(w.id) !== strId);
+          saveToLocalStorage();
+          render();
 
-        if (isWishlistCloudReady && fbDeleteDoc && fbDoc) {
-          try {
-            await fbDeleteDoc(fbDoc(db, 'shared_wishlist', strId));
-          } catch (err) {
-            diagLog(`雲端刪除待付項目失敗 (${strId})：${err.message || err}`, true);
+          if (isWishlistCloudReady && fbDeleteDoc && fbDoc) {
+            try {
+              await fbDeleteDoc(fbDoc(db, 'shared_wishlist', strId));
+              clearOfflineDeletion('wish', strId);
+            } catch (err) {
+              diagLog(`雲端刪除待付項目失敗 (${strId})：${err.message || err}`, true);
+            }
           }
+          showToast('項目已移除');
         }
-        showToast('項目已移除');
+      } finally {
+        isExecutingDelete = false;
       }
     }
 
     async function handleWishlistSubmit(e) {
       e.preventDefault();
-      const currentMonthStr = getMonthStr(state.currentYear, state.currentMonth);
-      const id = document.getElementById('wishlist-edit-id').value;
-      const title = document.getElementById('wishlist-item-title').value.trim();
-      const rawMonth = document.getElementById('wishlist-item-month').value || currentMonthStr;
-      const month = normalizeMonthStr(rawMonth);
-      const price = Math.round(Number(document.getElementById('wishlist-item-price').value) * 100) / 100;
-      const rawCategory = document.getElementById('wishlist-item-category').value;
-      const category = rawCategory === '固定' ? '固定' : '不固定';
-      const note = document.getElementById('wishlist-item-note').value.trim();
-      const isFixed = category === '固定';
-      const realMonthStr = getMonthStr(new Date().getFullYear(), new Date().getMonth() + 1);
-      const monthIndex = monthStrToIndex(month);
-      const realIndex = monthStrToIndex(realMonthStr);
-      const autoRollover = !isFixed && Number.isFinite(monthIndex) && Number.isFinite(realIndex) && monthIndex >= realIndex;
+      if (isSubmittingWishlist) return;
+      isSubmittingWishlist = true;
+      try {
+        const currentMonthStr = getMonthStr(state.currentYear, state.currentMonth);
+        const id = document.getElementById('wishlist-edit-id').value;
+        const title = document.getElementById('wishlist-item-title').value.trim();
+        const rawMonth = document.getElementById('wishlist-item-month').value || currentMonthStr;
+        const month = normalizeMonthStr(rawMonth);
+        const price = Math.round(Number(document.getElementById('wishlist-item-price').value) * 100) / 100;
+        const rawCategory = document.getElementById('wishlist-item-category').value;
+        const category = rawCategory === '固定' ? '固定' : '不固定';
+        const note = document.getElementById('wishlist-item-note').value.trim();
+        const isFixed = category === '固定';
+        const realMonthStr = getMonthStr(new Date().getFullYear(), new Date().getMonth() + 1);
+        const monthIndex = monthStrToIndex(month);
+        const realIndex = monthStrToIndex(realMonthStr);
+        const autoRollover = !isFixed && Number.isFinite(monthIndex) && Number.isFinite(realIndex) && monthIndex >= realIndex;
 
-      if (!title) {
-        showToast('請輸入項目名稱');
-        return;
-      }
-      if (!month) {
-        showToast('請選擇有效月份');
-        return;
-      }
-      if (!Number.isFinite(price) || price <= 0 || price > MAX_AMOUNT) {
-        showToast('請輸入有效金額');
-        return;
-      }
+        if (!title) {
+          showToast('請輸入項目名稱');
+          return;
+        }
+        if (!month) {
+          showToast('請選擇有效月份');
+          return;
+        }
+        if (!Number.isFinite(price) || price < 0 || price > MAX_AMOUNT) {
+          showToast('請輸入有效金額');
+          return;
+        }
 
-      // 固定項目以名稱作為系列識別；若與其他「仍在運作」的固定系列同名，會造成
-      // 編輯價格、停止固定時互相污染，因此在建立/改名時直接擋下。
-      if (isFixed) {
         const editingItem = id ? state.wishlist.find(w => String(w.id) === String(id)) : null;
         const wasFixed = !!(editingItem && isFixedItem(editingItem));
-        const oldTitleForConflict = editingItem ? String(editingItem.title || '').trim() : '';
-        const conflict = state.wishlist.some(w => {
-          if (String(w.id) === String(id || '')) return false;
-          if (!isFixedItem(w) || w.recurring === false) return false;
-          const wt = String(w.title || '').trim();
-          if (!wt) return false;
-          if (wasFixed && wt === oldTitleForConflict) return false;
-          return wt === title;
-        });
-        if (conflict) {
-          showToast('已有同名固定項目，請直接編輯該項目');
-          return;
-        }
-
-        // 編輯既有固定項目時，若移到（或改名到）已有同名副本的月份，不能產生同月重複
-        if (editingItem && wasFixed) {
-          const monthChanged = monthStrToIndex(month) !== monthStrToIndex(editingItem.month);
-          const titleChanged = String(editingItem.title || '').trim() !== title;
-          if (monthChanged || titleChanged) {
-            const targetIndex = monthStrToIndex(month);
-            const targetMonthConflict = state.wishlist.some(w => {
-              if (String(w.id) === String(id)) return false;
-              if (!isFixedItem(w)) return false;
-              const wt = String(w.title || '').trim();
-              const matchesTitle = wt === title || wt === oldTitleForConflict;
-              return matchesTitle && monthStrToIndex(w.month) === targetIndex;
-            });
-            if (targetMonthConflict) {
-              showToast('該月份已有同名固定項目');
-              return;
-            }
-          }
-        }
-      }
-
-      const itemData = { title, month, price, category, note, isFixed, autoRollover };
-      closeWishlistModal();
-
-      if (id) {
-        const strId = String(id);
-        const idx = state.wishlist.findIndex(w => String(w.id) === strId);
-        if (idx === -1) {
-          showToast('找不到項目，請重新整理後再試');
-          return;
-        }
-        const targetItem = state.wishlist[idx];
-        const oldTitle = String(targetItem.title || '').trim();
-        const originalMonthKey = targetItem ? normalizeMonthStr(targetItem.month) : '';
-        const movedFixedMonth = !!(isFixed && targetItem && isFixedItem(targetItem) && originalMonthKey && monthStrToIndex(month) !== monthStrToIndex(originalMonthKey));
-
-        if (idx !== -1) {
-          state.wishlist[idx] = { ...state.wishlist[idx], ...itemData };
-          queueWishUpdate(strId, itemData);
-        }
-
-        // 固定項目被移到其他月份時，原月份要加入忽略清單，否則下次同步會在原月份又補一筆
-        if (movedFixedMonth && oldTitle) {
-          const ignoredKey = `budget_ignored_fixed_${originalMonthKey}`;
-          const ignoredList = safeArrayParse(safeGetItem(ignoredKey), []).map(String);
-          if (!ignoredList.includes(oldTitle)) {
-            ignoredList.push(oldTitle);
-            safeSetItem(ignoredKey, JSON.stringify(ignoredList));
-          }
-        }
-
-        // 固定項目改名／改價：只同步同一世代（運作中或已停止歷史）的同名副本，
-        // 避免同名的新舊系列互相污染；已付款副本只改名，保留歷史金額
-        if (isFixed && oldTitle) {
-          const targetIsActive = !targetItem || targetItem.recurring !== false;
-          if (oldTitle !== title && targetIsActive) migrateIgnoredFixedTitle(oldTitle, title);
-
-          const copiesToSync = [];
-          state.wishlist.forEach(w => {
-            if (String(w.id) === strId) return;
-            if (!isFixedItem(w)) return;
-            if ((w.recurring !== false) !== targetIsActive) return;
-            if (String(w.title || '').trim() !== oldTitle) return;
-            // 只是改價／改備註時，不需要動到已付款的歷史副本
-            if (w.purchased && oldTitle === title) return;
-
-            w.title = title;
-            w.category = '固定';
-            w.isFixed = true;
-            const fields = { title, category: '固定', isFixed: true };
-            if (!w.purchased) {
-              w.price = price;
-              w.note = note;
-              fields.price = price;
-              fields.note = note;
-            }
-            copiesToSync.push({ id: String(w.id), fields });
-          });
-
-          copiesToSync.forEach(copy => queueWishUpdate(copy.id, copy.fields));
-
-          if (isWishlistCloudReady && fbSetDoc && fbDoc) {
-            for (const copy of copiesToSync) {
-              try {
-                await fbSetDoc(fbDoc(db, 'shared_wishlist', copy.id), copy.fields, { merge: true });
-                clearWishUpdate(copy.id);
-              } catch (err) {
-                diagLog(`同步固定項目副本失敗 (${copy.id})：${err.message || err}`, true);
-              }
-            }
-          }
-        }
-
-        saveToLocalStorage();
-        render();
-        if (isWishlistCloudReady && fbSetDoc && fbDoc) {
-          try {
-            await fbSetDoc(fbDoc(db, 'shared_wishlist', strId), itemData, { merge: true });
-            clearWishUpdate(strId);
-          } catch (err) {
-            diagLog(`更新待付項目雲端同步失敗 (${strId})：${err.message || err}`, true);
-          }
-        }
-        showToast('項目已更新');
-      } else {
-        const newId = makeId('w');
-        const fullItem = { id: newId, ...itemData, purchased: false, ...(isFixed ? { recurring: true } : {}) };
-        state.wishlist.push(fullItem);
+        const seriesId = isFixed
+          ? (wasFixed ? getSeriesId(editingItem) : slugifySeriesKey(title))
+          : undefined;
 
         if (isFixed) {
-          const parts = String(month).replace(/\//g, '-').split('-');
-          const yr = parseInt(parts[0], 10);
-          const mo = parseInt(parts[1], 10);
+          const oldTitleForConflict = editingItem ? String(editingItem.title || '').trim() : '';
+          const conflict = state.wishlist.some(w => {
+            if (String(w.id) === String(id || '')) return false;
+            if (!isFixedItem(w) || w.recurring === false) return false;
+            const wt = String(w.title || '').trim();
+            if (!wt) return false;
+            if (wasFixed && (wt === oldTitleForConflict || getSeriesId(w) === seriesId)) return false;
+            return wt === title;
+          });
+          if (conflict) {
+            showToast('已有同名固定項目，請直接編輯該項目');
+            return;
+          }
 
-          if (Number.isFinite(yr) && Number.isFinite(mo) && mo >= 1 && mo <= 12) {
-            // 只從使用者選定的月份往後建立，不再回填建立之前的月份
-            for (let m = mo; m <= 12; m++) {
-              const mStr = getMonthStr(yr, m);
-
-              const ignoredKey = `budget_ignored_fixed_${mStr}`;
-              const ignoredList = safeArrayParse(safeGetItem(ignoredKey), []).map(String);
-              if (ignoredList.includes(title)) {
-                safeSetItem(ignoredKey, JSON.stringify(ignoredList.filter(t => t !== title)));
+          if (editingItem && wasFixed) {
+            const monthChanged = monthStrToIndex(month) !== monthStrToIndex(editingItem.month);
+            const titleChanged = String(editingItem.title || '').trim() !== title;
+            if (monthChanged || titleChanged) {
+              const targetIndex = monthStrToIndex(month);
+              const targetMonthConflict = state.wishlist.some(w => {
+                if (String(w.id) === String(id)) return false;
+                if (!isFixedItem(w)) return false;
+                const wt = String(w.title || '').trim();
+                const matchesSeries = wt === title || wt === oldTitleForConflict || getSeriesId(w) === seriesId;
+                return matchesSeries && monthStrToIndex(w.month) === targetIndex;
+              });
+              if (targetMonthConflict) {
+                showToast('該月份已有同名固定項目');
+                return;
               }
+            }
+          }
+        }
 
-              const exists = state.wishlist.some(w => isSameMonthYear(w.month, yr, m) && isFixedItem(w) && w.recurring !== false && String(w.title || '').trim() === title);
-              if (!exists) {
-                const cloneId = makeId('w');
-                const cloneItem = { id: cloneId, title, month: mStr, price, category: '固定', note, purchased: false, isFixed: true, autoRollover: false, recurring: true };
-                state.wishlist.push(cloneItem);
-                if (isWishlistCloudReady && fbSetDoc && fbDoc) {
-                  try {
-                    await fbSetDoc(fbDoc(db, 'shared_wishlist', cloneId), cloneItem);
-                  } catch (e) {
-                    diagLog(`新增固定項目月份副本雲端同步失敗 (${cloneId})：${e.message || e}`, true);
-                    queueWishUpdate(cloneId, cloneItem);
-                  }
-                } else {
-                  queueWishUpdate(cloneId, cloneItem);
+        const itemData = {
+          title,
+          month,
+          price,
+          category,
+          note,
+          isFixed,
+          autoRollover,
+          ...(isFixed ? { seriesId, recurring: editingItem && editingItem.recurring === false ? false : true } : {})
+        };
+        closeWishlistModal();
+
+        if (id) {
+          const strId = String(id);
+          const idx = state.wishlist.findIndex(w => String(w.id) === strId);
+          if (idx === -1) {
+            showToast('找不到項目，請重新整理後再試');
+            return;
+          }
+          const targetItem = state.wishlist[idx];
+          const oldTitle = String(targetItem.title || '').trim();
+          const oldSeriesId = wasFixed ? getSeriesId(targetItem) : '';
+          const editingPaidRecord = !!targetItem.purchased;
+          const originalMonthKey = targetItem ? normalizeMonthStr(targetItem.month) : '';
+          const movedFixedMonth = !!(isFixed && wasFixed && originalMonthKey && monthStrToIndex(month) !== monthStrToIndex(originalMonthKey));
+
+          state.wishlist[idx] = { ...state.wishlist[idx], ...itemData };
+          const mainSeq = queueWishUpdate(strId, itemData);
+
+          if (movedFixedMonth && oldTitle) {
+            const ignoredKey = `budget_ignored_fixed_${originalMonthKey}`;
+            const ignoredList = safeArrayParse(safeGetItem(ignoredKey), []).map(String);
+            if (!ignoredList.includes(oldTitle)) ignoredList.push(oldTitle);
+            if (oldSeriesId && !ignoredList.includes(oldSeriesId)) ignoredList.push(oldSeriesId);
+            safeSetItem(ignoredKey, JSON.stringify(ignoredList));
+          }
+
+          if (isFixed && wasFixed && oldTitle) {
+            const targetIsActive = targetItem.recurring !== false;
+            if (oldTitle !== title && targetIsActive) migrateIgnoredFixedTitle(oldTitle, title);
+
+            const copiesToSync = [];
+            state.wishlist.forEach(w => {
+              if (String(w.id) === strId) return;
+              if (!isFixedItem(w)) return;
+              if ((w.recurring !== false) !== targetIsActive) return;
+              if (getSeriesId(w) !== oldSeriesId && String(w.title || '').trim() !== oldTitle) return;
+              if (w.purchased && oldTitle === title) return;
+
+              w.title = title;
+              w.category = '固定';
+              w.isFixed = true;
+              w.seriesId = seriesId;
+              const fields = { title, category: '固定', isFixed: true, seriesId };
+              if (!editingPaidRecord && !w.purchased) {
+                w.price = price;
+                w.note = note;
+                fields.price = price;
+                fields.note = note;
+              }
+              const copySeq = queueWishUpdate(w.id, fields);
+              copiesToSync.push({ id: String(w.id), fields, seq: copySeq });
+            });
+
+            if (isWishlistCloudReady && fbSetDoc && fbDoc) {
+              for (const copy of copiesToSync) {
+                try {
+                  await fbSetDoc(fbDoc(db, 'shared_wishlist', copy.id), copy.fields, { merge: true });
+                  clearWishUpdate(copy.id, copy.seq);
+                } catch (err) {
+                  diagLog(`同步固定項目副本失敗 (${copy.id})：${err.message || err}`, true);
                 }
               }
             }
           }
-        }
 
-        saveToLocalStorage();
-        render();
-        if (isWishlistCloudReady && fbSetDoc && fbDoc) {
-          try {
-            await fbSetDoc(fbDoc(db, 'shared_wishlist', newId), fullItem);
-          } catch (err) {
-            diagLog(`新增待付項目雲端同步失敗 (${newId})：${err.message || err}`, true);
-            queueWishUpdate(newId, fullItem);
+          if (isFixed) {
+            clearStoppedFixedSeries(seriesId);
+            const targetYr = parseInt(month.split('-')[0], 10);
+            if (Number.isFinite(targetYr)) {
+              await ensureYearFixedItems(targetYr);
+            }
+            if (targetYr !== state.currentYear) {
+              await ensureYearFixedItems(state.currentYear);
+            }
           }
+
+          saveToLocalStorage();
+          render();
+          if (isWishlistCloudReady && fbSetDoc && fbDoc) {
+            try {
+              await fbSetDoc(fbDoc(db, 'shared_wishlist', strId), itemData, { merge: true });
+              clearWishUpdate(strId, mainSeq);
+            } catch (err) {
+              diagLog(`更新待付項目雲端同步失敗 (${strId})：${err.message || err}`, true);
+            }
+          }
+          showToast('項目已更新');
         } else {
-          queueWishUpdate(newId, fullItem);
+          if (isFixed) clearStoppedFixedSeries(seriesId);
+          const newId = isFixed ? makeDeterministicFixedId(seriesId, month) : makeId('w');
+          clearOfflineDeletion('wish', newId);
+          const fullItem = { id: newId, ...itemData, purchased: false, ...(isFixed ? { recurring: true } : {}) };
+          state.wishlist = state.wishlist.filter(w => String(w.id) !== newId);
+          state.wishlist.push(fullItem);
+          const mainSeq = queueWishUpdate(newId, fullItem);
+
+          if (isFixed) {
+            const parts = String(month).split('-');
+            const yr = parseInt(parts[0], 10);
+            const mo = parseInt(parts[1], 10);
+
+            if (Number.isFinite(yr) && Number.isFinite(mo) && mo >= 1 && mo <= 12) {
+              for (let m = mo; m <= 12; m++) {
+                const mStr = getMonthStr(yr, m);
+                const ignoredKey = `budget_ignored_fixed_${mStr}`;
+                const ignoredList = safeArrayParse(safeGetItem(ignoredKey), []).map(String);
+                if (ignoredList.includes(title) || ignoredList.includes(seriesId)) {
+                  safeSetItem(ignoredKey, JSON.stringify(ignoredList.filter(t => t !== title && t !== seriesId)));
+                }
+
+                const exists = state.wishlist.some(w => isSameMonthYear(w.month, yr, m) && isFixedItem(w) && w.recurring !== false && (getSeriesId(w) === seriesId || String(w.title || '').trim() === title));
+                if (!exists) {
+                  const cloneId = makeDeterministicFixedId(seriesId, mStr);
+                  clearOfflineDeletion('wish', cloneId);
+                  const cloneItem = { id: cloneId, seriesId, title, month: mStr, price, category: '固定', note, purchased: false, isFixed: true, autoRollover: false, recurring: true };
+                  state.wishlist.push(cloneItem);
+                  const cloneSeq = queueWishUpdate(cloneId, cloneItem);
+                  if (isWishlistCloudReady && fbSetDoc && fbDoc) {
+                    try {
+                      await fbSetDoc(fbDoc(db, 'shared_wishlist', cloneId), cloneItem);
+                      clearWishUpdate(cloneId, cloneSeq);
+                    } catch (e) {
+                      diagLog(`新增固定項目月份副本雲端同步失敗 (${cloneId})：${e.message || e}`, true);
+                    }
+                  }
+                }
+              }
+            }
+          }
+
+          saveToLocalStorage();
+          render();
+          if (isWishlistCloudReady && fbSetDoc && fbDoc) {
+            try {
+              await fbSetDoc(fbDoc(db, 'shared_wishlist', newId), fullItem);
+              clearWishUpdate(newId, mainSeq);
+            } catch (err) {
+              diagLog(`新增待付項目雲端同步失敗 (${newId})：${err.message || err}`, true);
+            }
+          }
+          showToast('待付項目已新增');
         }
-        showToast('待付項目已新增');
+      } finally {
+        isSubmittingWishlist = false;
       }
     }
 
@@ -1989,7 +2254,7 @@
       const totalYearNet = roundCents(totalYearIncome - totalYearExpense);
       document.getElementById('year-total-income').innerText = formatCurrency(totalYearIncome);
       document.getElementById('year-total-expense').innerText = formatCurrency(totalYearExpense);
-      
+
       const yearNetEl = document.getElementById('year-net-savings');
       if (yearNetEl) {
         yearNetEl.innerText = formatCurrency(totalYearNet);
@@ -2010,7 +2275,8 @@
           <div class="flex items-center gap-2.5 flex-wrap">
             <span class="flex items-center gap-1"><span class="w-2.5 h-0.5 bg-[#10B981] rounded inline-block"></span>收入</span>
             <span class="flex items-center gap-1"><span class="w-2.5 h-0.5 bg-[#F43F5E] rounded inline-block"></span>支出</span>
-            <span class="flex items-center gap-1"><span class="w-2.5 h-0.5 bg-[#0284C7] rounded inline-block"></span>結餘</span>
+            <span class="flex items-center gap-1"><span class="w-2.5 h-0.5 bg-[#0284C7] rounded inline-block"></span>正結餘</span>
+            <span class="flex items-center gap-1"><span class="w-2.5 h-0.5 bg-[#E11D48] rounded inline-block"></span>負結餘</span>
           </div>
         `;
         renderWaveTrendChart(container, monthlyData);
@@ -2022,53 +2288,45 @@
       const chartHeight = 110;
       const chartWidth = 360;
       const colWidth = chartWidth / 12;
-
-      // 數值簡化格式（如 15.2k 或 3,500）
-      const fmtVal = (val) => {
-        if (!val || val <= 0) return '';
-        if (val >= 10000) return (val / 1000).toFixed(1) + 'k';
-        return Number(val).toLocaleString();
-      };
+      const fmtVal = fmtChartVal;
 
       let svg = `<svg viewBox="0 0 ${chartWidth} 140" class="w-full h-full overflow-visible">`;
       svg += `<line x1="0" y1="${chartHeight}" x2="${chartWidth}" y2="${chartHeight}" stroke="#E5E0D5" stroke-width="1" />`;
 
       data.forEach((d, idx) => {
         const x = idx * colWidth;
-        // 保留頂部 16px 空間供標籤顯示，避免文字被頂部邊界切掉
-        const incHeight = d.income > 0 ? (d.income / maxVal) * (chartHeight - 18) : 0;
-        const expHeight = d.expense > 0 ? (d.expense / maxVal) * (chartHeight - 18) : 0;
+        const incHeight = d.income > 0 ? (d.income / maxVal) * (chartHeight - 20) : 0;
+        const expHeight = d.expense > 0 ? (d.expense / maxVal) * (chartHeight - 20) : 0;
         const isCurrent = d.month === state.currentMonth;
 
         const incBarWidth = (colWidth - 6) / 2;
         const expBarWidth = (colWidth - 6) / 2;
         const incX = x + 2;
         const expX = x + 2 + incBarWidth + 1;
+        const centerColX = x + colWidth / 2;
+        const bothPresentAndClose = d.income > 0 && d.expense > 0 && Math.abs(incHeight - expHeight) < 10;
+
+        let incLabelY = Math.max(8, chartHeight - incHeight - 3);
+        let expLabelY = Math.max(8, chartHeight - expHeight - 3);
+        if (bothPresentAndClose) {
+          const topBarY = chartHeight - Math.max(incHeight, expHeight);
+          incLabelY = Math.max(7, topBarY - 10);
+          expLabelY = Math.max(15, topBarY - 2);
+        }
 
         svg += `
           <g class="cursor-pointer group" onclick="jumpToMonth(${d.month})">
-            <!-- 觸控透明底板 -->
             <rect x="${x}" y="0" width="${colWidth}" height="${chartHeight + 24}" fill="black" opacity="0" pointer-events="all" />
-            
-            <!-- 當月高亮背景 -->
             ${isCurrent ? `<rect x="${x + 1}" y="0" width="${colWidth - 2}" height="${chartHeight + 22}" fill="#E8EEF5" rx="4" opacity="0.6"/>` : ''}
-            
-            <!-- 綠色收入柱 -->
             ${incHeight > 0 ? `<rect x="${incX}" y="${chartHeight - incHeight}" width="${incBarWidth}" height="${incHeight}" fill="#10B981" rx="1.5" class="transition group-hover:opacity-80"/>` : ''}
-            
-            <!-- 紅色支出柱 -->
             ${expHeight > 0 ? `<rect x="${expX}" y="${chartHeight - expHeight}" width="${expBarWidth}" height="${expHeight}" fill="#F43F5E" rx="1.5" class="transition group-hover:opacity-80"/>` : ''}
-            
-            <!-- 柱頂數值標籤（帶白色描邊防遮擋與自動高低錯位） -->
             ${d.income > 0 ? `
-              <text class="chart-num-label" x="${incX + incBarWidth / 2}" y="${Math.max(8, chartHeight - incHeight - 3)}" text-anchor="middle" font-size="6.5" font-family="Inter, sans-serif" font-weight="700" fill="#047857">${fmtVal(d.income)}</text>
+              <text class="chart-num-label" x="${bothPresentAndClose ? centerColX : (incX + incBarWidth / 2)}" y="${incLabelY}" text-anchor="middle" font-size="6" font-family="Inter, sans-serif" font-weight="700" fill="#047857">${fmtVal(d.income)}</text>
             ` : ''}
             ${d.expense > 0 ? `
-              <text class="chart-num-label" x="${expX + expBarWidth / 2}" y="${(d.income > 0 && Math.abs(incHeight - expHeight) < 8) ? (chartHeight - expHeight - 10 >= 8 ? chartHeight - expHeight - 10 : Math.min(chartHeight - 2, chartHeight - expHeight + 7)) : Math.max(8, chartHeight - expHeight - 3)}" text-anchor="middle" font-size="6.5" font-family="Inter, sans-serif" font-weight="700" fill="#E11D48">${fmtVal(d.expense)}</text>
+              <text class="chart-num-label" x="${bothPresentAndClose ? centerColX : (expX + expBarWidth / 2)}" y="${expLabelY}" text-anchor="middle" font-size="6" font-family="Inter, sans-serif" font-weight="700" fill="#E11D48">${fmtVal(d.expense)}</text>
             ` : ''}
-
-            <!-- 月份標籤 -->
-            <text x="${x + colWidth / 2}" y="${chartHeight + 16}" text-anchor="middle" font-size="8" font-weight="${isCurrent ? 'bold' : 'normal'}" fill="${isCurrent ? '#0284C7' : '#8E8B85'}">${d.month}月</text>
+            <text x="${centerColX}" y="${chartHeight + 16}" text-anchor="middle" font-size="8" font-weight="${isCurrent ? 'bold' : 'normal'}" fill="${isCurrent ? '#0284C7' : '#8E8B85'}">${d.month}月</text>
           </g>
         `;
       });
@@ -2080,9 +2338,9 @@
     function renderWaveTrendChart(container, data) {
       const svgWidth = 380;
       const svgHeight = 160;
-      
-      const plotLeft = 24;
-      const plotRight = 372;
+
+      const plotLeft = 28;
+      const plotRight = 368;
       const plotTop = 26;
       const plotBottom = 122;
       const plotWidth = plotRight - plotLeft;
@@ -2093,7 +2351,6 @@
       const minVal = Math.min(...allVals, 0);
 
       const absMax = Math.max(Math.abs(maxVal), Math.abs(minVal), 2000);
-      // 依最大值動態放大刻度間距，避免極大金額產生數十億次迴圈而卡死
       let step = 1000;
       const rawStep = absMax / 8;
       if (Number.isFinite(rawStep) && rawStep > step) {
@@ -2134,9 +2391,7 @@
           const p1 = pts[i];
           const p2 = pts[i + 1];
           const cpX = (p1.x + p2.x) / 2;
-          let cp1y = p1[key];
-          let cp2y = p2[key];
-          path += ` C ${cpX} ${cp1y}, ${cpX} ${cp2y}, ${p2.x} ${p2[key]}`;
+          path += ` C ${cpX} ${p1[key]}, ${cpX} ${p2[key]}, ${p2.x} ${p2[key]}`;
         }
         return path;
       };
@@ -2149,24 +2404,31 @@
       const areaNet = `${pathNet} L ${points[points.length - 1].x} ${zeroY} L ${points[0].x} ${zeroY} Z`;
 
       let ticks = [];
-      // 第二次保險：即使資料異常，也絕不讓刻度迴圈無限執行
-      for (let v = bottomVal; v <= topVal && ticks.length < 40; v += step) ticks.push(v);
-      if (!ticks.includes(0)) ticks.push(0);
+      for (let v = bottomVal; v <= topVal && ticks.length < 40; v += step) {
+        if (Math.abs(v) > step * 0.25) ticks.push(v);
+      }
+      ticks.push(0);
       ticks.sort((a, b) => a - b);
 
       let svg = `<svg viewBox="0 0 ${svgWidth} ${svgHeight}" class="w-full h-full overflow-visible">
         <defs>
-          <linearGradient id="netAreaGrad" x1="0" y1="0" x2="0" y2="1">
+          <linearGradient id="netAreaGradPos" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stop-color="#0284C7" stop-opacity="0.22"/>
-            <stop offset="100%" stop-color="#0284C7" stop-opacity="0.0"/>
+            <stop offset="100%" stop-color="#0284C7" stop-opacity="0.02"/>
           </linearGradient>
+          <linearGradient id="netAreaGradNeg" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#F43F5E" stop-opacity="0.02"/>
+            <stop offset="100%" stop-color="#F43F5E" stop-opacity="0.22"/>
+          </linearGradient>
+          <clipPath id="clipAboveZero"><rect x="${plotLeft}" y="${plotTop}" width="${plotWidth}" height="${Math.max(0, zeroY - plotTop)}" /></clipPath>
+          <clipPath id="clipBelowZero"><rect x="${plotLeft}" y="${zeroY}" width="${plotWidth}" height="${Math.max(0, plotBottom - zeroY)}" /></clipPath>
         </defs>
       `;
 
       ticks.forEach(t => {
         const yPos = valToY(t);
         const isZero = (t === 0);
-        const labelText = Math.abs(t) >= 10000 ? `${t / 1000}k` : Number(t).toLocaleString();
+        const labelText = t === 0 ? '0' : fmtChartVal(t);
         svg += `<text x="${plotLeft - 4}" y="${yPos + 2.5}" text-anchor="end" font-size="6.5" font-family="Inter, sans-serif" font-weight="${isZero ? '600' : '400'}" fill="${isZero ? '#475569' : '#94A3B8'}">${labelText}</text>`;
         if (isZero) {
           svg += `<line x1="${plotLeft}" y1="${yPos}" x2="${plotRight}" y2="${yPos}" stroke="#CBD5E1" stroke-width="1.2" />`;
@@ -2176,7 +2438,8 @@
       });
 
       svg += `
-        <path d="${areaNet}" fill="url(#netAreaGrad)" />
+        <path d="${areaNet}" fill="url(#netAreaGradPos)" clip-path="url(#clipAboveZero)" />
+        <path d="${areaNet}" fill="url(#netAreaGradNeg)" clip-path="url(#clipBelowZero)" />
         <path d="${pathIncome}" fill="none" stroke="#10B981" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
         <path d="${pathExpense}" fill="none" stroke="#F43F5E" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
         <path d="${pathNet}" fill="none" stroke="#0284C7" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
@@ -2184,6 +2447,7 @@
 
       points.forEach(p => {
         const isCurrent = p.month === state.currentMonth;
+        const netDotColor = p.net < 0 ? '#E11D48' : '#0284C7';
 
         svg += `<g class="cursor-pointer" onclick="jumpToMonth(${p.month})">
           <rect x="${p.x - colStep / 2}" y="${plotTop}" width="${colStep}" height="${svgHeight - plotTop}" fill="transparent" pointer-events="all" />`;
@@ -2195,27 +2459,25 @@
         svg += `
           <circle cx="${p.x}" cy="${p.yInc}" r="${p.income > 0 ? 2.5 : 1.5}" fill="#10B981" stroke="#FFFFFF" stroke-width="0.8"/>
           <circle cx="${p.x}" cy="${p.yExp}" r="${p.expense > 0 ? 2.5 : 1.5}" fill="#F43F5E" stroke="#FFFFFF" stroke-width="0.8"/>
-          <circle cx="${p.x}" cy="${p.yNet}" r="${p.net !== 0 ? 3.2 : 2}" fill="#0284C7" stroke="#FFFFFF" stroke-width="1"/>
+          <circle cx="${p.x}" cy="${p.yNet}" r="${p.net !== 0 ? 3.2 : 2}" fill="${netDotColor}" stroke="#FFFFFF" stroke-width="1"/>
         `;
 
         if (isCurrent) {
           svg += `<rect x="${p.x - 9}" y="130" width="18" height="12" rx="3.5" fill="#E0F2FE" />`;
         }
         svg += `<text x="${p.x}" y="139" text-anchor="middle" font-size="7.5" font-family="Inter, sans-serif" font-weight="${isCurrent ? 'bold' : 'normal'}" fill="${isCurrent ? '#0284C7' : '#8E8B85'}">${p.month}月</text>`;
-
         svg += `</g>`;
       });
 
-      const fmtVal = (val) => {
-        if (!val) return '';
-        if (Math.abs(val) >= 10000) return (val / 1000).toFixed(1) + 'k';
-        return Number(val).toLocaleString();
-      };
+      const fmtVal = fmtChartVal;
 
       svg += `<g id="chart-val-labels-topmost">`;
-      points.forEach(p => {
+      points.forEach((p, idx) => {
+        const anchor = idx === 0 ? 'start' : idx === points.length - 1 ? 'end' : 'middle';
+        const labelX = idx === 0 ? p.x + 2 : idx === points.length - 1 ? p.x - 2 : p.x;
+
         if (p.income > 0) {
-          svg += `<text class="chart-num-label" x="${p.x}" y="${p.yInc - 6}" text-anchor="middle" font-size="7.5" font-family="Inter, sans-serif" font-weight="700" fill="#047857">${fmtVal(p.income)}</text>`;
+          svg += `<text class="chart-num-label" x="${labelX}" y="${Math.max(10, p.yInc - 6)}" text-anchor="${anchor}" font-size="7" font-family="Inter, sans-serif" font-weight="700" fill="#047857">${fmtVal(p.income)}</text>`;
         }
 
         if (p.expense > 0) {
@@ -2223,7 +2485,7 @@
           if (p.income > 0 && Math.abs(expLabelY - (p.yInc - 6)) < 9) {
             expLabelY = Math.max(10, (p.yInc - 6) - 9);
           }
-          svg += `<text class="chart-num-label" x="${p.x}" y="${expLabelY}" text-anchor="middle" font-size="7.5" font-family="Inter, sans-serif" font-weight="700" fill="#E11D48">${fmtVal(p.expense)}</text>`;
+          svg += `<text class="chart-num-label" x="${labelX}" y="${expLabelY}" text-anchor="${anchor}" font-size="7" font-family="Inter, sans-serif" font-weight="700" fill="#E11D48">${fmtVal(p.expense)}</text>`;
         }
 
         if (p.net !== 0) {
@@ -2234,7 +2496,8 @@
             netY = (p.yExp + 21 <= plotBottom) ? (p.yExp + 21) : (p.yExp - 15);
           }
           netY = Math.max(10, Math.min(plotBottom, netY));
-          svg += `<text class="chart-num-label" x="${p.x}" y="${netY}" text-anchor="middle" font-size="8" font-family="Inter, sans-serif" font-weight="800" fill="#0284C7">${p.net > 0 ? '+' : ''}${fmtVal(p.net)}</text>`;
+          const netTextColor = p.net < 0 ? '#BE123C' : '#0284C7';
+          svg += `<text class="chart-num-label" x="${labelX}" y="${netY}" text-anchor="${anchor}" font-size="7.5" font-family="Inter, sans-serif" font-weight="800" fill="${netTextColor}">${p.net > 0 ? '+' : ''}${fmtVal(p.net)}</text>`;
         }
       });
       svg += `</g>`;
@@ -2247,14 +2510,17 @@
       const remoteWishMap = new Map();
       const deletedWishList = safeArrayParse(safeGetItem('budget_deleted_wish'), []).map(String);
       const pendingUploads = [];
+      const fromServer = !snapshot.metadata || !snapshot.metadata.fromCache;
+      const presentServerIds = new Set();
 
       for (const docSnap of snapshot.docs) {
         const docId = String(docSnap.id);
-        // 記憶體墓碑 + localStorage 墓碑都要擋
+        presentServerIds.add(docId);
         if (pendingDeletedWish.has(docId) || deletedWishList.includes(docId)) {
           if (typeof fbDeleteDoc === 'function' && fbDoc) {
             try {
               await fbDeleteDoc(fbDoc(db, 'shared_wishlist', docId));
+              clearOfflineDeletion('wish', docId);
             } catch (e) {
               diagLog(`快照清理待付墓碑失敗 (${docId})：${e.message || e}`, true);
             }
@@ -2264,13 +2530,13 @@
           const remoteItem = { ...docSnap.data(), id: docId };
           const pending = pendingWishUpdates[docId];
           if (pending) {
-            const satisfied = pendingFieldsSatisfied(remoteItem, pending);
-            // 本機尚未成功同步的修改優先，避免離線操作被舊快照蓋回
-            remoteWishMap.set(docId, { ...remoteItem, ...pending });
+            const cleanPending = stripInternalFields(pending);
+            const satisfied = pendingFieldsSatisfied(remoteItem, cleanPending);
+            remoteWishMap.set(docId, { ...remoteItem, ...cleanPending });
             if (satisfied) {
-              delete pendingWishUpdates[docId];
+              clearWishUpdate(docId, pending._seq);
             } else {
-              pendingUploads.push({ id: docId, fields: { ...pending } });
+              pendingUploads.push({ id: docId, fields: cleanPending, seq: pending._seq });
             }
           } else {
             remoteWishMap.set(docId, remoteItem);
@@ -2278,15 +2544,23 @@
         }
       }
 
-      // 保留本地有、但雲端尚未同步到的未刪除項目並補上傳
+      if (fromServer) {
+        deletedWishList.forEach(delId => {
+          if (!presentServerIds.has(delId)) {
+            clearOfflineDeletion('wish', delId);
+          }
+        });
+      }
+
       for (const localItem of state.wishlist) {
         const lid = String(localItem.id);
         if (!remoteWishMap.has(lid) && !pendingDeletedWish.has(lid) && !deletedWishList.includes(lid)) {
           remoteWishMap.set(lid, localItem);
           if (typeof fbSetDoc === 'function' && fbDoc) {
             try {
+              const seq = pendingWishUpdates[lid] ? pendingWishUpdates[lid]._seq : null;
               await fbSetDoc(fbDoc(db, 'shared_wishlist', lid), localItem);
-              delete pendingWishUpdates[lid];
+              clearWishUpdate(lid, seq);
             } catch (e) {
               diagLog(`快照補傳本地待付項目失敗 (${lid})：${e.message || e}`, true);
             }
@@ -2294,12 +2568,11 @@
         }
       }
 
-      // 補傳既有雲端文件的本機修改（失敗就保留 pending，下次快照再試）
       if (typeof fbSetDoc === 'function' && fbDoc) {
         for (const upload of pendingUploads) {
           try {
             await fbSetDoc(fbDoc(db, 'shared_wishlist', upload.id), upload.fields, { merge: true });
-            delete pendingWishUpdates[upload.id];
+            clearWishUpdate(upload.id, upload.seq);
           } catch (e) {
             diagLog(`快照補傳待付修改失敗 (${upload.id})：${e.message || e}`, true);
           }
@@ -2310,11 +2583,11 @@
       });
       persistPendingUpdates();
 
-      state.wishlist = normalizeWishlistItems(Array.from(remoteWishMap.values()));
+      const normalizedList = normalizeWishlistItems(Array.from(remoteWishMap.values()));
+      state.wishlist = await deduplicateFixedItems(normalizedList);
       saveToLocalStorage();
 
-      // 每次快照都補齊當月固定項目，可涵蓋 Firestore 先回傳快取、再回傳伺服器資料的情況
-      await syncFixedItemsToMonth(state.currentYear, state.currentMonth);
+      await ensureYearFixedItems(state.currentYear);
       await rolloverUnpurchasedItems();
       render();
     }
@@ -2323,13 +2596,17 @@
       const remoteIncMap = new Map();
       const deletedIncList = safeArrayParse(safeGetItem('budget_deleted_income'), []).map(String);
       const pendingIncUploads = [];
+      const fromServer = !snapshot.metadata || !snapshot.metadata.fromCache;
+      const presentServerIds = new Set();
 
       for (const docSnap of snapshot.docs) {
         const docId = String(docSnap.id);
+        presentServerIds.add(docId);
         if (pendingDeletedIncome.has(docId) || deletedIncList.includes(docId)) {
           if (typeof fbDeleteDoc === 'function' && fbDoc) {
             try {
               await fbDeleteDoc(fbDoc(db, 'shared_incomes', docId));
+              clearOfflineDeletion('income', docId);
             } catch (e) {
               diagLog(`快照清理收入墓碑失敗 (${docId})：${e.message || e}`, true);
             }
@@ -2339,17 +2616,26 @@
           const remoteItem = { ...docSnap.data(), id: docId };
           const pending = pendingIncomeUpdates[docId];
           if (pending) {
-            const satisfied = pendingFieldsSatisfied(remoteItem, pending);
-            remoteIncMap.set(docId, { ...remoteItem, ...pending });
+            const cleanPending = stripInternalFields(pending);
+            const satisfied = pendingFieldsSatisfied(remoteItem, cleanPending);
+            remoteIncMap.set(docId, { ...remoteItem, ...cleanPending });
             if (satisfied) {
-              delete pendingIncomeUpdates[docId];
+              clearIncomeUpdate(docId, pending._seq);
             } else {
-              pendingIncUploads.push({ id: docId, fields: { ...pending } });
+              pendingIncUploads.push({ id: docId, fields: cleanPending, seq: pending._seq });
             }
           } else {
             remoteIncMap.set(docId, remoteItem);
           }
         }
+      }
+
+      if (fromServer) {
+        deletedIncList.forEach(delId => {
+          if (!presentServerIds.has(delId)) {
+            clearOfflineDeletion('income', delId);
+          }
+        });
       }
 
       for (const localInc of state.incomes) {
@@ -2358,8 +2644,9 @@
           remoteIncMap.set(lid, localInc);
           if (typeof fbSetDoc === 'function' && fbDoc) {
             try {
+              const seq = pendingIncomeUpdates[lid] ? pendingIncomeUpdates[lid]._seq : null;
               await fbSetDoc(fbDoc(db, 'shared_incomes', lid), localInc);
-              delete pendingIncomeUpdates[lid];
+              clearIncomeUpdate(lid, seq);
             } catch (e) {
               diagLog(`快照補傳本地收入失敗 (${lid})：${e.message || e}`, true);
             }
@@ -2371,7 +2658,7 @@
         for (const upload of pendingIncUploads) {
           try {
             await fbSetDoc(fbDoc(db, 'shared_incomes', upload.id), upload.fields, { merge: true });
-            delete pendingIncomeUpdates[upload.id];
+            clearIncomeUpdate(upload.id, upload.seq);
           } catch (e) {
             diagLog(`快照補傳收入修改失敗 (${upload.id})：${e.message || e}`, true);
           }
@@ -2469,12 +2756,34 @@
       handleBackdropClick
     });
 
-    // 先同步渲染，避免 localStorage / 雲端異常時畫面一片空白
+    let lastKnownRealMonth = getMonthStr(new Date().getFullYear(), new Date().getMonth() + 1);
+
+    async function checkRealMonthRollover() {
+      const realNow = new Date();
+      const currentRealStr = getMonthStr(realNow.getFullYear(), realNow.getMonth() + 1);
+      if (currentRealStr !== lastKnownRealMonth) {
+        const wasOnRealMonth = getMonthStr(state.currentYear, state.currentMonth) === lastKnownRealMonth;
+        lastKnownRealMonth = currentRealStr;
+        if (wasOnRealMonth) {
+          state.currentYear = realNow.getFullYear();
+          state.currentMonth = realNow.getMonth() + 1;
+        }
+        await ensureYearFixedItems(state.currentYear);
+        await rolloverUnpurchasedItems();
+        render();
+      }
+    }
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') checkRealMonthRollover();
+    });
+    setInterval(checkRealMonthRollover, 60000);
+
     render();
 
     (async () => {
       try {
-        await syncFixedItemsToMonth(state.currentYear, state.currentMonth);
+        await ensureYearFixedItems(state.currentYear);
         await rolloverUnpurchasedItems();
       } catch (err) {
         diagLog(`啟動自動同步失敗：${err.message || err}`, true);
