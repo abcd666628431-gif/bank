@@ -11,24 +11,36 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Serif+TC:wght@500;600;700&display=swap" rel="stylesheet">
 
   <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            appBg: '#F3EFEA',
-            cardBg: '#FFFFFF',
-            subText: '#858077',
-            accentGreen: '#15803D',
-            accentRed: '#DC2626',
-            brandDark: '#1E2C26'
-          },
-          fontFamily: {
-            serif: ['"Noto Serif TC"', 'serif'],
-            sans: ['Inter', 'sans-serif']
+    if (window.tailwind) {
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              appBg: '#F3EFEA',
+              cardBg: '#FFFFFF',
+              subText: '#858077',
+              accentGreen: '#15803D',
+              accentRed: '#DC2626',
+              brandDark: '#1E2C26'
+            },
+            fontFamily: {
+              serif: ['"Noto Serif TC"', 'serif'],
+              sans: ['Inter', 'sans-serif']
+            }
           }
         }
-      }
+      };
     }
+  </script>
+  <script>
+    window.addEventListener('load', function () {
+      if (!window.tailwind) {
+        var warn = document.createElement('div');
+        warn.textContent = '樣式資源 (Tailwind CDN) 載入失敗，畫面可能顯示不正常，請確認網路後重新整理。';
+        warn.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:2147483647;background:#B91C1C;color:#fff;font:600 12px/1.5 sans-serif;padding:8px 12px;text-align:center;';
+        document.body.appendChild(warn);
+      }
+    });
   </script>
   <style>
     body {
@@ -69,6 +81,12 @@
     .hidden { display: none !important; }
     .bg-appBg { background-color: #F3EFEA; }
     .bg-cardBg { background-color: #FFFFFF; }
+    .modal-panel {
+      max-height: 90vh;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      -webkit-overflow-scrolling: touch;
+    }
   </style>
 </head>
 <body class="flex justify-center min-h-screen py-0 sm:py-4 text-[#24211E]">
@@ -90,11 +108,11 @@
         </div>
 
         <div class="flex items-center bg-[#E8E2D8] p-1 rounded-xl shadow-inner gap-1">
-          <button type="button" data-nav-btn onclick="changeMonth(-1)" title="上個月" aria-label="上個月" class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-white text-gray-700 transition active:scale-95">
+          <button type="button" data-nav-btn onclick="changeMonth(-1)" title="上個月（全頁連動）" aria-label="上個月" class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-white text-gray-700 transition active:scale-95">
             <i class="ph ph-caret-left text-sm font-bold"></i>
           </button>
           <span id="current-month-display" class="font-bold text-xs text-[#1C1A18] px-1 tracking-wide">--年--月</span>
-          <button type="button" data-nav-btn onclick="changeMonth(1)" title="下個月" aria-label="下個月" class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-white text-gray-700 transition active:scale-95">
+          <button type="button" data-nav-btn onclick="changeMonth(1)" title="下個月（全頁連動）" aria-label="下個月" class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-white text-gray-700 transition active:scale-95">
             <i class="ph ph-caret-right text-sm font-bold"></i>
           </button>
         </div>
@@ -126,13 +144,13 @@
       <!-- 本月收入區 -->
       <section class="bg-cardBg rounded-2xl p-3 shadow-sm border border-[#EBE7E0] space-y-2">
         <div class="flex items-center justify-between">
-          <span class="text-[9px] font-semibold text-subText tracking-wide">收入月份</span>
-          <div class="flex items-center gap-0.5 bg-[#F3EFEA] border border-[#E6E0D7] rounded-lg px-0.5 py-0.5 flex-shrink-0" aria-label="切換收入月份">
-            <button type="button" data-nav-btn onclick="changeMonth(-1)" title="上個月" aria-label="上個月" class="w-6 h-6 flex items-center justify-center rounded-md text-gray-600 hover:bg-white active:scale-95 transition">
+          <span class="text-[9px] font-semibold text-subText tracking-wide" title="所有區塊共用同一個月份">全頁月份</span>
+          <div class="flex items-center gap-0.5 bg-[#F3EFEA] border border-[#E6E0D7] rounded-lg px-0.5 py-0.5 flex-shrink-0" aria-label="切換全頁月份">
+            <button type="button" data-nav-btn onclick="changeMonth(-1)" title="上個月（全頁連動）" aria-label="上個月" class="w-6 h-6 flex items-center justify-center rounded-md text-gray-600 hover:bg-white active:scale-95 transition">
               <i class="ph ph-caret-left text-[10px] font-bold pointer-events-none"></i>
             </button>
             <span data-month-nav-label class="text-[9px] font-bold text-[#1C1A18] font-sans px-0.5 min-w-[38px] text-center whitespace-nowrap">----/--</span>
-            <button type="button" data-nav-btn onclick="changeMonth(1)" title="下個月" aria-label="下個月" class="w-6 h-6 flex items-center justify-center rounded-md text-gray-600 hover:bg-white active:scale-95 transition">
+            <button type="button" data-nav-btn onclick="changeMonth(1)" title="下個月（全頁連動）" aria-label="下個月" class="w-6 h-6 flex items-center justify-center rounded-md text-gray-600 hover:bg-white active:scale-95 transition">
               <i class="ph ph-caret-right text-[10px] font-bold pointer-events-none"></i>
             </button>
           </div>
@@ -160,13 +178,13 @@
       <!-- 類別支出分佈 (僅統計已剔選扣款項目) -->
       <section class="bg-cardBg rounded-2xl p-3 shadow-sm border border-[#EBE7E0] space-y-2">
         <div class="flex items-center justify-between">
-          <span class="text-[9px] font-semibold text-subText tracking-wide">支出月份</span>
-          <div class="flex items-center gap-0.5 bg-[#F3EFEA] border border-[#E6E0D7] rounded-lg px-0.5 py-0.5 flex-shrink-0" aria-label="切換支出月份">
-            <button type="button" data-nav-btn onclick="changeMonth(-1)" title="上個月" aria-label="上個月" class="w-6 h-6 flex items-center justify-center rounded-md text-gray-600 hover:bg-white active:scale-95 transition">
+          <span class="text-[9px] font-semibold text-subText tracking-wide" title="所有區塊共用同一個月份">全頁月份</span>
+          <div class="flex items-center gap-0.5 bg-[#F3EFEA] border border-[#E6E0D7] rounded-lg px-0.5 py-0.5 flex-shrink-0" aria-label="切換全頁月份">
+            <button type="button" data-nav-btn onclick="changeMonth(-1)" title="上個月（全頁連動）" aria-label="上個月" class="w-6 h-6 flex items-center justify-center rounded-md text-gray-600 hover:bg-white active:scale-95 transition">
               <i class="ph ph-caret-left text-[10px] font-bold pointer-events-none"></i>
             </button>
             <span data-month-nav-label class="text-[9px] font-bold text-[#1C1A18] font-sans px-0.5 min-w-[38px] text-center whitespace-nowrap">----/--</span>
-            <button type="button" data-nav-btn onclick="changeMonth(1)" title="下個月" aria-label="下個月" class="w-6 h-6 flex items-center justify-center rounded-md text-gray-600 hover:bg-white active:scale-95 transition">
+            <button type="button" data-nav-btn onclick="changeMonth(1)" title="下個月（全頁連動）" aria-label="下個月" class="w-6 h-6 flex items-center justify-center rounded-md text-gray-600 hover:bg-white active:scale-95 transition">
               <i class="ph ph-caret-right text-[10px] font-bold pointer-events-none"></i>
             </button>
           </div>
@@ -198,13 +216,13 @@
       <!-- 待付費區 -->
       <section class="bg-cardBg rounded-2xl px-1.5 py-3 shadow-sm border border-[#EBE7E0] space-y-2.5">
         <div class="flex items-center justify-between px-1">
-          <span class="text-[9px] font-semibold text-subText tracking-wide">待付月份</span>
-          <div class="flex items-center gap-0.5 bg-[#F3EFEA] border border-[#E6E0D7] rounded-lg px-0.5 py-0.5 flex-shrink-0" aria-label="切換待付月份">
-            <button type="button" data-nav-btn onclick="changeMonth(-1)" title="上個月" aria-label="上個月" class="w-6 h-6 flex items-center justify-center rounded-md text-gray-600 hover:bg-white active:scale-95 transition">
+          <span class="text-[9px] font-semibold text-subText tracking-wide" title="所有區塊共用同一個月份">全頁月份</span>
+          <div class="flex items-center gap-0.5 bg-[#F3EFEA] border border-[#E6E0D7] rounded-lg px-0.5 py-0.5 flex-shrink-0" aria-label="切換全頁月份">
+            <button type="button" data-nav-btn onclick="changeMonth(-1)" title="上個月（全頁連動）" aria-label="上個月" class="w-6 h-6 flex items-center justify-center rounded-md text-gray-600 hover:bg-white active:scale-95 transition">
               <i class="ph ph-caret-left text-[10px] font-bold pointer-events-none"></i>
             </button>
             <span data-month-nav-label class="text-[9px] font-bold text-[#1C1A18] font-sans px-0.5 min-w-[38px] text-center whitespace-nowrap">----/--</span>
-            <button type="button" data-nav-btn onclick="changeMonth(1)" title="下個月" aria-label="下個月" class="w-6 h-6 flex items-center justify-center rounded-md text-gray-600 hover:bg-white active:scale-95 transition">
+            <button type="button" data-nav-btn onclick="changeMonth(1)" title="下個月（全頁連動）" aria-label="下個月" class="w-6 h-6 flex items-center justify-center rounded-md text-gray-600 hover:bg-white active:scale-95 transition">
               <i class="ph ph-caret-right text-[10px] font-bold pointer-events-none"></i>
             </button>
           </div>
@@ -289,7 +307,7 @@
       <!-- Annual Trends -->
       <section class="bg-cardBg rounded-2xl p-3 shadow-sm border border-[#EBE7E0] space-y-2">
         <div class="flex items-center justify-between">
-          <span class="text-[9px] font-semibold text-subText tracking-wide">圖表年份與月份</span>
+          <span class="text-[9px] font-semibold text-subText tracking-wide">圖表年份／全頁月份</span>
           <div class="flex items-center gap-1">
             <div class="flex items-center gap-0.5 bg-[#F3EFEA] border border-[#E6E0D7] rounded-lg px-0.5 py-0.5 flex-shrink-0" aria-label="切換圖表年份">
               <button type="button" data-nav-btn onclick="changeYear(-1)" title="上一年" aria-label="上一年" class="w-6 h-6 flex items-center justify-center rounded-md text-gray-600 hover:bg-white active:scale-95 transition">
@@ -300,12 +318,12 @@
                 <i class="ph ph-caret-double-right text-[10px] font-bold pointer-events-none"></i>
               </button>
             </div>
-            <div class="flex items-center gap-0.5 bg-[#F3EFEA] border border-[#E6E0D7] rounded-lg px-0.5 py-0.5 flex-shrink-0" aria-label="切換圖表月份">
-              <button type="button" data-nav-btn onclick="changeMonth(-1)" title="上個月" aria-label="上個月" class="w-6 h-6 flex items-center justify-center rounded-md text-gray-600 hover:bg-white active:scale-95 transition">
+            <div class="flex items-center gap-0.5 bg-[#F3EFEA] border border-[#E6E0D7] rounded-lg px-0.5 py-0.5 flex-shrink-0" aria-label="切換全頁月份">
+              <button type="button" data-nav-btn onclick="changeMonth(-1)" title="上個月（全頁連動）" aria-label="上個月" class="w-6 h-6 flex items-center justify-center rounded-md text-gray-600 hover:bg-white active:scale-95 transition">
                 <i class="ph ph-caret-left text-[10px] font-bold pointer-events-none"></i>
               </button>
               <span data-month-nav-label class="text-[9px] font-bold text-[#1C1A18] font-sans px-0.5 min-w-[38px] text-center whitespace-nowrap">----/--</span>
-              <button type="button" data-nav-btn onclick="changeMonth(1)" title="下個月" aria-label="下個月" class="w-6 h-6 flex items-center justify-center rounded-md text-gray-600 hover:bg-white active:scale-95 transition">
+              <button type="button" data-nav-btn onclick="changeMonth(1)" title="下個月（全頁連動）" aria-label="下個月" class="w-6 h-6 flex items-center justify-center rounded-md text-gray-600 hover:bg-white active:scale-95 transition">
                 <i class="ph ph-caret-right text-[10px] font-bold pointer-events-none"></i>
               </button>
             </div>
@@ -365,7 +383,7 @@
 
   <!-- Modal: 新增/編輯待付項目 -->
   <div id="wishlist-modal" role="dialog" aria-modal="true" aria-labelledby="wishlist-modal-title" onclick="handleBackdropClick(event, 'wishlist-modal')" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-[9999] flex items-center justify-center p-4">
-    <div class="bg-white w-full max-w-md rounded-2xl p-4 shadow-2xl space-y-3 border border-[#ECE8E1]" onclick="event.stopPropagation()">
+    <div class="modal-panel bg-white w-full max-w-md rounded-2xl p-4 shadow-2xl space-y-3 border border-[#ECE8E1]" onclick="event.stopPropagation()">
       <div class="flex items-center justify-between border-b pb-2 border-gray-100">
         <h3 id="wishlist-modal-title" class="font-bold text-sm text-gray-800">新增待付項目</h3>
         <button type="button" onclick="closeWishlistModal()" aria-label="關閉視窗" class="p-1 rounded-full text-gray-400 hover:text-gray-700">
@@ -424,7 +442,7 @@
 
   <!-- Modal: 新增/編輯收入項目 -->
   <div id="income-modal" role="dialog" aria-modal="true" aria-labelledby="income-modal-title" onclick="handleBackdropClick(event, 'income-modal')" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-[9999] flex items-center justify-center p-4">
-    <div class="bg-white w-full max-w-md rounded-2xl p-4 shadow-2xl space-y-3 border border-[#ECE8E1]" onclick="event.stopPropagation()">
+    <div class="modal-panel bg-white w-full max-w-md rounded-2xl p-4 shadow-2xl space-y-3 border border-[#ECE8E1]" onclick="event.stopPropagation()">
       <div class="flex items-center justify-between border-b pb-2 border-gray-100">
         <h3 id="income-modal-title" class="font-bold text-sm text-gray-800">新增收入</h3>
         <button type="button" onclick="closeIncomeModal()" aria-label="關閉視窗" class="p-1 rounded-full text-gray-400 hover:text-gray-700">
@@ -468,7 +486,7 @@
        role="dialog" aria-modal="true" aria-labelledby="delete-modal-title"
        class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-[99999] flex items-center justify-center p-4"
        onclick="handleBackdropClick(event, 'custom-delete-modal')">
-    <div class="bg-white w-full max-w-xs rounded-2xl p-4 shadow-2xl space-y-3 border border-[#ECE8E1] text-center"
+    <div class="modal-panel bg-white w-full max-w-xs rounded-2xl p-4 shadow-2xl space-y-3 border border-[#ECE8E1] text-center"
          ontouchstart="event.stopPropagation()"
          onclick="event.stopPropagation()">
       <div class="w-10 h-10 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center mx-auto text-xl">
@@ -499,12 +517,15 @@
     const CLOUD_OP_TIMEOUT_MS = 3500;
     const TOMBSTONE_RETENTION_MS = 30 * 24 * 60 * 60 * 1000;
     const IN_FLIGHT_PROTECTION_MS = 6000;
+    const META_TOMBSTONE_LIMIT = 300;
+    const META_COMPACT_THRESHOLD = 420;
 
     let app = null, db = null;
     let isWishlistCloudReady = false;
     let isIncomesCloudReady = false;
-    let hasReceivedInitialWishlistSnapshot = false;
+    let hasReceivedInitialServerSnapshot = false;
     let toastTimer = null;
+    let lastToastShownAt = 0;
     let lastPriorityToastAt = 0;
     let idCounter = 0;
     let updateSeqCounter = 0;
@@ -516,6 +537,10 @@
     let currentDeleteModalTargetId = null;
     let snapshotMergeQueue = Promise.resolve();
     let reconnectTimer = null;
+    let metaSyncRunning = false;
+    let metaSyncDirty = false;
+    let metaRetryTimer = null;
+    let cloudInitPromise = null;
 
     const inFlightWishWrites = new Map();
     const inFlightIncomeWrites = new Map();
@@ -525,7 +550,7 @@
     let storageFallbackActive = false;
     let storageWarnedOnce = false;
 
-    let fbDoc, fbSetDoc, fbUpdateDoc, fbDeleteDoc, fbOnSnapshot, fbCollection, fbWriteBatch;
+    let fbDoc, fbSetDoc, fbDeleteDoc, fbOnSnapshot, fbCollection;
 
     function diagLog(msg, isError = false) {
       if (isError) console.error(msg); else console.log(msg);
@@ -643,6 +668,24 @@
       return Number.isFinite(targetIdx) && Number.isFinite(itemIdx) && itemIdx === targetIdx;
     }
 
+    function minMonthStr(a, b) {
+      const ia = monthStrToIndex(a);
+      const ib = monthStrToIndex(b);
+      if (!Number.isFinite(ia)) return b;
+      if (!Number.isFinite(ib)) return a;
+      return ia <= ib ? a : b;
+    }
+
+    function parseTs(value) {
+      if (value === null || value === undefined) return 0;
+      if (typeof value === 'object') {
+        const n = Number(value.ts);
+        return Number.isFinite(n) && n > 0 ? n : 0;
+      }
+      const n = Number(value);
+      return Number.isFinite(n) && n > 0 ? n : 0;
+    }
+
     // 優先讀取 memoryStorageMap（確保空間滿載降級時永遠拿到最新刪除後資料，絕不讀回 localStorage 舊殘留）
     function safeGetItem(key) {
       if (memoryStorageMap.has(key)) {
@@ -673,6 +716,13 @@
       try { sessionStorage.removeItem(key); } catch (e) {}
     }
 
+    // 不做配額回收的寫入，僅供 purgeStorageGarbage 內部使用，避免遞迴
+    function writeStorageRaw(key, strVal) {
+      memoryStorageMap.set(key, strVal);
+      try { sessionStorage.setItem(key, strVal); } catch (e) {}
+      try { localStorage.setItem(key, strVal); } catch (e) {}
+    }
+
     function getAllStorageKeys() {
       const keySet = new Set(memoryStorageMap.keys());
       try {
@@ -690,11 +740,10 @@
       return Array.from(keySet);
     }
 
-    // 垃圾回收：先執行 removeItem 釋放配額，再寫入精簡資料；絕不清空刪除黑名單（墓碑）
+    // 垃圾回收：先執行 removeItem 釋放配額，再寫入精簡資料；記憶體與磁碟必須同步
     function purgeStorageGarbage(aggressive = false) {
       try {
         const nowTs = Date.now();
-        // 第一步：先刪除所有舊版分散的單月忽略鍵與廢棄鍵，立即騰出儲存空間
         const allKeys = getAllStorageKeys();
         allKeys.forEach(k => {
           if (k && k.indexOf('budget_ignored_fixed_') === 0 && k !== 'budget_ignored_fixed_map') {
@@ -704,35 +753,15 @@
           }
         });
 
-        const activeWishIds = new Set((window.__appState ? window.__appState.wishlist : []).map(i => String(i.id)));
-        const activeIncIds = new Set((window.__appState ? window.__appState.incomes : []).map(i => String(i.id)));
+        const hasState = !!window.__appState;
+        const activeWishIds = new Set((hasState ? window.__appState.wishlist : []).map(i => String(i.id)));
+        const activeIncIds = new Set((hasState ? window.__appState.incomes : []).map(i => String(i.id)));
 
-        // 第二步：修剪已同步 ID 清單（只保留目前仍存在於清單中的 ID，先刪後寫）
-        try { localStorage.removeItem('budget_synced_wish_ids'); } catch (e) {}
-        try { localStorage.removeItem('budget_synced_income_ids'); } catch (e) {}
-
-        if (activeWishIds.size > 0 && !aggressive) {
-          const prunedWishSync = Array.from(syncedCloudWishIds).filter(id => activeWishIds.has(id));
-          const str = JSON.stringify(prunedWishSync);
-          memoryStorageMap.set('budget_synced_wish_ids', str);
-          try { localStorage.setItem('budget_synced_wish_ids', str); } catch (e) {}
-        }
-        if (activeIncIds.size > 0 && !aggressive) {
-          const prunedIncSync = Array.from(syncedCloudIncomeIds).filter(id => activeIncIds.has(id));
-          const str = JSON.stringify(prunedIncSync);
-          memoryStorageMap.set('budget_synced_income_ids', str);
-          try { localStorage.setItem('budget_synced_income_ids', str); } catch (e) {}
-        }
-
-        // 第三步：整理刪除墓碑與時間戳（為缺少時間戳的舊墓碑補上當前時間，絕不誤刪最近墓碑）
-        const rawTsMap = safePendingMap(safeGetItem('budget_deletion_timestamps'));
-        const nextTsMap = Object.create(null);
         const maxTombstones = aggressive ? 150 : 500;
-
         const keepRecentTombstones = (idSet) => {
           const entries = Array.from(idSet).map(id => {
-            const ts = rawTsMap[id] && Number(rawTsMap[id].ts) > 0 ? Number(rawTsMap[id].ts) : nowTs;
-            return { id, ts };
+            const ts = parseTs(deletionTimestamps[id]) || nowTs;
+            return { id: String(id), ts };
           }).filter(item => (nowTs - item.ts) <= TOMBSTONE_RETENTION_MS);
           entries.sort((a, b) => b.ts - a.ts);
           return entries.slice(0, maxTombstones);
@@ -741,15 +770,36 @@
         const keptWish = keepRecentTombstones(pendingDeletedWish);
         const keptInc = keepRecentTombstones(pendingDeletedIncome);
 
-        keptWish.forEach(e => { nextTsMap[e.id] = { ts: e.ts }; });
-        keptInc.forEach(e => { nextTsMap[e.id] = { ts: e.ts }; });
+        // 重建記憶體 Set，讓記憶體與磁碟狀態一致（否則下一次寫入又會把舊資料寫回去）
+        pendingDeletedWish.clear();
+        keptWish.forEach(e => pendingDeletedWish.add(e.id));
+        pendingDeletedIncome.clear();
+        keptInc.forEach(e => pendingDeletedIncome.add(e.id));
 
-        try {
-          localStorage.removeItem('budget_deletion_timestamps');
-          localStorage.setItem('budget_deletion_timestamps', JSON.stringify(nextTsMap));
-          localStorage.setItem('budget_deleted_wish', JSON.stringify(keptWish.map(e => e.id)));
-          localStorage.setItem('budget_deleted_income', JSON.stringify(keptInc.map(e => e.id)));
-        } catch (e) {}
+        Object.keys(deletionTimestamps).forEach(id => {
+          if (!pendingDeletedWish.has(id) && !pendingDeletedIncome.has(id)) delete deletionTimestamps[id];
+        });
+        keptWish.forEach(e => { deletionTimestamps[e.id] = { ts: e.ts }; });
+        keptInc.forEach(e => { deletionTimestamps[e.id] = { ts: e.ts }; });
+
+        writeStorageRaw('budget_deletion_timestamps', JSON.stringify(deletionTimestamps));
+        writeStorageRaw('budget_deleted_wish', JSON.stringify(Array.from(pendingDeletedWish)));
+        writeStorageRaw('budget_deleted_income', JSON.stringify(Array.from(pendingDeletedIncome)));
+
+        if (hasState) {
+          if (activeWishIds.size > 0) {
+            Array.from(syncedCloudWishIds).forEach(id => {
+              if (!activeWishIds.has(id) && !pendingDeletedWish.has(id)) syncedCloudWishIds.delete(id);
+            });
+            writeStorageRaw('budget_synced_wish_ids', JSON.stringify(Array.from(syncedCloudWishIds)));
+          }
+          if (activeIncIds.size > 0) {
+            Array.from(syncedCloudIncomeIds).forEach(id => {
+              if (!activeIncIds.has(id) && !pendingDeletedIncome.has(id)) syncedCloudIncomeIds.delete(id);
+            });
+            writeStorageRaw('budget_synced_income_ids', JSON.stringify(Array.from(syncedCloudIncomeIds)));
+          }
+        }
       } catch (e) {
         console.warn('清理儲存空間垃圾時發生異常：', e);
       }
@@ -798,6 +848,20 @@
         const value = parsed[key];
         if (value && typeof value === 'object' && !Array.isArray(value)) out[k] = value;
       });
+      return out;
+    }
+
+    function toRecentTimestampPayload(map, limit) {
+      const out = {};
+      Object.keys(map || {}).forEach(id => {
+        const ts = parseTs(map[id]);
+        if (ts > 0) out[String(id)] = ts;
+      });
+      const keys = Object.keys(out);
+      if (keys.length > limit) {
+        keys.sort((a, b) => out[b] - out[a]);
+        keys.slice(limit).forEach(k => delete out[k]);
+      }
       return out;
     }
 
@@ -903,7 +967,7 @@
       const n = Number(val);
       if (!Number.isFinite(n)) return 0;
       const sign = n < 0 ? -1 : 1;
-      return sign * Math.round(Math.min(Math.abs(n), MAX_AMOUNT * 10) * 100) / 100;
+      return sign * Math.round(Math.min(Math.abs(n), MAX_AMOUNT) * 100) / 100;
     }
 
     function normalizeWishlistItems(items) {
@@ -1001,23 +1065,48 @@
       return out;
     }
 
-    // 集中式單月忽略表（同時保存於單一鍵 budget_ignored_fixed_map 並同步上雲端，支援跨裝置與大小寫無關比對）
+    // ============================================================
+    // 單月忽略表：不再是單純陣列，而是 { keys, updatedAt }
+    // 有了 updatedAt 才能做「後寫入勝出」，也才能把「取消忽略」同步到雲端
+    // ============================================================
     const ignoredFixedMonthsMap = Object.create(null);
+
+    function normalizeIgnoredEntry(raw) {
+      if (Array.isArray(raw)) {
+        return {
+          keys: Array.from(new Set(raw.map(v => String(v || '').trim().toLowerCase()).filter(Boolean))),
+          updatedAt: 0
+        };
+      }
+      if (!raw || typeof raw !== 'object') return { keys: [], updatedAt: 0 };
+      const keys = Array.isArray(raw.keys) ? raw.keys : [];
+      return {
+        keys: Array.from(new Set(keys.map(v => String(v || '').trim().toLowerCase()).filter(Boolean))),
+        updatedAt: Number(raw.updatedAt) || 0
+      };
+    }
 
     function loadAndMigrateIgnoredFixedMonths() {
       const savedMap = safeJSONParse(safeGetItem('budget_ignored_fixed_map'), {});
       if (savedMap && typeof savedMap === 'object' && !Array.isArray(savedMap)) {
         Object.keys(savedMap).forEach(m => {
           const normM = normalizeMonthStr(m);
-          if (normM && Array.isArray(savedMap[m])) {
-            ignoredFixedMonthsMap[normM] = Array.from(new Set([
-              ...(ignoredFixedMonthsMap[normM] || []),
-              ...savedMap[m].map(v => String(v || '').trim().toLowerCase()).filter(Boolean)
-            ]));
+          if (!normM) return;
+          const entry = normalizeIgnoredEntry(savedMap[m]);
+          if (entry.keys.length === 0) return;
+          const prev = ignoredFixedMonthsMap[normM];
+          if (!prev) {
+            // 舊版格式沒有時間戳，維持 0 讓雲端較新的「取消忽略」可以覆蓋
+            ignoredFixedMonthsMap[normM] = { keys: entry.keys, updatedAt: entry.updatedAt || 0 };
+          } else {
+            ignoredFixedMonthsMap[normM] = {
+              keys: Array.from(new Set([...(prev.keys || []), ...entry.keys])),
+              updatedAt: Math.max(prev.updatedAt || 0, entry.updatedAt || 0)
+            };
           }
         });
       }
-      // 遷移舊版分散的 budget_ignored_fixed_YYYY-MM 鍵並刪除舊鍵以釋放配額
+
       const allKeys = getAllStorageKeys();
       let migratedAny = false;
       allKeys.forEach(key => {
@@ -1029,62 +1118,72 @@
               .map(v => String(v || '').trim().toLowerCase())
               .filter(Boolean);
             if (list.length > 0) {
-              ignoredFixedMonthsMap[normM] = Array.from(new Set([
-                ...(ignoredFixedMonthsMap[normM] || []),
-                ...list
-              ]));
+              const prev = ignoredFixedMonthsMap[normM];
+              ignoredFixedMonthsMap[normM] = {
+                keys: Array.from(new Set([...(prev ? prev.keys : []), ...list])),
+                updatedAt: prev ? (prev.updatedAt || 0) : 0
+              };
               migratedAny = true;
             }
           }
           safeRemoveItem(key);
         }
       });
-      if (migratedAny) {
-        persistIgnoredFixedMonths();
-      }
+      if (migratedAny) persistIgnoredFixedMonths();
     }
 
     function persistIgnoredFixedMonths() {
       const cleanMap = {};
       Object.keys(ignoredFixedMonthsMap).forEach(m => {
-        const arr = (ignoredFixedMonthsMap[m] || []).filter(Boolean);
-        if (arr.length > 0) cleanMap[m] = Array.from(new Set(arr));
+        const entry = ignoredFixedMonthsMap[m];
+        if (!entry) return;
+        cleanMap[m] = {
+          keys: Array.from(new Set((entry.keys || []).filter(Boolean))),
+          updatedAt: Number(entry.updatedAt) || 0
+        };
       });
       safeSetItem('budget_ignored_fixed_map', JSON.stringify(cleanMap));
     }
 
-    function getIgnoredListForMonth(monthStr) {
+    function getIgnoredEntry(monthStr) {
       const normM = normalizeMonthStr(monthStr);
-      if (!normM) return [];
-      return ignoredFixedMonthsMap[normM] || [];
+      if (!normM) return null;
+      return ignoredFixedMonthsMap[normM] || null;
+    }
+
+    function getIgnoredListForMonth(monthStr) {
+      const entry = getIgnoredEntry(monthStr);
+      return entry && Array.isArray(entry.keys) ? entry.keys : [];
     }
 
     function addIgnoredFixedForMonth(monthStr, title, seriesId) {
       const normM = normalizeMonthStr(monthStr);
       if (!normM) return;
-      const list = new Set(ignoredFixedMonthsMap[normM] || []);
+      const prev = ignoredFixedMonthsMap[normM];
+      const list = new Set(prev ? prev.keys : []);
       const normTitle = String(title || '').trim().toLowerCase();
       const normSeries = String(seriesId || '').trim().toLowerCase();
       if (normTitle) list.add(normTitle);
       if (normSeries) list.add(normSeries);
       if (normTitle) list.add(slugifySeriesKey(normTitle).toLowerCase());
-      ignoredFixedMonthsMap[normM] = Array.from(list);
+      ignoredFixedMonthsMap[normM] = { keys: Array.from(list), updatedAt: Date.now() };
       persistIgnoredFixedMonths();
       syncMetaStateToCloud();
     }
 
     function removeIgnoredFixedForMonth(monthStr, title, seriesId) {
       const normM = normalizeMonthStr(monthStr);
-      if (!normM || !ignoredFixedMonthsMap[normM]) return;
+      if (!normM) return;
+      const prev = ignoredFixedMonthsMap[normM];
+      const list = prev ? prev.keys : [];
       const normTitle = String(title || '').trim().toLowerCase();
       const normSeries = String(seriesId || '').trim().toLowerCase();
       const slugKey = normTitle ? slugifySeriesKey(normTitle).toLowerCase() : '';
-      ignoredFixedMonthsMap[normM] = ignoredFixedMonthsMap[normM].filter(
+      const next = list.filter(
         entry => entry !== normTitle && entry !== normSeries && entry !== slugKey
       );
-      if (ignoredFixedMonthsMap[normM].length === 0) {
-        delete ignoredFixedMonthsMap[normM];
-      }
+      // 即使清空也保留一筆帶時間戳的空清單，這樣才有辦法覆蓋雲端較舊的忽略紀錄
+      ignoredFixedMonthsMap[normM] = { keys: next, updatedAt: Date.now() };
       persistIgnoredFixedMonths();
       syncMetaStateToCloud();
     }
@@ -1095,22 +1194,26 @@
       const normTitle = String(title || '').trim().toLowerCase();
       const normSeries = String(seriesId || '').trim().toLowerCase();
       const slugKey = normTitle ? slugifySeriesKey(normTitle).toLowerCase() : '';
-      return (normTitle && list.includes(normTitle)) ||
+      return Boolean((normTitle && list.includes(normTitle)) ||
              (normSeries && list.includes(normSeries)) ||
-             (slugKey && list.includes(slugKey));
+             (slugKey && list.includes(slugKey)));
     }
 
     function migrateIgnoredFixedTitle(oldTitle, newTitle) {
       const oldNorm = String(oldTitle || '').trim().toLowerCase();
       const newNorm = String(newTitle || '').trim().toLowerCase();
       if (!oldNorm || !newNorm || oldNorm === newNorm) return;
+      const oldSlug = slugifySeriesKey(oldNorm).toLowerCase();
+      const newSlug = slugifySeriesKey(newNorm).toLowerCase();
       let changed = false;
       Object.keys(ignoredFixedMonthsMap).forEach(m => {
-        const list = ignoredFixedMonthsMap[m] || [];
-        if (list.includes(oldNorm)) {
-          ignoredFixedMonthsMap[m] = Array.from(new Set(list.map(t => t === oldNorm ? newNorm : t)));
-          changed = true;
-        }
+        const entry = ignoredFixedMonthsMap[m];
+        if (!entry) return;
+        const hasOld = entry.keys.includes(oldNorm) || entry.keys.includes(oldSlug);
+        if (!hasOld) return;
+        const next = Array.from(new Set(entry.keys.map(t => (t === oldNorm ? newNorm : t === oldSlug ? newSlug : t))));
+        ignoredFixedMonthsMap[m] = { keys: next, updatedAt: Date.now() };
+        changed = true;
       });
       if (changed) {
         persistIgnoredFixedMonths();
@@ -1118,6 +1221,9 @@
       }
     }
 
+    // ============================================================
+    // 刪除墓碑 / 復原標記：雲端以「時間戳」判斷最後狀態，避免只增不減
+    // ============================================================
     const deletionTimestamps = safePendingMap(safeGetItem('budget_deletion_timestamps'));
     const pendingDeletedWish = new Set(
       safeArrayParse(safeGetItem('budget_deleted_wish'), []).map(String)
@@ -1125,6 +1231,8 @@
     const pendingDeletedIncome = new Set(
       safeArrayParse(safeGetItem('budget_deleted_income'), []).map(String)
     );
+    const restoredWishTimestamps = safePendingMap(safeGetItem('budget_restored_wish'));
+    const restoredIncomeTimestamps = safePendingMap(safeGetItem('budget_restored_income'));
 
     // 確保所有既存墓碑都有時間戳，防止無時間戳墓碑在重整時被誤刪
     const bootNowTs = Date.now();
@@ -1171,7 +1279,6 @@
     }
 
     function persistStoppedSeriesState() {
-      // 只保留最近 200 筆停止狀態，防止無限膨脹
       const keys = Object.keys(stoppedSeriesState);
       if (keys.length > 200) {
         keys.sort((a, b) => Number((stoppedSeriesState[b] && stoppedSeriesState[b].updatedAt) || 0) - Number((stoppedSeriesState[a] && stoppedSeriesState[a].updatedAt) || 0));
@@ -1182,25 +1289,95 @@
       safeSetItem('budget_stopped_fixed_series', JSON.stringify(activeStoppedList));
     }
 
-    async function syncMetaStateToCloud() {
-      if (isWishlistCloudReady && fbSetDoc && fbDoc) {
-        try {
-          markWishWriteInFlight(META_STOPPED_DOC_ID);
-          const recentDeletedWish = Array.from(pendingDeletedWish).slice(-200);
-          const recentDeletedInc = Array.from(pendingDeletedIncome).slice(-200);
-          await withCloudTimeout(fbSetDoc(fbDoc(db, 'shared_wishlist', META_STOPPED_DOC_ID), {
-            id: META_STOPPED_DOC_ID,
-            seriesMap: { ...stoppedSeriesState },
-            stoppedKeys: Object.keys(stoppedSeriesState).filter(k => stoppedSeriesState[k] && stoppedSeriesState[k].stopped),
-            ignoredMonthsMap: { ...ignoredFixedMonthsMap },
-            deletedWishIds: recentDeletedWish,
-            deletedIncomeIds: recentDeletedInc,
-            updatedAt: Date.now()
-          }, { merge: true }));
-        } catch (e) {
-          diagLog(`同步設定與墓碑狀態至雲端失敗：${e.message || e}`, true);
-        }
+    function buildMetaPayload() {
+      const seriesMap = {};
+      Object.keys(stoppedSeriesState).forEach(k => {
+        const entry = stoppedSeriesState[k] || {};
+        seriesMap[k] = { stopped: !!entry.stopped, updatedAt: Number(entry.updatedAt) || 0 };
+      });
+
+      const ignoredMonthsMap = {};
+      Object.keys(ignoredFixedMonthsMap).forEach(m => {
+        const entry = ignoredFixedMonthsMap[m];
+        ignoredMonthsMap[m] = { keys: entry.keys || [], updatedAt: Number(entry.updatedAt) || 0 };
+      });
+
+      const wishTombstones = {};
+      pendingDeletedWish.forEach(id => {
+        const ts = parseTs(deletionTimestamps[id]);
+        if (ts > 0) wishTombstones[id] = ts;
+      });
+      const incomeTombstones = {};
+      pendingDeletedIncome.forEach(id => {
+        const ts = parseTs(deletionTimestamps[id]);
+        if (ts > 0) incomeTombstones[id] = ts;
+      });
+
+      return {
+        id: META_STOPPED_DOC_ID,
+        seriesMap,
+        stoppedKeys: Object.keys(seriesMap).filter(k => seriesMap[k].stopped),
+        ignoredMonthsMap,
+        wishTombstones: toRecentTimestampPayload(wishTombstones, META_TOMBSTONE_LIMIT),
+        incomeTombstones: toRecentTimestampPayload(incomeTombstones, META_TOMBSTONE_LIMIT),
+        wishRestored: toRecentTimestampPayload(restoredWishTimestamps, META_TOMBSTONE_LIMIT),
+        incomeRestored: toRecentTimestampPayload(restoredIncomeTimestamps, META_TOMBSTONE_LIMIT),
+        updatedAt: Date.now()
+      };
+    }
+
+    async function pushMetaStateToCloud() {
+      if (!isWishlistCloudReady || !fbSetDoc || !fbDoc) {
+        metaSyncDirty = true;
+        return false;
       }
+      const payload = buildMetaPayload();
+      const totalKeys = Object.keys(payload.seriesMap).length +
+        Object.keys(payload.ignoredMonthsMap).length +
+        Object.keys(payload.wishTombstones).length +
+        Object.keys(payload.incomeTombstones).length +
+        Object.keys(payload.wishRestored).length +
+        Object.keys(payload.incomeRestored).length;
+      // 資料量過大時改用完整覆寫（不 merge），順便清掉雲端早已失效的舊 key
+      const useMerge = totalKeys <= META_COMPACT_THRESHOLD;
+      try {
+        await withCloudTimeout(fbSetDoc(fbDoc(db, 'shared_wishlist', META_STOPPED_DOC_ID), payload, useMerge ? { merge: true } : undefined));
+        return true;
+      } catch (e) {
+        diagLog(`同步設定與墓碑狀態至雲端失敗：${e.message || e}`, true);
+        return false;
+      }
+    }
+
+    function scheduleMetaRetry() {
+      if (metaRetryTimer) clearTimeout(metaRetryTimer);
+      metaRetryTimer = setTimeout(() => {
+        metaRetryTimer = null;
+        if (metaSyncDirty) syncMetaStateToCloud();
+      }, 6000);
+    }
+
+    // 串行化 + 合併高頻變更，避免舊狀態覆蓋新狀態
+    function syncMetaStateToCloud() {
+      metaSyncDirty = true;
+      if (metaSyncRunning) return;
+      if (!isWishlistCloudReady || !fbSetDoc || !fbDoc) return;
+      metaSyncRunning = true;
+      (async () => {
+        try {
+          while (metaSyncDirty) {
+            metaSyncDirty = false;
+            const ok = await pushMetaStateToCloud();
+            if (!ok) {
+              metaSyncDirty = true;
+              scheduleMetaRetry();
+              break;
+            }
+          }
+        } finally {
+          metaSyncRunning = false;
+        }
+      })();
     }
 
     function recordStoppedFixedSeries(seriesKey, title = '') {
@@ -1234,9 +1411,9 @@
     // 檢查某筆未付款固定項目是否因系列已停止或單月已忽略而應被攔截
     function isUnpurchasedFixedItemBlocked(item) {
       if (!item || !isFixedItem(item) || item.purchased) return false;
+      if (item.recurring === false) return false;
       const seriesKey = getSeriesId(item);
       const title = String(item.title || '').trim();
-      if (item.recurring === false) return false;
       if (isSeriesStopped(seriesKey, title)) return true;
       if (isFixedItemIgnoredInMonth(item.month, title, seriesKey)) return true;
       return false;
@@ -1356,12 +1533,13 @@
       if (!toast || !text) return;
 
       const nowMs = Date.now();
-      if (!isWarning && (nowMs - lastPriorityToastAt) < 1800) {
+      if (isWarning) {
+        if (nowMs - lastPriorityToastAt < 400) return;
+        lastPriorityToastAt = nowMs;
+      } else if (nowMs - lastToastShownAt < 700) {
         return;
       }
-      if (isWarning) {
-        lastPriorityToastAt = nowMs;
-      }
+      lastToastShownAt = nowMs;
 
       if (icon) {
         icon.className = isWarning
@@ -1389,7 +1567,45 @@
 
     saveToLocalStorage(true);
 
-    // 跨分頁即時同步：同步更新 memoryStorageMap 並立即過濾刪除黑名單
+    // 跨分頁即時同步：只做「合併」，絕不整份覆蓋（否則會吃掉另一分頁剛新增的資料）
+    function mergeWishlistFromStorage(rawValue) {
+      const incoming = normalizeWishlistItems(safeArrayParse(rawValue, []));
+      const byId = new Map(state.wishlist.map(w => [String(w.id), w]));
+      incoming.forEach(inc => {
+        const id = String(inc.id);
+        if (pendingDeletedWish.has(id) || isUnpurchasedFixedItemBlocked(inc)) return;
+        const current = byId.get(id);
+        if (!current) {
+          state.wishlist.push(inc);
+          return;
+        }
+        if (pendingWishUpdates[id] || isWishWriteProtected(id)) return;
+        if (getItemUpdatedAt(inc) > getItemUpdatedAt(current)) {
+          Object.assign(current, inc);
+        }
+      });
+      state.wishlist = normalizeWishlistItems(state.wishlist)
+        .filter(w => !pendingDeletedWish.has(String(w.id)));
+    }
+
+    function mergeIncomeFromStorage(rawValue) {
+      const incoming = normalizeIncomeItems(safeArrayParse(rawValue, []));
+      const byId = new Map(state.incomes.map(i => [String(i.id), i]));
+      incoming.forEach(inc => {
+        const id = String(inc.id);
+        if (pendingDeletedIncome.has(id)) return;
+        const current = byId.get(id);
+        if (!current) {
+          state.incomes.push(inc);
+          return;
+        }
+        if (pendingIncomeUpdates[id] || isIncomeWriteProtected(id)) return;
+        if (getItemUpdatedAt(inc) > getItemUpdatedAt(current)) {
+          Object.assign(current, inc);
+        }
+      });
+    }
+
     window.addEventListener('storage', (e) => {
       if (!e.key) return;
       if (e.newValue === null) {
@@ -1399,84 +1615,102 @@
       }
 
       if (e.key === 'budget_deleted_wish') {
-        safeArrayParse(e.newValue, []).map(String).forEach(id => pendingDeletedWish.add(id));
-        state.wishlist = state.wishlist.filter(w => !pendingDeletedWish.has(String(w.id)));
+        safeArrayParse(e.newValue, []).map(String).forEach(id => {
+          pendingDeletedWish.add(id);
+          if (!deletionTimestamps[id]) deletionTimestamps[id] = { ts: Date.now() };
+        });
         render();
       } else if (e.key === 'budget_deleted_income') {
-        safeArrayParse(e.newValue, []).map(String).forEach(id => pendingDeletedIncome.add(id));
-        state.incomes = state.incomes.filter(i => !pendingDeletedIncome.has(String(i.id)));
+        safeArrayParse(e.newValue, []).map(String).forEach(id => {
+          pendingDeletedIncome.add(id);
+          if (!deletionTimestamps[id]) deletionTimestamps[id] = { ts: Date.now() };
+        });
         render();
       } else if (e.key === 'budget_wishlist') {
-        state.wishlist = normalizeWishlistItems(safeArrayParse(e.newValue, []))
-          .filter(w => !pendingDeletedWish.has(String(w.id)) && !isUnpurchasedFixedItemBlocked(w));
+        mergeWishlistFromStorage(e.newValue);
         render();
       } else if (e.key === 'budget_incomes') {
-        state.incomes = normalizeIncomeItems(safeArrayParse(e.newValue, []))
-          .filter(i => !pendingDeletedIncome.has(String(i.id)));
+        mergeIncomeFromStorage(e.newValue);
         render();
       } else if (e.key === 'budget_stopped_series_state') {
         const nextState = safePendingMap(e.newValue);
-        Object.keys(stoppedSeriesState).forEach(k => delete stoppedSeriesState[k]);
-        Object.assign(stoppedSeriesState, nextState);
-        state.wishlist = state.wishlist.filter(w => !isUnpurchasedFixedItemBlocked(w));
+        Object.keys(nextState).forEach(k => {
+          const remote = nextState[k];
+          const local = stoppedSeriesState[k];
+          if (!local || Number(remote.updatedAt || 0) > Number(local.updatedAt || 0)) {
+            stoppedSeriesState[k] = remote;
+          }
+        });
         render();
       } else if (e.key === 'budget_ignored_fixed_map') {
-        const nextMap = safeJSONParse(e.newValue, {});
-        Object.keys(ignoredFixedMonthsMap).forEach(k => delete ignoredFixedMonthsMap[k]);
-        if (nextMap && typeof nextMap === 'object') Object.assign(ignoredFixedMonthsMap, nextMap);
-        state.wishlist = state.wishlist.filter(w => !isUnpurchasedFixedItemBlocked(w));
+        applyRemoteIgnoredMonths(safeJSONParse(e.newValue, {}));
         render();
       } else if (e.key === 'budget_pending_wish_updates') {
-        const nextMap = safePendingMap(e.newValue);
-        Object.keys(pendingWishUpdates).forEach(k => delete pendingWishUpdates[k]);
-        Object.assign(pendingWishUpdates, nextMap);
+        const incoming = safePendingMap(e.newValue);
+        Object.keys(incoming).forEach(id => {
+          const local = pendingWishUpdates[id];
+          if (!local || Number(incoming[id] && incoming[id].updatedAt || 0) > Number(local.updatedAt || 0)) {
+            pendingWishUpdates[id] = incoming[id];
+          }
+        });
         refreshSyncBadge();
       } else if (e.key === 'budget_pending_income_updates') {
-        const nextMap = safePendingMap(e.newValue);
-        Object.keys(pendingIncomeUpdates).forEach(k => delete pendingIncomeUpdates[k]);
-        Object.assign(pendingIncomeUpdates, nextMap);
+        const incoming = safePendingMap(e.newValue);
+        Object.keys(incoming).forEach(id => {
+          const local = pendingIncomeUpdates[id];
+          if (!local || Number(incoming[id] && incoming[id].updatedAt || 0) > Number(local.updatedAt || 0)) {
+            pendingIncomeUpdates[id] = incoming[id];
+          }
+        });
         refreshSyncBadge();
       }
     });
 
-    // 記錄刪除墓碑：保留 30 天，不因單次雲端刪除完成而立即自毀，徹底阻斷晚到快照或跨裝置快取復活
+    // 記錄刪除墓碑：保留 30 天，並同時清掉該 id 的「復原」標記
     function recordOfflineDeletion(type, id) {
       const strId = String(id);
-      if (type === 'income') {
+      const isIncome = type === 'income';
+      if (isIncome) {
         incomeMutationEpoch++;
         pendingDeletedIncome.add(strId);
         clearIncomeWriteInFlight(strId);
         clearIncomeUpdate(strId);
+        delete restoredIncomeTimestamps[strId];
+        safeSetItem('budget_restored_income', JSON.stringify(restoredIncomeTimestamps));
       } else {
         wishMutationEpoch++;
         pendingDeletedWish.add(strId);
         clearWishWriteInFlight(strId);
         clearWishUpdate(strId);
+        delete restoredWishTimestamps[strId];
+        safeSetItem('budget_restored_wish', JSON.stringify(restoredWishTimestamps));
       }
       deletionTimestamps[strId] = { ts: Date.now() };
       safeSetItem('budget_deletion_timestamps', JSON.stringify(deletionTimestamps));
-
-      const key = type === 'income' ? 'budget_deleted_income' : 'budget_deleted_wish';
-      const setRef = type === 'income' ? pendingDeletedIncome : pendingDeletedWish;
-      safeSetItem(key, JSON.stringify(Array.from(setRef)));
+      safeSetItem(isIncome ? 'budget_deleted_income' : 'budget_deleted_wish',
+        JSON.stringify(Array.from(isIncome ? pendingDeletedIncome : pendingDeletedWish)));
     }
 
-    function clearOfflineDeletion(type, id) {
+    // 清除刪除墓碑並寫入「復原」時間戳，避免雲端舊墓碑把重新建立的項目再殺一次
+    function clearOfflineDeletion(type, id, opts) {
+      const options = opts || {};
       const strId = String(id);
-      const key = type === 'income' ? 'budget_deleted_income' : 'budget_deleted_wish';
-      if (type === 'income') {
-        pendingDeletedIncome.delete(strId);
-        syncedCloudIncomeIds.delete(strId);
-      } else {
-        pendingDeletedWish.delete(strId);
-        syncedCloudWishIds.delete(strId);
-      }
+      const isIncome = type === 'income';
+      const pending = isIncome ? pendingDeletedIncome : pendingDeletedWish;
+      const restored = isIncome ? restoredIncomeTimestamps : restoredWishTimestamps;
+
+      pending.delete(strId);
+      if (isIncome) syncedCloudIncomeIds.delete(strId); else syncedCloudWishIds.delete(strId);
       delete deletionTimestamps[strId];
+
       safeSetItem('budget_deletion_timestamps', JSON.stringify(deletionTimestamps));
       persistSyncedCloudIds();
+      safeSetItem(isIncome ? 'budget_deleted_income' : 'budget_deleted_wish', JSON.stringify(Array.from(pending)));
 
-      const setRef = type === 'income' ? pendingDeletedIncome : pendingDeletedWish;
-      safeSetItem(key, JSON.stringify(Array.from(setRef)));
+      restored[strId] = { ts: Date.now() };
+      safeSetItem(isIncome ? 'budget_restored_income' : 'budget_restored_wish', JSON.stringify(restored));
+
+      if (!options.silent) syncMetaStateToCloud();
     }
 
     // 缺少時間戳時自動補上當前時間並視為「未過期」，絕不因缺時間戳而在 0 秒內誤清黑名單
@@ -1657,9 +1891,9 @@
       if (!isWishlistCloudReady || !isIncomesCloudReady) {
         initCloudSync();
       }
+      if (metaSyncDirty) syncMetaStateToCloud();
     });
     window.addEventListener('offline', () => refreshSyncBadge());
-
     // 同月份同系列固定項目去重：合併已付款狀態與備註，且不汙染標準確定性 ID
     async function deduplicateFixedItems(items, allowCloudDelete = false) {
       const groups = new Map();
@@ -1685,11 +1919,12 @@
           const mergedPurchased = !!(existing.purchased || item.purchased);
           const mergedNote = existing.note || item.note || '';
           const mergedRecurring = (existing.recurring !== false && item.recurring !== false);
+          const itemIsNewer = getItemUpdatedAt(item) > getItemUpdatedAt(existing);
 
           const preferNew =
             (String(item.id) === deterministicId && String(existing.id) !== deterministicId) ||
             (!existing.purchased && item.purchased && String(existing.id) !== deterministicId) ||
-            (!!existing.purchased === !!item.purchased && String(existing.id) !== deterministicId && getItemUpdatedAt(item) > getItemUpdatedAt(existing));
+            (!!existing.purchased === !!item.purchased && String(existing.id) !== deterministicId && itemIsNewer);
 
           if (preferNew) {
             item.purchased = mergedPurchased;
@@ -1703,6 +1938,12 @@
             existing.purchased = mergedPurchased;
             existing.note = mergedNote;
             existing.recurring = mergedRecurring;
+            // 兩份重複資料若內容不同，採用較新的金額/名稱，避免永遠保留舊價
+            if (itemIsNewer && String(existing.id) === deterministicId) {
+              existing.price = item.price;
+              existing.title = item.title;
+              existing.updatedAt = getItemUpdatedAt(item);
+            }
             toRemoveIds.push(String(item.id));
           }
         }
@@ -2021,7 +2262,7 @@
         trendBtn.className = "px-2 py-0.5 rounded-md bg-white text-[#1C1A18] shadow-sm font-bold transition";
         flowBtn.className = "px-2 py-0.5 rounded-md hover:text-gray-900 transition";
       }
-      renderAnnualChart();
+      renderAnnualChart(getVisibleWishlist());
     }
 
     function updateMonthUI() {
@@ -2043,20 +2284,24 @@
       }
     }
 
-    function render() {
-      state.wishlist = state.wishlist.filter(w => !pendingDeletedWish.has(String(w.id)) && !isUnpurchasedFixedItemBlocked(w));
-      state.incomes = state.incomes.filter(i => !pendingDeletedIncome.has(String(i.id)));
-      renderOverview();
-      renderCategories();
-      renderWishlist();
-      renderIncome();
-      renderAnnualChart();
+    // 顯示用清單一律由 state 衍生，render 不再直接修改 state
+    function getVisibleWishlist() {
+      return state.wishlist.filter(w => !pendingDeletedWish.has(String(w.id)) && !isUnpurchasedFixedItemBlocked(w));
     }
 
-    function renderOverview() {
+    function render() {
+      const wishlist = getVisibleWishlist();
+      renderOverview(wishlist);
+      renderCategories(wishlist);
+      renderWishlist(wishlist);
+      renderIncome();
+      renderAnnualChart(wishlist);
+    }
+
+    function renderOverview(wishlist) {
       updateMonthUI();
 
-      const currentMonthItems = state.wishlist.filter(item => isSameMonthYear(item.month, state.currentYear, state.currentMonth));
+      const currentMonthItems = wishlist.filter(item => isSameMonthYear(item.month, state.currentYear, state.currentMonth));
       const currentMonthIncomes = state.incomes.filter(item => isSameMonthYear(item.month, state.currentYear, state.currentMonth));
 
       const fixedItems = currentMonthItems.filter(i => isFixedItem(i));
@@ -2083,7 +2328,7 @@
       }
 
       const currentPurchasedExpense = roundCents(currentMonthItems.filter(i => i.purchased).reduce((s, i) => s + Number(i.price || 0), 0));
-      const allPurchasedExpense = roundCents(state.wishlist.filter(i => i.purchased && monthStrToIndex(i.month) <= cutoffIdx).reduce((s, i) => s + Number(i.price || 0), 0));
+      const allPurchasedExpense = roundCents(wishlist.filter(i => i.purchased && monthStrToIndex(i.month) <= cutoffIdx).reduce((s, i) => s + Number(i.price || 0), 0));
 
       const currentSettledIncome = roundCents(currentMonthIncomes.filter(i => i.received).reduce((s, i) => s + Number(i.price || 0), 0));
       const currentPendingIncome = roundCents(currentMonthIncomes.filter(i => !i.received).reduce((s, i) => s + Number(i.price || 0), 0));
@@ -2134,8 +2379,8 @@
       if (document.getElementById('variable-col-sum')) document.getElementById('variable-col-sum').innerText = formatCurrency(variableSum);
     }
 
-    function renderCategories() {
-      const currentMonthItems = state.wishlist.filter(item => isSameMonthYear(item.month, state.currentYear, state.currentMonth) && item.purchased);
+    function renderCategories(wishlist) {
+      const currentMonthItems = wishlist.filter(item => isSameMonthYear(item.month, state.currentYear, state.currentMonth) && item.purchased);
       const totalExpense = clampAmount(currentMonthItems.reduce((sum, t) => sum + Number(t.price || 0), 0));
 
       const catMap = { '固定': 0, '不固定': 0 };
@@ -2233,7 +2478,7 @@
     function renderIncome() {
       const container = document.getElementById('income-items-container');
       const currentIncomes = state.incomes
-        .filter(item => isSameMonthYear(item.month, state.currentYear, state.currentMonth))
+        .filter(item => !pendingDeletedIncome.has(String(item.id)) && isSameMonthYear(item.month, state.currentYear, state.currentMonth))
         .sort((a, b) => {
           const timeA = getItemTimestamp(a);
           const timeB = getItemTimestamp(b);
@@ -2362,7 +2607,7 @@
       const actionsEl = document.getElementById('delete-modal-actions');
 
       titleEl.innerText = `確定要移除收入「${item.title}」嗎？`;
-      descEl.innerText = `此筆收入將從本月記錄中移除`;
+      descEl.innerText = `此筆收入將從原歸屬月份 (${formatMonthLabel(item.month)}) 的記錄中移除`;
       actionsEl.innerHTML = `
         <button type="button" data-action="delete" class="w-full py-3.5 bg-rose-600 text-white font-semibold rounded-xl text-sm active:scale-95 touch-manipulation">確定刪除</button>
         <button type="button" data-action="cancel" class="w-full py-3 bg-gray-100 text-gray-600 font-semibold rounded-xl text-sm active:scale-95 touch-manipulation">取消</button>
@@ -2510,14 +2755,13 @@
         isSubmittingIncome = false;
       }
     }
-
-    function renderWishlist() {
+    function renderWishlist(wishlist) {
       const fixedContainer = document.getElementById('wishlist-fixed-container');
       const variableContainer = document.getElementById('wishlist-variable-container');
       const monthBadge = document.getElementById('wishlist-month-badge');
       if (monthBadge) monthBadge.innerText = `${state.currentMonth}月專屬`;
 
-      const currentMonthWishlist = state.wishlist.filter(item => {
+      const currentMonthWishlist = wishlist.filter(item => {
         return isSameMonthYear(item.month, state.currentYear, state.currentMonth);
       });
 
@@ -2849,6 +3093,7 @@
             });
         });
       }
+      syncMetaStateToCloud();
     }
 
     function executeWishlistDelete(id, deleteAll) {
@@ -2909,10 +3154,12 @@
         isExecutingDelete = false;
       }
     }
-
     async function handleWishlistSubmit(e) {
       e.preventDefault();
-      if (isSubmittingWishlist) return;
+      if (isSubmittingWishlist) {
+        showToast('上一筆仍在處理中，請稍候', true);
+        return;
+      }
       isSubmittingWishlist = true;
       try {
         const currentMonthStr = getMonthStr(state.currentYear, state.currentMonth);
@@ -2998,8 +3245,9 @@
         }
 
         const nowTs = Date.now();
-        // 若使用者編輯固定項目的歸屬月份（無論往前或往後），以新設定的月份更新起始月
-        const originMonth = isFixed ? month : null;
+        // 系列起始月只往前推、不往後退：編輯任一月份都不該把整條系列的起點搬走
+        const prevOriginMonth = editingItem ? normalizeMonthStr(editingItem.originMonth) : '';
+        const originMonth = isFixed ? minMonthStr(prevOriginMonth || month, month) : null;
 
         const itemData = {
           title,
@@ -3030,7 +3278,6 @@
           const oldTitle = String(targetItem.title || '').trim();
           const oldNormTitle = oldTitle.toLowerCase();
           const oldSeriesId = wasFixed ? getSeriesId(targetItem) : '';
-          const editingPaidRecord = !!targetItem.purchased;
           const originalMonthKey = targetItem ? normalizeMonthStr(targetItem.month) : '';
           const movedFixedMonth = !!(wasFixed && originalMonthKey && monthStrToIndex(month) !== monthStrToIndex(originalMonthKey));
 
@@ -3080,7 +3327,8 @@
             removeIgnoredFixedForMonth(month, title, seriesId);
           }
 
-          if (isFixed && wasFixed && wantRecurring && oldTitle && !editingPaidRecord) {
+          // 不論被編輯的那筆是否已付款，都應該把新名稱／新金額同步到其他未付款副本
+          if (isFixed && wasFixed && wantRecurring && oldTitle) {
             if (oldTitle !== title) migrateIgnoredFixedTitle(oldTitle, title);
 
             const copiesToSync = [];
@@ -3282,8 +3530,7 @@
         isSubmittingWishlist = false;
       }
     }
-
-    function renderAnnualChart() {
+    function renderAnnualChart(wishlist) {
       const year = state.currentYear;
       document.getElementById('annual-year-badge').innerText = `${year}年`;
 
@@ -3293,7 +3540,7 @@
       const roundCents = (val) => clampAmount(val);
 
       for (let m = 1; m <= 12; m++) {
-        const txs = state.wishlist.filter(t => isSameMonthYear(t.month, year, m) && t.purchased);
+        const txs = wishlist.filter(t => isSameMonthYear(t.month, year, m) && t.purchased);
         const incs = state.incomes.filter(i => isSameMonthYear(i.month, year, m) && i.received);
         const incRaw = incs.reduce((sum, i) => sum + Number(i.price || 0), 0);
         const expRaw = txs.reduce((sum, t) => sum + Number(t.price || 0), 0);
@@ -3337,12 +3584,20 @@
       }
     }
 
+    // 只有「檢視年份＝現實年份」時才高亮當月，避免看別年時也亮同月份
+    function getHighlightMonth() {
+      const realNow = new Date();
+      if (state.currentYear !== realNow.getFullYear()) return 0;
+      return state.currentMonth;
+    }
+
     function renderBarFlowChart(container, data) {
       const maxVal = Math.max(...data.map(d => Math.max(d.income, d.expense)), 100);
       const chartHeight = 110;
       const chartWidth = 360;
       const colWidth = chartWidth / 12;
       const fmtVal = fmtChartVal;
+      const highlightMonth = getHighlightMonth();
 
       let svg = `<svg viewBox="0 0 ${chartWidth} 140" class="w-full h-full overflow-visible">`;
       svg += `<line x1="0" y1="${chartHeight}" x2="${chartWidth}" y2="${chartHeight}" stroke="#E5E0D5" stroke-width="1" />`;
@@ -3351,7 +3606,7 @@
         const x = idx * colWidth;
         const incHeight = d.income > 0 ? Math.max(2.5, (d.income / maxVal) * (chartHeight - 22)) : 0;
         const expHeight = d.expense > 0 ? Math.max(2.5, (d.expense / maxVal) * (chartHeight - 22)) : 0;
-        const isCurrent = d.month === state.currentMonth;
+        const isCurrent = d.month === highlightMonth;
 
         const incBarWidth = (colWidth - 6) / 2;
         const expBarWidth = (colWidth - 6) / 2;
@@ -3501,8 +3756,9 @@
         ${hasNegativeNet ? `<path d="${pathNet}" fill="none" stroke="#E11D48" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" clip-path="url(#clipBelowZero)" />` : ''}
       `;
 
+      const highlightMonth = getHighlightMonth();
       points.forEach(p => {
-        const isCurrent = p.month === state.currentMonth;
+        const isCurrent = p.month === highlightMonth;
         const netDotColor = p.net < 0 ? '#E11D48' : '#0284C7';
 
         svg += `<g class="cursor-pointer" onclick="jumpToMonth(${p.month})">
@@ -3591,73 +3847,148 @@
       container.innerHTML = svg;
     }
 
-    // 雲端待付清單快照合併：全程防護非同步時間差，每次 await 後即時過濾最新 pendingDeletedWish 與停止/忽略規則
+    // ============================================================
+    // 雲端 meta 套用：忽略名單、系列停止狀態、墓碑／復原
+    // 全部以 updatedAt / ts 比對，較新者勝出，移除才會真正生效
+    // ============================================================
+    function applyRemoteIgnoredMonths(remoteMap) {
+      if (!remoteMap || typeof remoteMap !== 'object' || Array.isArray(remoteMap)) return;
+      let changed = false;
+      Object.keys(remoteMap).forEach(m => {
+        const normM = normalizeMonthStr(m);
+        if (!normM) return;
+        const remote = normalizeIgnoredEntry(remoteMap[m]);
+        const local = ignoredFixedMonthsMap[normM];
+        if (!local) {
+          ignoredFixedMonthsMap[normM] = remote;
+          changed = true;
+        } else if (remote.updatedAt > local.updatedAt) {
+          ignoredFixedMonthsMap[normM] = remote;
+          changed = true;
+        }
+      });
+      if (changed) persistIgnoredFixedMonths();
+    }
+
+    function applyRemoteTombstoneState(type, tombstones, restores) {
+      const isIncome = type === 'income';
+      const pending = isIncome ? pendingDeletedIncome : pendingDeletedWish;
+      const restored = isIncome ? restoredIncomeTimestamps : restoredWishTimestamps;
+      const storageDeletedKey = isIncome ? 'budget_deleted_income' : 'budget_deleted_wish';
+      const storageRestoredKey = isIncome ? 'budget_restored_income' : 'budget_restored_wish';
+      const isProtected = isIncome ? isIncomeWriteProtected : isWishWriteProtected;
+
+      const ids = new Set();
+      Object.keys(tombstones || {}).forEach(k => ids.add(k));
+      Object.keys(restores || {}).forEach(k => ids.add(k));
+
+      let changed = false;
+      ids.forEach(rawId => {
+        const id = String(rawId);
+        if (!id || id === '__proto__' || id === 'constructor' || id === 'prototype') return;
+        if (isProtected(id)) return;
+
+        const rDel = parseTs(tombstones && tombstones[id]);
+        const rRes = parseTs(restores && restores[id]);
+        const lDel = parseTs(deletionTimestamps[id]);
+        const lRes = parseTs(restored[id]);
+
+        if (rDel > rRes && rDel > lDel && rDel > lRes) {
+          pending.add(id);
+          deletionTimestamps[id] = { ts: rDel };
+          delete restored[id];
+          changed = true;
+        } else if (rRes > rDel && rRes > lDel) {
+          if (pending.delete(id)) changed = true;
+          if (deletionTimestamps[id]) { delete deletionTimestamps[id]; changed = true; }
+          if (rRes > lRes) { restored[id] = { ts: rRes }; changed = true; }
+        }
+      });
+
+      if (changed) {
+        safeSetItem('budget_deletion_timestamps', JSON.stringify(deletionTimestamps));
+        safeSetItem(storageDeletedKey, JSON.stringify(Array.from(pending)));
+        safeSetItem(storageRestoredKey, JSON.stringify(restored));
+      }
+    }
+
+    function applyWishlistMetaDoc(metaData) {
+      if (!metaData || typeof metaData !== 'object') return;
+
+      if (metaData.seriesMap && typeof metaData.seriesMap === 'object') {
+        Object.keys(metaData.seriesMap).forEach(k => {
+          const remoteEntry = metaData.seriesMap[k];
+          if (!remoteEntry || typeof remoteEntry !== 'object') return;
+          const rTime = Number(remoteEntry.updatedAt || 0);
+          const localEntry = stoppedSeriesState[k];
+          const lTime = localEntry ? Number(localEntry.updatedAt || 0) : 0;
+          if (!localEntry || rTime > lTime) {
+            stoppedSeriesState[k] = { stopped: !!remoteEntry.stopped, updatedAt: rTime };
+          }
+        });
+        persistStoppedSeriesState();
+      } else if (Array.isArray(metaData.stoppedKeys)) {
+        metaData.stoppedKeys.map(String).forEach(k => {
+          if (!stoppedSeriesState[k]) {
+            stoppedSeriesState[k] = { stopped: true, updatedAt: 1700000000000 };
+          }
+        });
+        persistStoppedSeriesState();
+      }
+
+      if (metaData.ignoredMonthsMap && typeof metaData.ignoredMonthsMap === 'object') {
+        applyRemoteIgnoredMonths(metaData.ignoredMonthsMap);
+      }
+
+      // 新格式：帶時間戳的 map
+      applyRemoteTombstoneState('wish', metaData.wishTombstones, metaData.wishRestored);
+      applyRemoteTombstoneState('income', metaData.incomeTombstones, metaData.incomeRestored);
+
+      // 舊格式：純 id 陣列，補上一個極舊的時間戳，讓後續的「復原」一定能覆蓋
+      if (Array.isArray(metaData.deletedWishIds)) {
+        metaData.deletedWishIds.map(String).forEach(delId => {
+          if (isWishWriteProtected(delId)) return;
+          if (!pendingDeletedWish.has(delId)) {
+            pendingDeletedWish.add(delId);
+            if (!deletionTimestamps[delId]) deletionTimestamps[delId] = { ts: 1700000000000 };
+          }
+        });
+        safeSetItem('budget_deleted_wish', JSON.stringify(Array.from(pendingDeletedWish)));
+      }
+      if (Array.isArray(metaData.deletedIncomeIds)) {
+        metaData.deletedIncomeIds.map(String).forEach(delId => {
+          if (isIncomeWriteProtected(delId)) return;
+          if (!pendingDeletedIncome.has(delId)) {
+            pendingDeletedIncome.add(delId);
+            if (!deletionTimestamps[delId]) deletionTimestamps[delId] = { ts: 1700000000000 };
+          }
+        });
+        safeSetItem('budget_deleted_income', JSON.stringify(Array.from(pendingDeletedIncome)));
+      }
+    }
+
     async function mergeWishlistSnapshot(snapshot) {
       const remoteWishMap = new Map();
       const pendingUploads = [];
       const fromServer = !snapshot.metadata || (!snapshot.metadata.fromCache && !snapshot.metadata.hasPendingWrites);
       const presentServerIds = new Set();
       const tombstoneDeletes = [];
+      let hasRealDocs = false;
 
+      // 第一輪：先把 meta 文件套用完，避免後面才讀到墓碑/忽略名單而漏刪
       for (const docSnap of snapshot.docs) {
         const docId = String(docSnap.id);
         if (docId === META_STOPPED_DOC_ID || docId === LEGACY_META_DOC_ID) {
-          const metaData = docSnap.data();
-          if (metaData && metaData.seriesMap && typeof metaData.seriesMap === 'object') {
-            Object.keys(metaData.seriesMap).forEach(k => {
-              const remoteEntry = metaData.seriesMap[k];
-              const localEntry = stoppedSeriesState[k];
-              if (remoteEntry && typeof remoteEntry === 'object') {
-                const rTime = Number(remoteEntry.updatedAt || 0);
-                const lTime = localEntry ? Number(localEntry.updatedAt || 0) : 0;
-                if (!localEntry || rTime > lTime) {
-                  stoppedSeriesState[k] = { stopped: !!remoteEntry.stopped, updatedAt: rTime };
-                }
-              }
-            });
-            persistStoppedSeriesState();
-          } else if (metaData && Array.isArray(metaData.stoppedKeys)) {
-            metaData.stoppedKeys.map(String).forEach(k => {
-              if (!stoppedSeriesState[k]) {
-                stoppedSeriesState[k] = { stopped: true, updatedAt: 1700000000000 };
-              }
-            });
-            persistStoppedSeriesState();
-          }
-          // 同步跨裝置單月忽略清單與跨裝置刪除墓碑
-          if (metaData && metaData.ignoredMonthsMap && typeof metaData.ignoredMonthsMap === 'object') {
-            Object.keys(metaData.ignoredMonthsMap).forEach(m => {
-              const normM = normalizeMonthStr(m);
-              if (normM && Array.isArray(metaData.ignoredMonthsMap[m])) {
-                ignoredFixedMonthsMap[normM] = Array.from(new Set([
-                  ...(ignoredFixedMonthsMap[normM] || []),
-                  ...metaData.ignoredMonthsMap[m].map(v => String(v || '').trim().toLowerCase()).filter(Boolean)
-                ]));
-              }
-            });
-            persistIgnoredFixedMonths();
-          }
-          if (metaData && Array.isArray(metaData.deletedWishIds)) {
-            metaData.deletedWishIds.map(String).forEach(delId => {
-              if (!isWishWriteProtected(delId)) {
-                pendingDeletedWish.add(delId);
-                if (!deletionTimestamps[delId]) deletionTimestamps[delId] = { ts: Date.now() };
-              }
-            });
-            safeSetItem('budget_deleted_wish', JSON.stringify(Array.from(pendingDeletedWish)));
-          }
-          if (metaData && Array.isArray(metaData.deletedIncomeIds)) {
-            metaData.deletedIncomeIds.map(String).forEach(delId => {
-              if (!isIncomeWriteProtected(delId)) {
-                pendingDeletedIncome.add(delId);
-                if (!deletionTimestamps[delId]) deletionTimestamps[delId] = { ts: Date.now() };
-              }
-            });
-            safeSetItem('budget_deleted_income', JSON.stringify(Array.from(pendingDeletedIncome)));
-          }
-          continue;
+          applyWishlistMetaDoc(docSnap.data());
         }
+      }
 
+      // 第二輪：處理實際資料
+      for (const docSnap of snapshot.docs) {
+        const docId = String(docSnap.id);
+        if (docId === META_STOPPED_DOC_ID || docId === LEGACY_META_DOC_ID) continue;
+
+        hasRealDocs = true;
         presentServerIds.add(docId);
         if (fromServer) syncedCloudWishIds.add(docId);
 
@@ -3705,7 +4036,7 @@
       if (fromServer) {
         Array.from(pendingDeletedWish).forEach(delId => {
           if (!presentServerIds.has(delId) && canExpireTombstone(delId)) {
-            clearOfflineDeletion('wish', delId);
+            clearOfflineDeletion('wish', delId, { silent: true });
           }
         });
       }
@@ -3721,8 +4052,8 @@
           continue;
         }
 
-        // 若本地項目連 syncedCloudWishIds 都沒有，且也沒有排入 pendingWishUpdates，但雲端快照已非空，代表是舊快取已被他處刪除的孤兒資料
-        if (fromServer && snapshot.docs.length > 0 && !pendingWishUpdates[lid] && !isWishWriteProtected(lid)) {
+        // 若本地項目連 syncedCloudWishIds 都沒有，且也沒有排入 pendingWishUpdates，但雲端快照已有資料，代表是舊快取已被他處刪除的孤兒資料
+        if (fromServer && hasRealDocs && !pendingWishUpdates[lid] && !isWishWriteProtected(lid)) {
           continue;
         }
 
@@ -3798,10 +4129,12 @@
       state.wishlist = state.wishlist.filter(w => !pendingDeletedWish.has(String(w.id)) && !isUnpurchasedFixedItemBlocked(w));
       saveToLocalStorage();
 
-      if (fromServer || !hasReceivedInitialWishlistSnapshot) {
-        hasReceivedInitialWishlistSnapshot = true;
+      // 只有真正拿到 server 資料才做「自動補齊 / 順延」，避免拿快取資料在離線時誤復活他處已刪除項目
+      if (fromServer) {
+        hasReceivedInitialServerSnapshot = true;
         await ensureYearFixedItems(state.currentYear);
         await rolloverUnpurchasedItems();
+        if (metaSyncDirty) syncMetaStateToCloud();
       }
       render();
     }
@@ -3812,9 +4145,11 @@
       const fromServer = !snapshot.metadata || (!snapshot.metadata.fromCache && !snapshot.metadata.hasPendingWrites);
       const presentServerIds = new Set();
       const tombstoneDeletes = [];
+      let hasRealDocs = false;
 
       for (const docSnap of snapshot.docs) {
         const docId = String(docSnap.id);
+        hasRealDocs = true;
         presentServerIds.add(docId);
         if (fromServer) syncedCloudIncomeIds.add(docId);
 
@@ -3858,7 +4193,7 @@
       if (fromServer) {
         Array.from(pendingDeletedIncome).forEach(delId => {
           if (!presentServerIds.has(delId) && canExpireTombstone(delId)) {
-            clearOfflineDeletion('income', delId);
+            clearOfflineDeletion('income', delId, { silent: true });
           }
         });
       }
@@ -3873,7 +4208,7 @@
           continue;
         }
 
-        if (fromServer && snapshot.docs.length > 0 && !pendingIncomeUpdates[lid] && !isIncomeWriteProtected(lid)) {
+        if (fromServer && hasRealDocs && !pendingIncomeUpdates[lid] && !isIncomeWriteProtected(lid)) {
           continue;
         }
 
@@ -3958,7 +4293,14 @@
       }, 12000);
     }
 
-    async function initCloudSync() {
+    // 併發鎖：避免 online / visibilitychange / reconnect 同時觸發而重複訂閱、洩漏監聽器
+    function initCloudSync() {
+      if (cloudInitPromise) return cloudInitPromise;
+      cloudInitPromise = doInitCloudSync().finally(() => { cloudInitPromise = null; });
+      return cloudInitPromise;
+    }
+
+    async function doInitCloudSync() {
       try {
         if (typeof unsubWishlist === 'function') { unsubWishlist(); unsubWishlist = null; }
         if (typeof unsubIncomes === 'function') { unsubIncomes(); unsubIncomes = null; }
@@ -3971,11 +4313,9 @@
 
         fbDoc = fsModule.doc;
         fbSetDoc = fsModule.setDoc;
-        fbUpdateDoc = fsModule.updateDoc;
         fbDeleteDoc = fsModule.deleteDoc;
         fbOnSnapshot = fsModule.onSnapshot;
         fbCollection = fsModule.collection;
-        fbWriteBatch = fsModule.writeBatch;
 
         unsubWishlist = fbOnSnapshot(fbCollection(db, 'shared_wishlist'), (snapshot) => {
           isWishlistCloudReady = true;
@@ -4073,27 +4413,32 @@
         checkRealMonthRollover();
         if (!isWishlistCloudReady || !isIncomesCloudReady) {
           initCloudSync();
+        } else if (metaSyncDirty) {
+          syncMetaStateToCloud();
         }
       }
     });
     setInterval(checkRealMonthRollover, 60000);
 
-    // 啟動流程：先渲染現有乾淨資料並立即啟動雲端同步，若 1.8 秒內為離線模式才在本地自動補齊固定與順延項目，防止未連網前誤復活他處已刪除資料
+    // 啟動流程：先渲染現有乾淨資料並立即啟動雲端同步。
+    // 只有在「離線」或「完全連不上雲端」時，才在本地自動補齊固定與順延項目，
+    // 避免尚未取得 server 資料前就把別處已刪除的資料復活。
     render();
     initCloudSync();
 
     setTimeout(async () => {
-      if (!hasReceivedInitialWishlistSnapshot) {
-        hasReceivedInitialWishlistSnapshot = true;
-        try {
-          await ensureYearFixedItems(state.currentYear);
-          await rolloverUnpurchasedItems();
-          render();
-        } catch (err) {
-          diagLog(`離線啟動自動同步失敗：${err.message || err}`, true);
-        }
+      if (hasReceivedInitialServerSnapshot) return;
+      const browserOnline = typeof navigator === 'undefined' ? true : navigator.onLine !== false;
+      const shouldLocalFallback = !browserOnline || !isWishlistCloudReady;
+      if (!shouldLocalFallback) return;
+      try {
+        await ensureYearFixedItems(state.currentYear);
+        await rolloverUnpurchasedItems();
+        render();
+      } catch (err) {
+        diagLog(`離線啟動自動同步失敗：${err.message || err}`, true);
       }
-    }, 1800);
-  </script>
+    }, 2000);
+</script>
 </body>
 </html>
