@@ -2316,15 +2316,9 @@
       const viewIdx = monthStrToIndex(getMonthStr(state.currentYear, state.currentMonth));
       const cutoffIdx = viewIdx;
 
-      const wealthLabel = document.getElementById('total-wealth-label');
+const wealthLabel = document.getElementById('total-wealth-label');
       if (wealthLabel) {
-        if (viewIdx > realIdx) {
-          wealthLabel.innerText = `總資產 (試算至${state.currentMonth}月)`;
-        } else if (viewIdx < realIdx) {
-          wealthLabel.innerText = `總資產 (截至${state.currentMonth}月)`;
-        } else {
-          wealthLabel.innerText = '總資產';
-        }
+        wealthLabel.innerText = '總資產';
       }
 
       const currentPurchasedExpense = roundCents(currentMonthItems.filter(i => i.purchased).reduce((s, i) => s + Number(i.price || 0), 0));
